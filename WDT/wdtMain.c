@@ -2,10 +2,10 @@
  * ==============================================================
  * System TARGET : ACE Control SDP-2000 Ver 1.0   
  * Target CPU    : MPC8248, VME6U
- * Main Factors  : ½º¸¶Æ®±ŞÀü¿ë SDP ÀÚÀåÄ¡ 
- *     - MPU ÀÌÁßÈ­ ±¸¼º
- *     - ESOP/SIO ¿¬°è : Àü·Â°¨½Ã, ¿ø°İÁø´Ü, Àü·ÂÇ°Áú, °íÀåÁ¡ µî
- *     - ÅëÇÕ ½Ã¹Ä·¹ÀÌÅÍ : 2013/07/08 V8.2 Àû¿ë 
+ * Main Factors  : ìŠ¤ë§ˆíŠ¸ê¸‰ì „ìš© SDP ìì¥ì¹˜ 
+ *     - MPU ì´ì¤‘í™” êµ¬ì„±
+ *     - ESOP/SIO ì—°ê³„ : ì „ë ¥ê°ì‹œ, ì›ê²©ì§„ë‹¨, ì „ë ¥í’ˆì§ˆ, ê³ ì¥ì  ë“±
+ *     - í†µí•© ì‹œë®¬ë ˆì´í„° : 2013/07/08 V8.2 ì ìš© 
  * --------------------------------------------------------------
  * System DESIGN : SANE-SYSTEM   .... by  Lee Ho-Sang
  * Initial-DATA  : 2016,03,25
@@ -19,7 +19,19 @@
 #include    "smbus.h"
 #include    "i2c-dev.h"
 
-//typedef unsigned char   bool;           // wdtParser.cpp ÂüÁ¶ 
+/* 2026-09-03 : updateHistoryQ()/init_fram() ì—ì„œ offsetof(HISTORY_QUE, queue)ë¥¼
+ * ì“°ëŠ”ë°, ì´ ë§¤í¬ë¡œëŠ” <stddef.h>ì— ì •ì˜ë¼ ìˆë‹¤. localLib.h ì²´ì¸ì´ ì´ê±¸ í•­ìƒ
+ * ëŒì–´ë“¤ì—¬ì¤€ë‹¤ê³  ë³´ì¥í•  ìˆ˜ ì—†ì–´ì„œ(ì‹¤ì œë¡œ ì´ íŒŒì¼ì—ì„œëŠ” ì•ˆ ëŒë ¤ì™€ì„œ ë¹Œë“œ
+ * ì—ëŸ¬ê°€ ë‚¬ìŒ) ëª…ì‹œì ìœ¼ë¡œ í¬í•¨í•œë‹¤. */
+#include    <stddef.h>
+
+/* 2026-09-30 : RTC backup ìœ ì§€ì‹œê°„ì´ ì§§ì€(ì•½ 5ë¶„) ë³´ë“œ ëŒ€ì‘.
+ * ì£¼ê¸°ì ìœ¼ë¡œ í˜„ì¬ ì‹œê°ì„ ë¹„íœ˜ë°œì„± íŒŒì¼ì— ì €ì¥í•˜ê³ , ë¶€íŒ… ì‹œ RTC ê°€ ë¦¬ì…‹ëœ
+ * ìƒíƒœë©´ ê·¸ ê°’ìœ¼ë¡œ system time + RTC ë¥¼ ë³µêµ¬í•œë‹¤.
+ * ì„¤ê³„: design/20260930_time_backup.md */
+#include    "time_backup.h"
+
+//typedef unsigned char   bool;           // wdtParser.cpp ì°¸ì¡°
 
 int	            termExec;
 
@@ -33,32 +45,32 @@ RTC             *rtc    = NULL;
 OPR_MSG         *opr    = NULL;
 CONSOLE_INFO	*console= NULL;
 
-LINK_MSG        *linkCfg= NULL;                 // CPU ÀÌÁßÈ­ ±¸Á¶Ã¼
-SCU_MSG         *scuCfg = NULL;                 // ÀÌÁßÈ­ ÀıÃ¼ÀåÄ¡(SCU) ±¸Á¶Ã¼
+LINK_MSG        *linkCfg= NULL;                 // CPU ì´ì¤‘í™” êµ¬ì¡°ì²´
+SCU_MSG         *scuCfg = NULL;                 // ì´ì¤‘í™” ì ˆì²´ì¥ì¹˜(SCU) êµ¬ì¡°ì²´
 
-ICCP_DCB        *iccpDCB = NULL;                // ICCP-HOST ±¸Á¶Ã¼
-ICCP_CONFIG     *iccpCFG = NULL;                // ICCP-HOST ±¸Á¶Ã¼
+ICCP_DCB        *iccpDCB = NULL;                // ICCP-HOST êµ¬ì¡°ì²´
+ICCP_CONFIG     *iccpCFG = NULL;                // ICCP-HOST êµ¬ì¡°ì²´
 
-ICCP_60870_DCB  *iccpInfo=NULL;                 // ICCP-HOST ÂüÁ¶¿ë : ¸ğ´ÏÅÍ¸µ ±¸Á¶Ã¼
+ICCP_60870_DCB  *iccpInfo=NULL;                 // ICCP-HOST ì°¸ì¡°ìš© : ëª¨ë‹ˆí„°ë§ êµ¬ì¡°ì²´
 
 MPU_CONFIG      *mpuCFG  = NULL;                 // MPU Config
-ESIO_CONFIG     *esioCFG[MAX_ESIO];             // ESIO ÀåÄ¡ Config
+ESIO_CONFIG     *esioCFG[MAX_ESIO];             // ESIO ì¥ì¹˜ Config
 
-HOST_DCB        *hostDCB[MAX_HOST];             // HOST °ü·Ã ±¸Á¶Ã¼ : ICCP, DNP, HARRIS, LANDIS...
+HOST_DCB        *hostDCB[MAX_HOST];             // HOST ê´€ë ¨ êµ¬ì¡°ì²´ : ICCP, DNP, HARRIS, LANDIS...
 
 RTU             *rtubuf[MAX_HARRIS_RTU];        /* HARRIS RTU Structure */
 PORT_DB         *portdb[MAX_HARRIS_PORT];       /* HARRIS #1 PORT Structure */
 	
-POINT_BUF       *devPtBuf[MAX_DEV_POINT];       // SDP µğ¹ÙÀÌ½º Æ÷ÀÎÆ® Config Á¤º¸
-CAL_POINT_BUF   *calPtBuf[MAX_CAL_POINT];       // SDP ¿¬»ê Æ÷ÀÎÆ® Config Á¤º¸
+POINT_BUF       *devPtBuf[MAX_DEV_POINT];       // SDP ë””ë°”ì´ìŠ¤ í¬ì¸íŠ¸ Config ì •ë³´
+CAL_POINT_BUF   *calPtBuf[MAX_CAL_POINT];       // SDP ì—°ì‚° í¬ì¸íŠ¸ Config ì •ë³´
 
-SCAN_CONFIG     *scanCFG[MAX_SCAN_PORT];        // ÇÏÀ§°èÀü±â SCAN Config
-SDP_DEVICE      *deviceCFG[MAX_DEVICE];         // °èÀü±â/ÀåÄ¡- ÀüÀÚ½Ä¹èÀü¹İ (GiPAM, HiMAP...)
+SCAN_CONFIG     *scanCFG[MAX_SCAN_PORT];        // í•˜ìœ„ê³„ì „ê¸° SCAN Config
+SDP_DEVICE      *deviceCFG[MAX_DEVICE];         // ê³„ì „ê¸°/ì¥ì¹˜- ì „ìì‹ë°°ì „ë°˜ (GiPAM, HiMAP...)
 
-//RTU_CONFIG      *rtuDCB = NULL;                 // ÇÏºÎ RTU ¿î¿µ ±¸Á¶Ã¼
+//RTU_CONFIG      *rtuDCB = NULL;                 // í•˜ë¶€ RTU ìš´ì˜ êµ¬ì¡°ì²´
 	 
-RTU_DATABASE    *rtudb  = NULL;                 // SDP µ¥ÀÌÅÍº£ÀÌ½º
-HISTORY_QUE     *hque   = NULL;                 // CONSOLE ¿ë ÀÌº¥Æ®
+RTU_DATABASE    *rtudb  = NULL;                 // SDP ë°ì´í„°ë² ì´ìŠ¤
+HISTORY_QUE     *hque   = NULL;                 // CONSOLE ìš© ì´ë²¤íŠ¸
 
 MPU_SOE_QUEUE   *mpuSOE = NULL;                 // MPU SOE Buffer
 //MPU_COS_QUEUE   *mpuCOS = NULL;                 // MPU COS Buffer
@@ -69,19 +81,19 @@ volatile HISTORY_QUE      *framHque;
 // hkkim for imx6sx 
 #if 0
 
-MPC860IO_DESC    ledPort1 = {0, NULL, 0, "/dev/i2c-1", O_RDWR|O_NDELAY};    // »ó´ÜºÎ LED : RUN/MS/ACT...
-MPC860IO_DESC    ledPort2 = {0, NULL, 0, "/dev/i2c-1", O_RDWR|O_NDELAY};    // ÇÏ´ÜºÎ LED : M1/S1.....
+MPC860IO_DESC    ledPort1 = {0, NULL, 0, "/dev/i2c-1", O_RDWR|O_NDELAY};    // ìƒë‹¨ë¶€ LED : RUN/MS/ACT...
+MPC860IO_DESC    ledPort2 = {0, NULL, 0, "/dev/i2c-1", O_RDWR|O_NDELAY};    // í•˜ë‹¨ë¶€ LED : M1/S1.....
 
-MPC860IO_DESC    devInput  = {0, NULL, 0, "/dev/i2c-0", O_RDWR|O_NDELAY};    // LINK ºÎ Output .....
-MPC860IO_DESC    devOutput = {0, NULL, 0, "/dev/i2c-0", O_RDWR|O_NDELAY};    // LINK ºÎ Output .....
+MPC860IO_DESC    devInput  = {0, NULL, 0, "/dev/i2c-0", O_RDWR|O_NDELAY};    // LINK ë¶€ Output .....
+MPC860IO_DESC    devOutput = {0, NULL, 0, "/dev/i2c-0", O_RDWR|O_NDELAY};    // LINK ë¶€ Output .....
 
 #else 
 
-MPC860IO_DESC    ledPort1 = {0, NULL, 0, "/dev/i2c-3", O_RDWR|O_NDELAY};    // »ó´ÜºÎ LED : RUN/MS/ACT...
-MPC860IO_DESC    ledPort2 = {0, NULL, 0, "/dev/i2c-3", O_RDWR|O_NDELAY};    // ÇÏ´ÜºÎ LED : M1/S1.....
+MPC860IO_DESC    ledPort1 = {0, NULL, 0, "/dev/i2c-3", O_RDWR|O_NDELAY};    // ìƒë‹¨ë¶€ LED : RUN/MS/ACT...
+MPC860IO_DESC    ledPort2 = {0, NULL, 0, "/dev/i2c-3", O_RDWR|O_NDELAY};    // í•˜ë‹¨ë¶€ LED : M1/S1.....
 
-MPC860IO_DESC    devInput  = {0, NULL, 0, "/dev/i2c-1", O_RDWR|O_NDELAY};    // LINK ºÎ Output .....
-MPC860IO_DESC    devOutput = {0, NULL, 0, "/dev/i2c-1", O_RDWR|O_NDELAY};    // LINK ºÎ Output .....
+MPC860IO_DESC    devInput  = {0, NULL, 0, "/dev/i2c-1", O_RDWR|O_NDELAY};    // LINK ë¶€ Output .....
+MPC860IO_DESC    devOutput = {0, NULL, 0, "/dev/i2c-1", O_RDWR|O_NDELAY};    // LINK ë¶€ Output .....
 
 #endif 
 
@@ -95,7 +107,7 @@ MPC860IO_DESC    devOutput = {0, NULL, 0, "/dev/i2c-1", O_RDWR|O_NDELAY};    // 
 MPC860IO_DESC    rtcPort  = {0, NULL, 0, "/dev/rtc0", O_RDWR};
 
 /* ---------------------------------------- */
-/*  VMEBUS °ü·Ã º¯¼ö ÃÊ±âÈ­                 */
+/*  VMEBUS ê´€ë ¨ ë³€ìˆ˜ ì´ˆê¸°í™”                 */
 /* ---------------------------------------- */
 void    *vmebus_ptr ;
 int     vme_fd; 
@@ -103,13 +115,29 @@ int     vme_fd;
 VME_SIODCB      *vmeSioDCB[MAX_VME_SIO];
 VME_SIODCB      tempVmeSioDCB[MAX_VME_SIO];
 
-static  word    vmeRunTick[MAX_VME_SIO];        //¸ğµâµ¿ÀÛ ÀÌ»ó
-static  word    vmeFailTick[MAX_VME_SIO];       //¸ğµâµ¿ÀÛ ÀÌ»ó
-static  word    vmeFailType[MAX_VME_SIO];       //¸ğµâÀåÂø ÀÌ»ó
+static  word    vmeRunTick[MAX_VME_SIO];        //ëª¨ë“ˆë™ì‘ ì´ìƒ
+static  word    vmeFailTick[MAX_VME_SIO];       //ëª¨ë“ˆë™ì‘ ì´ìƒ
+static  word    vmeFailType[MAX_VME_SIO];       //ëª¨ë“ˆì¥ì°© ì´ìƒ
 static  word    vmeActCount[MAX_VME_SIO];
 
 static  short   ledRunTick=0;
 static  short   iccpRunTick = 0;
+
+/* ---------------------------------------- */
+/*  RTC ì‹œê° ë°±ì—… (time_backup) ê´€ë ¨        */
+/* ---------------------------------------- */
+/* ì´ ì‹œê°ë³´ë‹¤ ì˜¤ë˜ëœ RTC ê°’ì´ë©´ "backup ë°©ì „ìœ¼ë¡œ RTC ê°€ ë¦¬ì…‹ëœ ê²ƒ" ìœ¼ë¡œ ê°„ì£¼í•œë‹¤.
+ * time_backup.h ì˜ TIME_BACKUP_MIN_VALID_TIME(2023-11-15)ì€ ê°±ì‹ ë˜ì§€ ì•Šì•„
+ * ì‹œê°„ì´ ê°ˆìˆ˜ë¡ ë¬´ì˜ë¯¸í•´ì§€ë¯€ë¡œ, ê·¸ ê°’ì„ ì“°ì§€ ì•Šê³  ì—¬ê¸°ì„œ ì§ì ‘ ê´€ë¦¬í•œë‹¤.
+ * ==> ë¦´ë¦¬ìŠ¤ë§ˆë‹¤ ë¹Œë“œ ì‹œì  ê·¼ì²˜ë¡œ ì˜¬ë ¤ì¤„ ê²ƒ.
+ *     1756000000 = 2025-08-24 */
+#define WDT_TIME_MIN_VALID      ((time_t)1756000000)
+
+/* ë§ˆì§€ë§‰ ë°±ì—… ì €ì¥ ì´í›„ ëª‡ ë²ˆì˜ ì‹œê°„(hour) ë³€í™”ê°€ ì§€ë‚˜ë©´ ë‹¤ì‹œ ì €ì¥í• ì§€.
+ * ì •í™•í•œ 12ì‹œê°„ ê³„ì‚°ì´ ì•„ë‹ˆë¼ hour ë³€í™” íšŸìˆ˜ë§Œ ì„¼ë‹¤. */
+#define WDT_TIME_BACKUP_HOURS   12
+
+static  int     timeBackupHourCnt = 0;      // ë§ˆì§€ë§‰ ì €ì¥ ì´í›„ hour ë³€í™” íšŸìˆ˜
 
 extern  int	    readClock();
 extern  int	    writeClock( int year, int month, int day, int hour, int min, int sec, int week);
@@ -122,7 +150,7 @@ extern  void    hostParaConfig();
 extern  void    scanParaConfig();
 extern  void    deviceParaConfig();
 extern  void    pointParaConfig(); 
-extern  void    calPointConfig();         // ¿¬»êÆ÷ÀÎÆ® Config...
+extern  void    calPointConfig();         // ì—°ì‚°í¬ì¸íŠ¸ Config...
 
 extern  int     get_NTP_Info();
 
@@ -144,9 +172,9 @@ static char cpuStsStr[2][12]  = {{"MPU-A"}, {"MPU-B"}};
 
 PROCESS_DESC	prcTable[MAX_PROCESS] = 
             {
-				{"SIM",    "",  0, 0},              // Simulator Åë½Å Process 
-                {"SCU",    "",  0, 0},              // ÀÌÁßÈ­ÀıÃ¼ÀåÄ¡(SCU) Åë½Å Process
-                {"LINK",   "",  0, 0},              // MPU ÀÌÁßÈ­ LINK Process 
+				{"SIM",    "",  0, 0},              // Simulator í†µì‹  Process 
+                {"SCU",    "",  0, 0},              // ì´ì¤‘í™”ì ˆì²´ì¥ì¹˜(SCU) í†µì‹  Process
+                {"LINK",   "",  0, 0},              // MPU ì´ì¤‘í™” LINK Process 
                 {"SCAN",   "",  0, 1},              // SCAN Process 
                 {"ICCP",   "",  0, 2},              // ICCP(60870-6) Process 
                 {"HOST",   "0", 0, 2},              // HOST#1  Process 
@@ -161,21 +189,20 @@ PROCESS_DESC	prcTable[MAX_PROCESS] =
 
 
 /* ---------------------------------------- */
-/*  SDP-ÀÚÀåÄ¡ : PROCESS °ü·Ã ±¸Á¶Ã¼ Á¤ÀÇ  ??????  */
+/*  SDP-ìì¥ì¹˜ : PROCESS ê´€ë ¨ êµ¬ì¡°ì²´ ì •ì˜  ??????  */
 /* ---------------------------------------- */
 PROCESS_DESC	prcTable[MAX_PROCESS] = 
             {
-				{"SIM",    "",  0, 0},              // Simulator Åë½Å Process 								
-                {"SCU",    "",  0, 0},              // ÀÌÁßÈ­ÀıÃ¼ÀåÄ¡(SCU) Åë½Å Process
-                {"LINK",   "",  0, 0},              // MPU ÀÌÁßÈ­ LINK Process 
+				{"SIM",    "",  0, 0},              // Simulator í†µì‹  Process 								
+                {"SCU",    "",  0, 0},              // ì´ì¤‘í™”ì ˆì²´ì¥ì¹˜(SCU) í†µì‹  Process
+                {"LINK",   "",  0, 0},              // MPU ì´ì¤‘í™” LINK Process 
                 {"SCAN",   "",  0, 1},              // SCAN Process 
                 {"ICCP",   "",  0, 2},              // ICCP(60870-6) Process 
                 {"HOST",   "0", 0, 2},              // HOST#1  Process                
-#if 1
                 {"HOST",   "1", 0, 2},              // HOST#2  Process 
                 {"HOST",   "2", 0, 2},              // HOST#3  Process 
                 {"HOST",   "3", 0, 2},              // HOST#4  Process 
-#endif    
+  
     	    };
 
 void    *mram_ptr;
@@ -183,8 +210,30 @@ int     mram_fd;                // SVME-860 Device Driver
 
 int     wdtid;                      
 
+/* --------------------------------------------------------------------
+ * 2026-09-03 : FRAMì´ ì—†ëŠ” ì‹ ê·œ ë³´ë“œìš© History.Bin íŒŒì¼ ë°±ì—…
+ *  (design/history-fram-to-file.md ì°¸ê³ )
+ *
+ *  ê¸°ì¡´ì—ëŠ” init_fram() ì´ /dev/mem ì„ mmap í•´ì„œ mram_ptr ì´ FRAM
+ *  ë¬¼ë¦¬ì£¼ì†Œë¥¼ ì§ì ‘ ê°€ë¦¬ì¼°ê³ , framHque ëŠ” "mram_ptr + 0x1000" ìœ„ì¹˜ë¥¼
+ *  HISTORY_QUE êµ¬ì¡°ì²´ë¡œ ìºìŠ¤íŒ…í•œ ê²ƒì´ì—ˆë‹¤(ì¦‰ framHque ì½ê¸°/ì“°ê¸°ê°€
+ *  ê·¸ëŒ€ë¡œ FRAM ì½ê¸°/ì“°ê¸°ì˜€ìŒ). ì‹ ê·œ ë³´ë“œëŠ” FRAMì´ ì—†ìœ¼ë¯€ë¡œ:
+ *   - histBuf   : FRAMì„ ëŒ€ì‹ í•˜ëŠ” ì‹¤ì œ ì €ì¥ ê³µê°„(ê·¸ëƒ¥ RAM). framHque
+ *                 ê°€ ìµœì¢…ì ìœ¼ë¡œ ì´ ë³€ìˆ˜ì˜ ì£¼ì†Œë¥¼ ê°€ë¦¬í‚¤ê²Œ ëœë‹¤.
+ *   - histFd    : /mnt/bin/History.Bin ì˜ íŒŒì¼ ë””ìŠ¤í¬ë¦½í„°. WDT
+ *                 í”„ë¡œì„¸ìŠ¤ê°€ ì‚´ì•„ìˆëŠ” ë™ì•ˆ open ìƒíƒœë¥¼ ìœ ì§€í•˜ë©°,
+ *                 ì´ë²¤íŠ¸ê°€ ìƒê¸¸ ë•Œë§ˆë‹¤(updateHistoryQ) pwrite ë¡œ
+ *                 ë°”ë€ ë¶€ë¶„ë§Œ íŒŒì¼ì— ë°˜ì˜í•œë‹¤ - FRAMì´ ë°”ì´íŠ¸ ë‹¨ìœ„ë¡œ
+ *                 ì¦‰ì‹œ ì“°ì˜€ë˜ ê²ƒê³¼ ë™ì¼í•œ íš¨ê³¼ë¥¼ íŒŒì¼ì—ì„œë„ ë‚¸ë‹¤.
+ *                 -1ì´ë©´ "ì´ë²ˆ ë¶€íŒ…ì—ëŠ” íŒŒì¼ì„ ëª» ì—´ì–´ì„œ ëª» ì“´ë‹¤"ëŠ”
+ *                 ëœ»ì´ê³ , ì´ ê²½ìš° framHque ëŠ” ê¸°ì¡´ í´ë°± ê·¸ëŒ€ë¡œ
+ *                 &localHQ(íœ˜ë°œì„± RAM)ë¥¼ ê°€ë¦¬í‚¤ê²Œ ëœë‹¤.
+ * -------------------------------------------------------------------- */
+static HISTORY_QUE   histBuf;
+static int           histFd = -1;
+
 //
-// ¸ğµâ:	SigHandler()
+// ëª¨ë“ˆ:	SigHandler()
 //
 void SigHandler(int sig)
 {
@@ -202,7 +251,7 @@ void SigHandler(int sig)
         //if(opr->wdtDebug)
            Debug(console,"wdt> ... signal [SIGTERM] generated (%2d)...!\n", sig);
         /* -------------------------------- */
-        /* LOG File ÀúÀå                    */
+        /* LOG File ì €ì¥                    */
         /* -------------------------------- */
         sprintf(buffer, "wdt> ... signal [SIGTERM] generated (%2d)...!", sig);
       	LogFile_MPU (shmPtr, ENT_NOT_DEFINED, buffer, strlen(buffer));   		
@@ -214,7 +263,7 @@ void SigHandler(int sig)
       //  if(opr->wdtDebug) 
               Debug(console,"wdt> ... signal [SIGBUS] generated (%2d)...!\n", sig);
         /* -------------------------------- */
-        /* LOG File ÀúÀå                    */
+        /* LOG File ì €ì¥                    */
         /* -------------------------------- */
         sprintf(buffer, "wdt> ... signal [SIGBUS] generated (%2d)...!", sig);
       	LogFile_MPU (shmPtr, ENT_NOT_DEFINED, buffer, strlen(buffer));   		
@@ -226,7 +275,7 @@ void SigHandler(int sig)
        // if(opr->wdtDebug) 
               Debug(console,"wdt> ... signal [SIGSEGV] generated (%2d)...!\n", sig);
         /* -------------------------------- */
-        /* LOG File ÀúÀå                    */
+        /* LOG File ì €ì¥                    */
         /* -------------------------------- */
         sprintf(buffer, "wdt> ... signal [SIGSEGV] generated (%2d)...!", sig);
       	LogFile_MPU (shmPtr, ENT_NOT_DEFINED, buffer, strlen(buffer));   		
@@ -237,7 +286,7 @@ void SigHandler(int sig)
       //  if(opr->wdtDebug) 
               Debug(console,"wdt> ... signal [SIGPIPE] generated (%2d)...!\n", sig);
         /* -------------------------------- */
-        /* LOG File ÀúÀå                    */
+        /* LOG File ì €ì¥                    */
         /* -------------------------------- */
         sprintf(buffer, "wdt> ... signal [SIGPIPE] generated (%2d)...!", sig);
       	LogFile_MPU (shmPtr, ENT_NOT_DEFINED, buffer, strlen(buffer));   		
@@ -248,7 +297,7 @@ void SigHandler(int sig)
 	    //if(opr->wdtDebug)
 	           Debug(console,"wdt> ... signal[%2d] generated ...!\n", sig);
 	    /* -------------------------------- */
-        /* LOG File ÀúÀå                    */
+        /* LOG File ì €ì¥                    */
         /* -------------------------------- */
         sprintf(buffer, "wdt> ... signal[%2d] generated ...!", sig);
       	LogFile_MPU (shmPtr, ENT_NOT_DEFINED, buffer, strlen(buffer));   		
@@ -277,23 +326,30 @@ int  write_led( int fd, unsigned char data)
 
 
 /*
-* MPU ³»ºÎ ÀÌº¥Æ®¿ë Memory ÃÊ±âÈ­
+* MPU ë‚´ë¶€ ì´ë²¤íŠ¸ìš© Memory ì´ˆê¸°í™”
 */
-int  init_fram(void)
+#if 0
+/* --------------------------------------------------------------------
+ * 2026-09-03 : ì˜ˆì „ FRAM(ë¹„íœ˜ë°œì„± ë©”ëª¨ë¦¬) ê¸°ë°˜ êµ¬í˜„. ì‹ ê·œ ë³´ë“œëŠ” FRAMì´
+ * ì—†ì–´ì„œ ì•„ë˜ History.Bin íŒŒì¼ ê¸°ë°˜ êµ¬í˜„ìœ¼ë¡œ ëŒ€ì²´í–ˆë‹¤. ì˜ˆì „ ë°©ì‹ì´
+ * ë‚¨ì•„ìˆëŠ” ë³´ë“œìš©ìœ¼ë¡œ ì°¸ê³ í•  ìˆ˜ ìˆë„ë¡ ì§€ìš°ì§€ ì•Šê³  #if 0 ìœ¼ë¡œ ë‚¨ê²¨ë‘”ë‹¤.
+ * (design/history-fram-to-file.md ì°¸ê³ )
+ * -------------------------------------------------------------------- */
+int  init_fram_OLD_FRAM_VERSION(void)
 {
-    printf("hkkim :  just NOT\r\n");
+    printf("[INFO] init_fram return just NOK\r\n");
     return NOK ;
     /* ------------------------------------ */
-    /*  RED_HAT: MEMORY DEVICE ÃÊ±âÈ­       */
+    /*  RED_HAT: MEMORY DEVICE ì´ˆê¸°í™”       */
     /* ------------------------------------ */
     if ((mram_fd = open("/dev/mem", O_RDWR) ) < 0)
     {
-        printf("wdt> *open /dev/fram ... Error ! \n");
+        printf("[ERROR] wdt> *open /dev/fram ... Error ! \n");
         return (NOK);
     }        
     
     /* ------------------------------------ */ 
-    /* FRAM Backup Memory ÃÊ±âÈ­ (512K)      */
+    /* FRAM Backup Memory ì´ˆê¸°í™” (512K)      */
     /* ------------------------------------ */
     if(( mram_ptr = ( char  *)mmap(0, MRAM_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, mram_fd, (MRAM_START_ADDRESS )) ) < 0)    
     {            
@@ -306,14 +362,85 @@ int  init_fram(void)
     return (OK);
 
 }
+#endif
+
+/* --------------------------------------------------------------------
+ * 2026-09-03 : FRAM ëŒ€ì‹  /mnt/bin/History.Bin íŒŒì¼ë¡œ History-Queueë¥¼
+ * ì˜ì†í™”í•˜ëŠ” ì‹ ê·œ ë³´ë“œìš© êµ¬í˜„. í•¨ìˆ˜ ì´ë¦„ê³¼ ë°˜í™˜ê°’(OK/NOK)ì€ ì˜ˆì „ê³¼
+ * ê·¸ëŒ€ë¡œ ìœ ì§€í•´ì„œ ì´ í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•˜ëŠ” init_variable() ìª½ì€ ì†ëŒˆ í•„ìš”ê°€
+ * ì—†ê²Œ í–ˆë‹¤. (design/history-fram-to-file.md "ì±„íƒì•ˆ ìƒì„¸ ì„¤ê³„ 2ì ˆ" ì°¸ê³ )
+ * -------------------------------------------------------------------- */
+int  init_fram(void)
+{
+    struct stat st;
+
+    /* ------------------------------------------------------------ */
+    /* (1) History.Bin ì—´ê¸° - ì—†ìœ¼ë©´ ìƒˆë¡œ ë§Œë“ ë‹¤(O_CREAT).           */
+    /*     0644 : ì†Œìœ ì rw, ê·¸ë£¹/ê¸°íƒ€ r  (ì‹¤í–‰ ê¶Œí•œ ë¶ˆí•„ìš”)         */
+    /* ------------------------------------------------------------ */
+    histFd = open(HIST_FILE_PATH, O_RDWR | O_CREAT, 0644);
+    if (histFd < 0)
+    {
+        printf("[ERROR] wdt> *open %s ... Error ! \n", HIST_FILE_PATH);
+        return (NOK);
+    }
+
+    /* ------------------------------------------------------------ */
+    /* (2) íŒŒì¼ í¬ê¸°ê°€ HISTORY_QUE í¬ê¸°ì™€ ë‹¤ë¥´ë©´(ìµœì´ˆ ìƒì„± ì§í›„ì´ê±°ë‚˜ */
+    /*     ì˜ˆì „ ë²„ì „/ì†ìƒëœ íŒŒì¼) 0ìœ¼ë¡œ ì´ˆê¸°í™”í•´ì„œ ìƒˆë¡œ ì“´ë‹¤.        */
+    /*     í¬ê¸°ê°€ ë§ìœ¼ë©´ ê¸°ì¡´ ë‚´ìš©ì„ ê·¸ëŒ€ë¡œ histBuf ë¡œ ì½ì–´ë“¤ì¸ë‹¤    */
+    /*     - ì´ê²Œ ì¬ë¶€íŒ… í›„ ì´ë ¥ì´ ì‚´ì•„ë‚¨ëŠ” ì§€ì ì´ë‹¤.                */
+    /* ------------------------------------------------------------ */
+    if (fstat(histFd, &st) < 0)
+    {
+        printf("[ERROR] wdt> *fstat %s ... Error ! \n", HIST_FILE_PATH);
+        close(histFd);
+        histFd = -1;
+        return (NOK);
+    }
+
+    if (st.st_size != (off_t) sizeof(HISTORY_QUE))
+    {
+        /* íŒŒì¼ì´ ë°©ê¸ˆ ìƒˆë¡œ ìƒì„±ëê±°ë‚˜(í¬ê¸° 0), ì˜ˆì „ ë²„ì „/ì†ìƒëœ íŒŒì¼ì´ë‹¤ */
+        printf("wdt> History.Bin size mismatch(file=%ld, need=%d) -> re-create\r\n",
+               (long) st.st_size, (int) sizeof(HISTORY_QUE));
+
+        bzero8248((byte *) &histBuf, sizeof(HISTORY_QUE));
+
+        if (pwrite(histFd, &histBuf, sizeof(HISTORY_QUE), 0) != (ssize_t) sizeof(HISTORY_QUE))
+        {
+            printf("[ERROR] wdt> *History.Bin initial write fail ! \n");
+            close(histFd);
+            histFd = -1;
+            return (NOK);
+        }
+        fsync(histFd);
+    }
+    else
+    {
+        if (pread(histFd, &histBuf, sizeof(HISTORY_QUE), 0) != (ssize_t) sizeof(HISTORY_QUE))
+        {
+            printf("[ERROR] wdt> *History.Bin read fail ! \n");
+            close(histFd);
+            histFd = -1;
+            return (NOK);
+        }
+    }
+
+    printf("wdt> History.Bin (%s, size %d Kbyte) Mapping OK\r\n",
+           HIST_FILE_PATH, (int) (sizeof(HISTORY_QUE) / 1024));
+
+    return (OK);
+
+}
 
 /*
-*   VMEBUS : SIO °ü·Ã ¸Ş¸ğ¸® ÃÊ±âÈ­...
+*   VMEBUS : SIO ê´€ë ¨ ë©”ëª¨ë¦¬ ì´ˆê¸°í™”...
 */
 int  init_vmebus(int sioid)
 {
     /* -------------------------------------------- */
-    /*  VME Backup Memory ÃÊ±âÈ­                    */
+    /*  VME Backup Memory ì´ˆê¸°í™”                    */
     /*  - SIO Module Size : 0x20000                 */
     /* -------------------------------------------- */
     if((vmebus_ptr = ( char  *) mmap(0, VMESIO_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, vme_fd, (VMESIO_START_ADDRESS + (sioid*VMESIO_SIZE))) ) < 0)
@@ -328,7 +455,7 @@ int  init_vmebus(int sioid)
 }    
 
 /*
-*   VMEBUS & MRAM ÃÊ±âÈ­ 
+*   VMEBUS & MRAM ì´ˆê¸°í™” 
 */
 int	init_variable()
 {
@@ -339,7 +466,7 @@ int	init_variable()
     
     
     /* -------------------------------------------- */
-    /*  VMEBUS MEMORY DEVICE ÃÊ±âÈ­                 */
+    /*  VMEBUS MEMORY DEVICE ì´ˆê¸°í™”                 */
     /* -------------------------------------------- */
     if ((vme_fd = open("/dev/mem", O_RDWR) ) < 0)
     {
@@ -348,16 +475,16 @@ int	init_variable()
     }        
     
     /* -------------------------------------------- */
-    /*  VME SIO# ±¸Á¶Ã¼ Æ÷ÀÎÆ® ÃÊ±âÈ­...            */
+    /*  VME SIO# êµ¬ì¡°ì²´ í¬ì¸íŠ¸ ì´ˆê¸°í™”...            */
     /* -------------------------------------------- */
     for (sioid = 0; sioid < MAX_VME_SIO; sioid++)
     {
         /* -------------------------------- */
-        /* 1. ¿ÜºÎ ¸Ş¸ğ¸® Æ÷ÀÎÆ® ÃÊ±âÈ­ ... */
+        /* 1. ì™¸ë¶€ ë©”ëª¨ë¦¬ í¬ì¸íŠ¸ ì´ˆê¸°í™” ... */
         /* -------------------------------- */
         if(init_vmebus(sioid) == OK)
         {
-            /* SIOº¸µå ÃÊ±âÈ­...³»ºÎ º¯¼ö ÃÊ±âÈ­¿¡ µû¸¥ º¯¼ö */             
+            /* SIOë³´ë“œ ì´ˆê¸°í™”...ë‚´ë¶€ ë³€ìˆ˜ ì´ˆê¸°í™”ì— ë”°ë¥¸ ë³€ìˆ˜ */             
     	    vmeSioDCB[sioid] = (VME_SIODCB *)(  vmebus_ptr);   
 	        size1 = sizeof(VME_SIODCB);
     	    //printf("wdt> VMEBUS INIT-OK... VME SIO(%d)  Address : %p, size=%d\n", sioid, vmeSioDCB[sioid], size1);  
@@ -373,7 +500,7 @@ int	init_variable()
             size1 = sizeof(VME_SIODCB);
 	        printf("wdt> **** VMEBUS(size=%d) INIT-Fail... VME SIO(%d)\n", size1, sioid); 
 
-            /* SIOº¸µå ÃÊ±âÈ­...³»ºÎ º¯¼ö ÃÊ±âÈ­¿¡ µû¸¥ º¯¼ö */             
+            /* SIOë³´ë“œ ì´ˆê¸°í™”...ë‚´ë¶€ ë³€ìˆ˜ ì´ˆê¸°í™”ì— ë”°ë¥¸ ë³€ìˆ˜ */             
 	        vmeSioDCB[sioid]  = (VME_SIODCB *) &tempVmeSioDCB;   
 
             vmeSioDCB[sioid]->sioAccess = 0;
@@ -385,15 +512,18 @@ int	init_variable()
     }
     
     /* ------------------------------- */
-    /* 1. ¿ÜºÎ ¸Ş¸ğ¸® Æ÷ÀÎÆ® ÃÊ±âÈ­ ... */
+    /* 1. ì™¸ë¶€ ë©”ëª¨ë¦¬ í¬ì¸íŠ¸ ì´ˆê¸°í™” ... */
     /* -------------------------------- */
 
     if(init_fram() == OK)
     {
   	    /* ---------------------------------------- */
-        /* ¿î¿µ HISTORY ...º¯¼ö ÃÊ±âÈ­              */ 
+        /* ìš´ì˜ HISTORY ...ë³€ìˆ˜ ì´ˆê¸°í™”              */ 
         /* ---------------------------------------- */  
-        framHque    = (HISTORY_QUE *)(  mram_ptr + 0x1000);   
+        /* 2026-09-03 : FRAM ë¬¼ë¦¬ì£¼ì†Œ(mram_ptr+0x1000) ëŒ€ì‹ , init_fram()ì´
+         * History.Bin íŒŒì¼ì—ì„œ ì´ë¯¸ ì½ì–´ë“¤ì—¬ ë†“ì€ RAM ë²„í¼ histBuf ë¥¼
+         * ê°€ë¦¬í‚¤ê²Œ í•œë‹¤. (design/history-fram-to-file.md ì°¸ê³ ) */
+        framHque    = (HISTORY_QUE *) &histBuf;
   	    memcpy8248((byte *)hque, (byte *)framHque, sizeof(HISTORY_QUE));
   	    
   	    printf("\n=======================================================\n");
@@ -440,42 +570,42 @@ typedef struct
 	CONSOLE_INFO	console;
 
     /* -------------------------------- */
-	/* ICCP ¿î¿µ ¹öÆÛ Queue             */
+	/* ICCP ìš´ì˜ ë²„í¼ Queue             */
 	/* -------------------------------- */
-    ICCP_DCB        iccpDCB;                            // ICCP-HOST ¿î¿µ ¹öÆÛ
-    ICCP_60870_DCB  iccpInfo;                           // ICCP-HOST ÂüÁ¶¿ë : ¸ğ´ÏÅÍ¸µ ±¸Á¶Ã¼
+    ICCP_DCB        iccpDCB;                            // ICCP-HOST ìš´ì˜ ë²„í¼
+    ICCP_60870_DCB  iccpInfo;                           // ICCP-HOST ì°¸ì¡°ìš© : ëª¨ë‹ˆí„°ë§ êµ¬ì¡°ì²´
     
     MPU_CONFIG      mpuConfig;                          // MPU Config
-    ESIO_CONFIG     esioConfig[MAX_ESIO];               // ESIO ÀåÄ¡ Config
+    ESIO_CONFIG     esioConfig[MAX_ESIO];               // ESIO ì¥ì¹˜ Config
     
-    LINK_MSG        link_msg;                           // CPU ÀÌÁßÈ­ ±¸Á¶Ã¼
-    SCU_MSG         scu_msg;                            // ÀÌÁßÈ­ ÀıÃ¼ÀåÄ¡ ±¸Á¶Ã¼ 
+    LINK_MSG        link_msg;                           // CPU ì´ì¤‘í™” êµ¬ì¡°ì²´
+    SCU_MSG         scu_msg;                            // ì´ì¤‘í™” ì ˆì²´ì¥ì¹˜ êµ¬ì¡°ì²´ 
 
     /* -------------------------------- */
-	/* HOST ¿î¿µ ¹öÆÛ Queue             */
+	/* HOST ìš´ì˜ ë²„í¼ Queue             */
 	/* -------------------------------- */
-    HOST_DCB        hostDCB[MAX_HOST];                  // HOST °ü·Ã ±¸Á¶Ã¼ : DNP, HARRIS, LANDIS...
+    HOST_DCB        hostDCB[MAX_HOST];                  // HOST ê´€ë ¨ êµ¬ì¡°ì²´ : DNP, HARRIS, LANDIS...
     
-    /* HARRIS-HOST µ¥ÀÌÅÍ ±¸Á¶ */
+    /* HARRIS-HOST ë°ì´í„° êµ¬ì¡° */
     RTU             rtubuf[MAX_HARRIS_RTU];         /* HARRIS RTU Structure */
 	PORT_DB         portdb[MAX_HARRIS_PORT];        /* HARRIS #1 PORT Structure */
 		
     /* -------------------------------- */
-	/* °èÀü±â SCAN ¹öÆÛ Queue           */
+	/* ê³„ì „ê¸° SCAN ë²„í¼ Queue           */
 	/* -------------------------------- */
-	SCAN_CONFIG     scanCFG[MAX_SCAN_PORT];             // ÇÏÀ§°èÀü±â SCAN Config
-	SDP_DEVICE      deviceCFG[MAX_DEVICE];              // °èÀü±â/ÀåÄ¡- ÀüÀÚ½Ä¹èÀü¹İ (GiPAM, HiMAP...)
+	SCAN_CONFIG     scanCFG[MAX_SCAN_PORT];             // í•˜ìœ„ê³„ì „ê¸° SCAN Config
+	SDP_DEVICE      deviceCFG[MAX_DEVICE];              // ê³„ì „ê¸°/ì¥ì¹˜- ì „ìì‹ë°°ì „ë°˜ (GiPAM, HiMAP...)
 
-	POINT_BUF       devPtBuf[MAX_DEV_POINT];            // ÀåÄ¡ Æ÷ÀÎÆ®¿ë ±¸Á¶Ã¼
-	CAL_POINT_BUF   calPtBuf[MAX_CAL_POINT];            // ¿¬»ê Æ÷ÀÎÆ®¿ë ±¸Á¶Ã¼
-    RTU_DATABASE    rtuDatabase;                        // SDP µ¥ÀÌÅÍº£ÀÌ½º
+	POINT_BUF       devPtBuf[MAX_DEV_POINT];            // ì¥ì¹˜ í¬ì¸íŠ¸ìš© êµ¬ì¡°ì²´
+	CAL_POINT_BUF   calPtBuf[MAX_CAL_POINT];            // ì—°ì‚° í¬ì¸íŠ¸ìš© êµ¬ì¡°ì²´
+    RTU_DATABASE    rtuDatabase;                        // SDP ë°ì´í„°ë² ì´ìŠ¤
     
     /* -------------------------------- */
-	/* ½Ã½ºÅÛ ¿î¿µ ÀÌº¥Æ® Queue         */
+	/* ì‹œìŠ¤í…œ ìš´ì˜ ì´ë²¤íŠ¸ Queue         */
 	/* -------------------------------- */
 	MPU_SOE_QUEUE   mpuSoeQueue;
 	//MPU_COS_QUEUE   mpuCosQueue;
-    HISTORY_QUE     localHistoryQ;                      // CONSOLE ¿ë LOCAL Event (SOE...)
+    HISTORY_QUE     localHistoryQ;                      // CONSOLE ìš© LOCAL Event (SOE...)
 
 } __attribute__ ((packed)) SHM_MEMORY;
 #endif
@@ -512,7 +642,7 @@ typedef struct
     hque->chksum= framHque->chksum;
     
     
-    /* SIMULATOR ÀÌº¥Æ® ÃÊ±âÈ­ */
+    /* SIMULATOR ì´ë²¤íŠ¸ ì´ˆê¸°í™” */
     opr->simFront = hque->front;
     opr->simRear  = hque->front;
     opr->simOverlab = RESET;
@@ -520,7 +650,7 @@ typedef struct
     mpuCFG->mpuStatus = 0;              
 
     /* ---------------------------------------- */
-    /*  ¿¬»êÆ÷ÀÎÆ®¿ë Local ÃÊ±âÈ­ È£Ãâ...       */
+    /*  ì—°ì‚°í¬ì¸íŠ¸ìš© Local ì´ˆê¸°í™” í˜¸ì¶œ...       */
     /* ---------------------------------------- */
     parserInit();        
     
@@ -530,7 +660,7 @@ typedef struct
 
 
 //
-// ¸ğµâ: SetProcessInfo()
+// ëª¨ë“ˆ: SetProcessInfo()
 //
 void SetProcessInfo(void)
 {
@@ -558,7 +688,7 @@ void SetProcessInfo(void)
 }
 
 //
-// ¸ğµâ: TerminateProcess()
+// ëª¨ë“ˆ: TerminateProcess()
 //
 void TerminateProcess(void)
 {
@@ -579,7 +709,7 @@ void TerminateProcess(void)
 }
 
 //
-// ¸ğµâ: CheckProcess()
+// ëª¨ë“ˆ: CheckProcess()
 //
 int start_process_first ; 
 
@@ -600,13 +730,13 @@ void CheckProcess(void)
 		if (!taskPtr->define)   continue;
 
         /* -------------------------------- */
-        /* PROCESS ÃÊ±â ±âµ¿½Ã ...          */
+        /* PROCESS ì´ˆê¸° ê¸°ë™ì‹œ ...          */
         /* -------------------------------- */
 		if (!taskPtr->active || IsProcessActive(taskPtr->pid) < 0)
-		{
-			if (dscPtr->waitCount > 0)  dscPtr->waitCount--;
+	    {    // ì²˜ìŒ ì´ê±°ë‚˜ ì¢…ë£Œëœ ê²½ìš° ë‹¤ì‹œ ì‚´ë¦°ë‹¤.
+ 			if (dscPtr->waitCount > 0)  dscPtr->waitCount--;
 			else
-			{   // dscPtr->waitCount ==0 ÀÌ¸é..¿©±â³×..
+			{   // dscPtr->waitCount ==0 ì´ë©´..ì—¬ê¸°ë„¤..
 			    //if(opr->wdtDebug)   
 			    //Debug(console,"wdt>> [*] Process Start ... %s \n", dscPtr->name);
 			        
@@ -614,21 +744,23 @@ void CheckProcess(void)
 				//dscPtr->waitCount = WDT_WAIT_COUNT;
 				
 				retVal = StartProcess(dscPtr->name, dscPtr->argument);
-				if ( ! start_process_first )
-				printf("wdt> *** TASK start : [ %s ] Return sts... %d\n", taskPtr->name, retVal);				
-				else 
-				printf("wdt> *** TASK Restart : [ %s ] Return sts... %d\n", taskPtr->name, retVal);
+				if ( ! start_process_first ) //ì•„..processë§ˆë‹¤ í•„ìš”í•˜êµ°..
+				{    
+				    printf("wdt> *** TASK start : [ %s ] Return sts... %d\n", taskPtr->name, retVal);				
+				   
+				}else 
+				    printf("wdt> *** TASK Restart : [ %s ] Return sts... %d\n", taskPtr->name, retVal);
 				
 				/* --------------------------------------------- */
-				/*	2020.05.15  TASK ½ÇÇàÀÌ»ó½Ã...					*/
+				/*	2020.05.15  TASK ì‹¤í–‰ì´ìƒì‹œ...					*/
 				/* --------------------------------------------- */
 				if(retVal == -1)
 				{
 					printf("\n----------------------------------------\n");
-					printf("wdt> *** [%s] TASK Restart... FAIL : REBOOT.. \n", taskPtr->name);
+					printf("[ERROR] wdt> *** [%s] TASK Restart... FAIL : REBOOT.. \n", taskPtr->name);
 					printf("\n----------------------------------------\n");
 					
-					/* LOG File ÀúÀå */
+					/* LOG File ì €ì¥ */
     				sprintf(buffer, "%s", "=====================================================");
     				LogFile_MPU (shmPtr, ENT_NOT_DEFINED, buffer, strlen(buffer));
     
@@ -641,20 +773,21 @@ void CheckProcess(void)
 					opr->wdtEnable = 0;
 					return;
 				}
-					
+
+                // ?  ì´ë ‡ê²Œ ë˜ë©´ ì¢…ë£Œ í™•ì¸í›„ 20 ì´ˆì¸ë°....					
 				dscPtr->waitCount = WDT_WAIT_COUNT;
 				dscPtr->waitCount = 20;
 				
 			}
 		}
-		else
+		else //  ì´ë¯¸ ì˜ ëŒê³  ìˆë‹¤..
 		{
-			dscPtr->waitCount = 0;
-			if (taskPtr->wdtEnable)
+			dscPtr->waitCount = 0; // ? ì´ê²Œ ë¬´ìŠ¨ ë™ì‘ì´ì§€...ì´ë ‡ê²Œ ë˜ë©´ ë°”ë¡œ ì‹œì‘ì¸ë°...
+			if (taskPtr->wdtEnable) // ê° procesê°€ ëŒë©´ 0 ìœ¼ë¡œ ëœë‹¤.
 			{
 				taskPtr->wdtCount++;
 				//Debug(console,"WDT> Task-%s, count=%d\n", taskPtr->name, taskPtr->wdtCount);
-				if (taskPtr->wdtCount > 10)
+				if (taskPtr->wdtCount > 10)  // 10ì´ˆ ë™ì•ˆ ëŒ€ê¸° í•˜ë©´ ê³„ì† ì´ìƒã…ì•ˆì§€ í™•ì¸
 				{
 				    Debug(console,"\n===================================\n");
                     Debug(console,"wdt> [*] Process Re-Start ... [%s] \n", taskPtr->name);
@@ -676,7 +809,7 @@ void CheckProcess(void)
 }
 
 //
-// ¸ğµâ:	DisplayLogo()
+// ëª¨ë“ˆ:	DisplayLogo()
 //
 void DisplayLogo(void)
 {
@@ -696,18 +829,18 @@ void DisplayLogo(void)
  }
 
 //
-// ¸ğµâ:	ClearEnvironment()
+// ëª¨ë“ˆ:	ClearEnvironment()
 //
 void ClearEnv(void)
 {
-    // ¼öÇàÁßÀÎ ÇÁ·Î¼¼½ºµéÀ» Á¾·á½ÃÅ²´Ù
+    // ìˆ˜í–‰ì¤‘ì¸ í”„ë¡œì„¸ìŠ¤ë“¤ì„ ì¢…ë£Œì‹œí‚¨ë‹¤
 	TerminateProcess();
 	
 	opr->stscode = 0;
 	opr->stscode1= 0;
 	
 	/* -------------------------------- */
-    /* »ó´ÜºÎ Àü¸é LED »óÅÂÇ¥Ãâ ...     */
+    /* ìƒë‹¨ë¶€ ì „ë©´ LED ìƒíƒœí‘œì¶œ ...     */
     /* -------------------------------- */
     write_led(ledPort1.id, opr->stscode);
     write_led(ledPort2.id, opr->stscode1);
@@ -719,11 +852,20 @@ void ClearEnv(void)
     close(devOutput.id);
     close(rtcPort.id);
     
-	close(mram_fd);    
-	
+	close(mram_fd);
+
+	/* 2026-09-03 : WDT ì¢…ë£Œ ì‹œ History.Bin fdë„ ì •ë¦¬í•œë‹¤.
+	 * (ë§ˆì§€ë§‰ ë‚´ìš©ì€ updateHistoryQ/clearHistoryQ ì—ì„œ ì´ë¯¸ fsync
+	 * ê¹Œì§€ ë§ˆì¹œ ìƒíƒœì´ë¯€ë¡œ ì—¬ê¸°ì„œëŠ” fdë§Œ ë‹«ìœ¼ë©´ ëœë‹¤.) */
+	if (histFd >= 0)
+	{
+		close(histFd);
+		histFd = -1;
+	}
+
 	iccpShmEnd ();
 	    
-	// °øÀ¯ ¸Ş¸ğ¸®¸¦ Á¦°ÅÇÑ´Ù
+	// ê³µìœ  ë©”ëª¨ë¦¬ë¥¼ ì œê±°í•œë‹¤
 	ShmDelete(&shmDesc);
 	
 	printf("wdt> *WDT PROCESS.... EXIT ...!\n");
@@ -810,19 +952,19 @@ int  chage_mode( int fd)
 					    
 
 //
-// ¸ğµâ:	InitEnvironment()
+// ëª¨ë“ˆ:	InitEnvironment()
 //
 int InitEnv( void)
 {
     int i;
     
-	// SIGNAL Ã³¸® ·çÆ¾ ¼³Á¤
+	// SIGNAL ì²˜ë¦¬ ë£¨í‹´ ì„¤ì •
 	signal( SIGBUS,  SigHandler);
 	signal( SIGSEGV, SigHandler);
 	signal( SIGTERM, SigHandler);
 
 	/* -------------------------------------------- */
-	/* µğ¹ÙÀÌ½º LED#1 ÃÊ±âÈ­ - IO Device Open ...   */
+	/* ë””ë°”ì´ìŠ¤ LED#1 ì´ˆê¸°í™” - IO Device Open ...   */
 	/* -------------------------------------------- */
     if((ledPort1.id = open( ledPort1.name, ledPort1.attr)) <0)  
 	{
@@ -838,11 +980,11 @@ int InitEnv( void)
         exit(1);
     }
 
-    /* OUTPUT ¼Ó¼º º¯°æ */
+    /* OUTPUT ì†ì„± ë³€ê²½ */
     chage_mode( ledPort1.id);
     
     /* -------------------------------------------- */
-	/* µğ¹ÙÀÌ½º LED#2 ÃÊ±âÈ­ - IO Device Open ...   */
+	/* ë””ë°”ì´ìŠ¤ LED#2 ì´ˆê¸°í™” - IO Device Open ...   */
 	/* -------------------------------------------- */
     if((ledPort2.id = open( ledPort2.name, ledPort2.attr)) <0)  
 	{
@@ -860,7 +1002,7 @@ int InitEnv( void)
         return (0);
     }
 
-    /* OUTPUT ¼Ó¼º º¯°æ */
+    /* OUTPUT ì†ì„± ë³€ê²½ */
     chage_mode( ledPort2.id);
 
     /* ---------------------------------------------------- */
@@ -892,7 +1034,7 @@ int InitEnv( void)
     
     
     /* ---------------------------------------------------- */
-    /*  MPU P2-IO-OUTPUT  :  CPU µ¿ÀÛ»óÅÂ Clear...          */
+    /*  MPU P2-IO-OUTPUT  :  CPU ë™ì‘ìƒíƒœ Clear...          */
     /* ---------------------------------------------------- */
     if((devOutput.id = open( devOutput.name, devOutput.attr)) <0)  
 	{
@@ -910,11 +1052,11 @@ int InitEnv( void)
         return (0);
     }
     
-    /* OUTPUT ¼Ó¼º º¯°æ */
+    /* OUTPUT ì†ì„± ë³€ê²½ */
     chage_mode( devOutput.id);
     
     /* -------------------------------------------- */
-	/* µğ¹ÙÀÌ½º RTC ÃÊ±âÈ­ - IO Device Open ...     */
+	/* ë””ë°”ì´ìŠ¤ RTC ì´ˆê¸°í™” - IO Device Open ...     */
 	/* -------------------------------------------- */
    	if((rtcPort.id = open( rtcPort.name, rtcPort.attr)) < 0)
     {
@@ -927,25 +1069,25 @@ int InitEnv( void)
     printf("size of SHM-Memory ... %d\n", sizeof(SHM_MEMORY));
     
     /* ------------------------------------ */
-	/*  °øÀ¯ ¸Ş¸ğ¸®¸¦ »ı¼ºÇÑ´Ù              */
+	/*  ê³µìœ  ë©”ëª¨ë¦¬ë¥¼ ìƒì„±í•œë‹¤              */
 	/* ------------------------------------ */
 	if (ShmCreate(&shmDesc) < 0)
 	{
-		printf("wdt> *°øÀ¯ ¸Ş¸ğ¸® Open ÀÌ»ó \n");
+		printf("wdt> *ê³µìœ  ë©”ëª¨ë¦¬ Open ì´ìƒ \n");
 		return(0);
 	}
 
     /* ------------------------------------ */
-	/*  °øÀ¯ ¸Ş¸ğ¸® »óÅÂ È®ÀÎ               */
+	/*  ê³µìœ  ë©”ëª¨ë¦¬ ìƒíƒœ í™•ì¸               */
 	/* ------------------------------------ */
 	if (ShmCheck(&shmDesc) < 0)
 	{
-		printf("wdt> *ERR_°øÀ¯ ¸Ş¸ğ¸® »óÅÂ ÀÌ»ó\n");
+		printf("wdt> *ERR_ê³µìœ  ë©”ëª¨ë¦¬ ìƒíƒœ ì´ìƒ\n");
 		return(0);
 	}
 	
 	/* ------------------------------------ */
-	/* °øÀ¯ ¸Ş¸ğ¸®»óÀÇ Æ÷ÀÎÅÍ º¯¼ö ÃÊ±âÈ­   */      
+	/* ê³µìœ  ë©”ëª¨ë¦¬ìƒì˜ í¬ì¸í„° ë³€ìˆ˜ ì´ˆê¸°í™”   */      
 	/* ------------------------------------ */
 	shmPtr = (SHM_MEMORY *) shmDesc.address;
 	taskPtr = (TASK_INFO *) &shmPtr->taskInfo[WDT_PROCESS];
@@ -953,8 +1095,8 @@ int InitEnv( void)
 	rtc     = (RTC *)       &shmPtr->rtc;
 	opr     = (OPR_MSG *)   &shmPtr->opr_msg;
     
-    linkCfg = (LINK_MSG *)  &shmPtr->link_msg;                  // MPU ÀÌÁßÈ­ °ü·Ã ±¸Á¶Ã¼
-    scuCfg 	= (SCU_MSG *)   &shmPtr->scu_msg;                   // ÀÌÁßÈ­ÀıÃ¼ÀåÄ¡(SCU) ±¸Á¶Ã¼
+    linkCfg = (LINK_MSG *)  &shmPtr->link_msg;                  // MPU ì´ì¤‘í™” ê´€ë ¨ êµ¬ì¡°ì²´
+    scuCfg 	= (SCU_MSG *)   &shmPtr->scu_msg;                   // ì´ì¤‘í™”ì ˆì²´ì¥ì¹˜(SCU) êµ¬ì¡°ì²´
     
 	rtudb   = (RTU_DATABASE *) &shmPtr->rtuDatabase;
     console = (CONSOLE_INFO *) &shmPtr->console; 
@@ -964,36 +1106,36 @@ int InitEnv( void)
     
 	hque    = (HISTORY_QUE *)  &shmPtr->localHistoryQ; 
 
-    mpuCFG  = (MPU_CONFIG *) &shmPtr->mpuConfig;                // MPU Network ±¸¼ºÁ¤º¸
+    mpuCFG  = (MPU_CONFIG *) &shmPtr->mpuConfig;                // MPU Network êµ¬ì„±ì •ë³´
     
     iccpDCB = (ICCP_DCB *) &shmPtr->iccpDCB;                   // ICCP_DCB 
-    iccpCFG = (ICCP_CONFIG *) &shmPtr->iccpDCB.config;         // MPU Network ±¸¼ºÁ¤º¸
+    iccpCFG = (ICCP_CONFIG *) &shmPtr->iccpDCB.config;         // MPU Network êµ¬ì„±ì •ë³´
     
-    /* ICCP-INFO ±¸Á¶Ã¼ Á¤ÀÇ */
-    iccpInfo= (ICCP_60870_DCB *) &shmPtr->iccpInfo;            // ICCP-HOST ÂüÁ¶¿ë : ¸ğ´ÏÅÍ¸µ ±¸Á¶Ã¼
+    /* ICCP-INFO êµ¬ì¡°ì²´ ì •ì˜ */
+    iccpInfo= (ICCP_60870_DCB *) &shmPtr->iccpInfo;            // ICCP-HOST ì°¸ì¡°ìš© : ëª¨ë‹ˆí„°ë§ êµ¬ì¡°ì²´
     
-    //rtuDCB  = (RTU_CONFIG *) &shmPtr->rtuConfig;               // ÇÏºÎ RTU ¿î¿µ±¸Á¶Ã¼
+    //rtuDCB  = (RTU_CONFIG *) &shmPtr->rtuConfig;               // í•˜ë¶€ RTU ìš´ì˜êµ¬ì¡°ì²´
     
     /* ------------------------------------ */
-    /*  ICCP °øÀ¯¸Ş¸ğ¸® ÃÊ±âÈ­              */
+    /*  ICCP ê³µìœ ë©”ëª¨ë¦¬ ì´ˆê¸°í™”              */
     /* ------------------------------------ */
     iccpShmInit (iccpDCB);
     
     /* ------------------------------------ */
-    /* ESIO CFG : ESIO ±¸Á¶Ã¼ (MMAX 5)      */
+    /* ESIO CFG : ESIO êµ¬ì¡°ì²´ (MMAX 5)      */
     /* ------------------------------------ */ 
     for(i=0; i< MAX_ESIO; i++)   
 	{
 	    esioCFG[i] = (ESIO_CONFIG *) &shmPtr->esioConfig[i];
 	    bzero((byte *) esioCFG[i], sizeof(ESIO_CONFIG));
 	    
-	    esioCFG[i]->online = 2;			// ESIO ±¸Á¶Ã¼ ÃÊ±âÈ­ 
+	    esioCFG[i]->online = 2;			// ESIO êµ¬ì¡°ì²´ ì´ˆê¸°í™” 
 	    esioCFG[i]->chksumReq   = SET;
     	esioCFG[i]->timeSyncReq = SET;
 	}
 	
 	/* ------------------------------------ */
-    /* HOST_DCB : »óÀ§ HOST ±¸Á¶Ã¼ (MMAX 8) */
+    /* HOST_DCB : ìƒìœ„ HOST êµ¬ì¡°ì²´ (MMAX 8) */
     /* ------------------------------------ */
     for(i=0; i< MAX_HOST; i++)   
 	{
@@ -1002,7 +1144,7 @@ int InitEnv( void)
 	}
 	
 	/* ------------------------------------ */
-    /* HARRIS_DCB : »óÀ§ HOST ±¸Á¶Ã¼ (MMAX 8) */
+    /* HARRIS_DCB : ìƒìœ„ HOST êµ¬ì¡°ì²´ (MMAX 8) */
     /* ------------------------------------ */
     for(i=0; i< MAX_HARRIS_RTU; i++)   
 	{
@@ -1011,7 +1153,7 @@ int InitEnv( void)
 	}
 	
 	/* ------------------------------------ */
-    /* HARRIS_DCB : »óÀ§ HOST ±¸Á¶Ã¼ (MMAX 8) */
+    /* HARRIS_DCB : ìƒìœ„ HOST êµ¬ì¡°ì²´ (MMAX 8) */
     /* ------------------------------------ */
     for(i=0; i< MAX_HARRIS_PORT; i++)   
 	{
@@ -1021,7 +1163,7 @@ int InitEnv( void)
 	
 
     /* ------------------------------------ */
-    /* SCAN CONFIG : SCAN ±¸Á¶Ã¼(MAX 16)    */
+    /* SCAN CONFIG : SCAN êµ¬ì¡°ì²´(MAX 16)    */
     /* ------------------------------------ */
     for(i=0; i< MAX_SCAN_PORT; i++)   
 	{
@@ -1030,7 +1172,7 @@ int InitEnv( void)
 	}
 	
 	/* ------------------------------------ */
-    /* °èÀü±â ±¸Á¶Ã¼ : ÀüÃ¼ °èÀü±â(MAX 64)  */
+    /* ê³„ì „ê¸° êµ¬ì¡°ì²´ : ì „ì²´ ê³„ì „ê¸°(MAX 64)  */
     /* ------------------------------------ */    
     for(i=0; i< MAX_DEVICE; i++)   
 	{
@@ -1039,7 +1181,7 @@ int InitEnv( void)
 	}
 
     /* ------------------------------------ */
-    /* µğ¹ÙÀÌ½º Æ÷ÀÎÆ® : 100                */
+    /* ë””ë°”ì´ìŠ¤ í¬ì¸íŠ¸ : 100                */
     /* ------------------------------------ */   
 	for(i=0; i< MAX_DEV_POINT; i++)   
 	{
@@ -1048,7 +1190,7 @@ int InitEnv( void)
 	}
 	
 	/* ------------------------------------ */
-    /* ¿¬»ê Æ÷ÀÎÆ® ±¸Á¶Ã¼ : 32              */
+    /* ì—°ì‚° í¬ì¸íŠ¸ êµ¬ì¡°ì²´ : 32              */
     /* ------------------------------------ */   
 	for(i=0; i< MAX_CAL_POINT; i++)   
 	{
@@ -1057,7 +1199,7 @@ int InitEnv( void)
 	}		
 	
 	/* ------------------------------------ */
-    /* ¿î¿µ Buffer Clear....                */
+    /* ìš´ì˜ Buffer Clear....                */
     /* ------------------------------------ */
     bzero( opr,     sizeof(OPR_MSG));
     bzero( rtc,     sizeof(RTC));
@@ -1081,15 +1223,15 @@ int InitEnv( void)
     opr->msgDebug   = 0xff; 
     opr->mpuDebug   = 0;
         
-	// PROCESS °ü·Ã Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù
+	// PROCESS ê´€ë ¨ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤
 	SetProcessInfo();
 	
 	/* ------------------------------------------------ */
-	/*  PROCESS È£Ãâ½Ã... Priority ÁöÁ¤ (-19 ~ 20)      */
+	/*  PROCESS í˜¸ì¶œì‹œ... Priority ì§€ì • (-19 ~ 20)      */
 	/* ------------------------------------------------ */
 	nice(NICE_WDT);
 
-	// ÇÁ·Î¼¼½º Á¤º¸¸¦ ÃÊ±âÈ­ÇÑ´Ù
+	// í”„ë¡œì„¸ìŠ¤ ì •ë³´ë¥¼ ì´ˆê¸°í™”í•œë‹¤
 	taskPtr->initial = 1;
 	UpdateProcessInfo(taskPtr, 1, getpid(), 0);
 
@@ -1098,7 +1240,7 @@ int InitEnv( void)
 
 
 /*
-*   CONSOLE Á¦¾î±â ¿î¿µ Event....FRAM ¿µ¿ªÀ¸·Î Copy
+*   CONSOLE ì œì–´ê¸° ìš´ì˜ Event....FRAM ì˜ì—­ìœ¼ë¡œ Copy
 */
 int updateHistoryQ()
 {
@@ -1107,6 +1249,7 @@ int updateHistoryQ()
     int		updateCount;
     volatile SYSLOG_FORM   *src, *des;
     SYSLOG_FORM  temp;
+    off_t   recOffset;              /* 2026-09-03 : ì´ë²ˆì— ë°”ë€ í ìŠ¬ë¡¯ì˜ History.Bin ìƒ ìœ„ì¹˜ */
 
     opr->nramAccess = SET;
     
@@ -1120,7 +1263,7 @@ int updateHistoryQ()
     while(front != rear)
     {        
     	/* ---------------------------------------- */
-       	/*  Á¦¾î±â WDT & System-REBOOT Check        */
+       	/*  ì œì–´ê¸° WDT & System-REBOOT Check        */
 	    /* ---------------------------------------- */
         if(opr->wdtEnable == SET)
 	    {
@@ -1133,13 +1276,34 @@ int updateHistoryQ()
         des = (SYSLOG_FORM *) &framHque->queue[rear];
         src = (SYSLOG_FORM *) &hque->queue[rear];
 
-        /* CPU ³»ºÎ Backup Memory Write... */     
+        /* CPU ë‚´ë¶€ Backup Memory Write... */     
         memcpy8248((byte *) &temp, (byte *)src, sizeof(SYSLOG_FORM));
         memcpy8248((byte *) des, (byte *) &temp, sizeof(SYSLOG_FORM));
+
+        /* --------------------------------------------------------- */
+        /* 2026-09-03 : ì˜ˆì „ì—ëŠ” ìœ„ memcpy8248 í•œ ì¤„ë¡œ ëì´ì—ˆë‹¤(desê°€  */
+        /* FRAM ë¬¼ë¦¬ì£¼ì†Œë¥¼ ì§ì ‘ ê°€ë¦¬ì¼°ìœ¼ë¯€ë¡œ memcpy ìì²´ê°€ FRAM ì“°ê¸°  */
+        /* ì˜€ìŒ). ì§€ê¸ˆì€ desê°€ RAM(histBuf) ì´ë¼ì„œ, ë°©ê¸ˆ ë°”ë€ ì´      */
+        /* ìŠ¬ë¡¯ í•˜ë‚˜ë§Œ ê³¨ë¼ History.Bin ì˜ ê°™ì€ offset ì— pwriteë¡œ    */
+        /* ì¦‰ì‹œ ë°˜ì˜í•´ì¤˜ì•¼ íŒŒì¼ì´ FRAMì²˜ëŸ¼ "ì¦‰ì‹œ ì˜ì†"ëœë‹¤. 44KB      */
+        /* ì „ì²´ë¥¼ ë§¤ë²ˆ ë‹¤ì‹œ ì“°ì§€ ì•Šê³  ë”± ì´ ìŠ¬ë¡¯(sizeof(SYSLOG_FORM)  */
+        /* ë°”ì´íŠ¸)ë§Œ ì“°ë¯€ë¡œ ì´ë²¤íŠ¸ê°€ ëª°ë ¤ë„ flash ë¶€ë‹´ì´ í¬ì§€ ì•Šë‹¤.   */
+        /* --------------------------------------------------------- */
+        if (histFd >= 0)
+        {
+            recOffset = (off_t) offsetof(HISTORY_QUE, queue) + (off_t) rear * (off_t) sizeof(SYSLOG_FORM);
+            /* pwrite()ëŠ” _FORTIFY_SOURCE ë¹Œë“œì—ì„œ ë°˜í™˜ê°’ì„ ë°˜ë“œì‹œ í™•ì¸í•˜ë„ë¡
+             * ê°•ì œëœë‹¤(warn_unused_result). ì‹¤íŒ¨í•´ë„ WDTë¥¼ ë©ˆì¶œ ì •ë„ëŠ”
+             * ì•„ë‹ˆë¯€ë¡œ(ë‹¤ìŒ ì´ë²¤íŠ¸ì—ì„œ ë‹¤ì‹œ ì‹œë„ë¨) Debug ë¡œê·¸ë§Œ ë‚¨ê¸´ë‹¤. */
+            if (pwrite(histFd, (void *) des, sizeof(SYSLOG_FORM), recOffset) < 0)
+            {
+                Debug(console, "wdt> *** History.Bin record write fail (rear=%d)\n", rear);
+            }
+        }
      
         rear = (rear + 1) & HISTORY_QUE_MASK;
         
-        /* ¹«ÇÑ Update ... ¹æÁö */
+        /* ë¬´í•œ Update ... ë°©ì§€ */
         if(++updateCount > 16)	break;
   	}
   	      
@@ -1149,6 +1313,30 @@ int updateHistoryQ()
     chksum = gensum((byte *) framHque, sizeof(HISTORY_QUE) - 2);
     framHque->chksum = chksum;
 
+    /* --------------------------------------------------------------- */
+    /* 2026-09-03 : ìœ„ì—ì„œ ê°±ì‹ í•œ í—¤ë”(front/overlab)ì™€ ë§¨ ë ì²´í¬ì„¬ë„  */
+    /* íŒŒì¼ì— ë°˜ì˜í•œë‹¤. front/overlab/clear ëŠ” êµ¬ì¡°ì²´ ë§¨ ì•(offset 0)  */
+    /* ì´ë¼ í•œ ë²ˆì— ì“°ê³ , chksum ì€ êµ¬ì¡°ì²´ ë§¨ ëì— ìˆì–´ ë”°ë¡œ ì“´ë‹¤.     */
+    /* fsync ê¹Œì§€ í˜¸ì¶œí•˜ëŠ” ì´ìœ ëŠ”, WDTê°€ ì¬ë¶€íŒ… ì§ì „ ë‚¨ê¸°ëŠ”            */
+    /* ENT_CU_RESTART ê°™ì€ ì´ë²¤íŠ¸ê°€ ë°”ë¡œ ì´ ê²½ë¡œë¥¼ íƒ€ê¸° ë•Œë¬¸ì— -       */
+    /* "ì „ì›ì´ ì‹¤ì œë¡œ ëŠê¸°ê¸° ì§ì „ ì´ë²¤íŠ¸ê°€ ë””ìŠ¤í¬ì— ë‚¨ëŠ”ê°€"ê°€ ì´       */
+    /* ê¸°ëŠ¥ì˜ ì¡´ì¬ ì´ìœ ë¼ durabilityë¥¼ ìš°ì„ í–ˆë‹¤. ì´ë²¤íŠ¸ê°€ ë§¤ìš°         */
+    /* ë¹ˆë²ˆí•œ í˜„ì¥ì´ë¼ë©´ ì´ fsync í˜¸ì¶œ ë¹ˆë„ë¥¼ ë‚®ì¶”ëŠ” ê±¸ ê³ ë ¤í•  ìˆ˜      */
+    /* ìˆë‹¤(design/history-fram-to-file.md ì°¸ê³ ).                     */
+    /* --------------------------------------------------------------- */
+    if (histFd >= 0)
+    {
+        if (pwrite(histFd, (void *) framHque, offsetof(HISTORY_QUE, queue), 0) < 0)
+        {
+            Debug(console, "wdt> *** History.Bin header write fail\n");
+        }
+        if (pwrite(histFd, (void *) &framHque->chksum, sizeof(word), sizeof(HISTORY_QUE) - sizeof(word)) < 0)
+        {
+            Debug(console, "wdt> *** History.Bin chksum write fail\n");
+        }
+        fsync(histFd);
+    }
+
     opr->nramAccess = RESET;
 
     return (rear);
@@ -1156,7 +1344,7 @@ int updateHistoryQ()
 }
 
 /*
-*   CONSOLE Á¦¾î±â ¿î¿µ Event....CLEAR
+*   CONSOLE ì œì–´ê¸° ìš´ì˜ Event....CLEAR
 */
 void clearHistoryQ()
 {
@@ -1167,7 +1355,7 @@ void clearHistoryQ()
     opr->nramAccess = SET;
     
     /* ---------------------------------------- */
-   	/*  Á¦¾î±â WDT & System-REBOOT Check        */
+   	/*  ì œì–´ê¸° WDT & System-REBOOT Check        */
    	/* ---------------------------------------- */
     if(opr->wdtEnable == SET)
    	{
@@ -1178,6 +1366,18 @@ void clearHistoryQ()
         
     chksum = gensum((byte *) framHque, sizeof(HISTORY_QUE) - 2);
     framHque->chksum = chksum;
+
+    /* 2026-09-03 : "ì´ë ¥ ì „ì²´ ì§€ìš°ê¸°"ëŠ” ê´€ë¦¬ìê°€ ê°€ë” í•˜ëŠ” ë™ì‘ì´ë¼ */
+    /* 44KB ì „ì²´ë¥¼ í†µì§¸ë¡œ ë‹¤ì‹œ ì¨ë„ ë¶€ë‹´ì´ ì—†ë‹¤. updateHistoryQ()   */
+    /* ì²˜ëŸ¼ ìŠ¬ë¡¯ ë‹¨ìœ„ë¡œ ìª¼ê°¤ í•„ìš” ì—†ì´ í•œ ë²ˆì— pwrite + fsync.       */
+    if (histFd >= 0)
+    {
+        if (pwrite(histFd, (void *) framHque, sizeof(HISTORY_QUE), 0) < 0)
+        {
+            Debug(console, "wdt> *** History.Bin clear write fail\n");
+        }
+        fsync(histFd);
+    }
 
     opr->nramAccess = RESET;
 
@@ -1190,13 +1390,13 @@ void clearHistoryQ()
 
 
 /*
-*   VMECU Àü¸éÆÇ »óÅÂ LED
+*   VMECU ì „ë©´íŒ ìƒíƒœ LED
 */
 void mpu_LED_Update()
 {
     
     /* -------------------------------- */
-    /* CPU ¿î¿µ¸ğµå µ¿ÀÛ»óÅÂ È®ÀÎ...    */
+    /* CPU ìš´ì˜ëª¨ë“œ ë™ì‘ìƒíƒœ í™•ì¸...    */
     /* -------------------------------- */
     if(opr->runMode == LOCAL_SLAVE)   
     {
@@ -1206,7 +1406,7 @@ void mpu_LED_Update()
             opr->stscode ^= LED_RUN_BIT;    /* RUN led */
             
             /* -------------------------------- */
-            /*  ESIO ¸ğµâ Åë½Å»óÅÂ Ç¥½Ã         */
+            /*  ESIO ëª¨ë“ˆ í†µì‹ ìƒíƒœ í‘œì‹œ         */
             /* -------------------------------- */  
             if(esioCFG[ESIO_SCADA]->online == SET)  opr->stscode1 ^= LED_ESIO_SCADA;    
             else                                    opr->stscode1 &= (~LED_ESIO_SCADA);
@@ -1230,7 +1430,7 @@ void mpu_LED_Update()
         opr->stscode ^= LED_RUN_BIT;    /* RUN led */
         
         /* -------------------------------- */
-        /*  ESIO ¸ğµâ Åë½Å»óÅÂ Ç¥½Ã         */
+        /*  ESIO ëª¨ë“ˆ í†µì‹ ìƒíƒœ í‘œì‹œ         */
         /* -------------------------------- */  
         if(esioCFG[ESIO_SCADA]->online == SET)  opr->stscode1 ^= LED_ESIO_SCADA;    
         else                                    opr->stscode1 &= (~LED_ESIO_SCADA);
@@ -1249,7 +1449,7 @@ void mpu_LED_Update()
     }
     
     /* -------------------------------- */
-    /* ICCP ¿î¿µ»óÅÂ µ¿ÀÛ»óÅÂ È®ÀÎ...   */
+    /* ICCP ìš´ì˜ìƒíƒœ ë™ì‘ìƒíƒœ í™•ì¸...   */
     /* -------------------------------- */
     if(iccpDCB->assocStatus)
     {    
@@ -1267,19 +1467,19 @@ void mpu_LED_Update()
         opr->stscode &= (~LED_D1_BIT);    
         
     /* -------------------------------- */
-    /*  ÀÌÁßÈ­ CPU¸ğµâ Åë½Å»óÅÂ Ç¥½Ã    */
+    /*  ì´ì¤‘í™” CPUëª¨ë“ˆ í†µì‹ ìƒíƒœ í‘œì‹œ    */
     /* -------------------------------- */   
     if(linkCfg->online == SET)  opr->stscode1 |= LED_LINK_ONLINE;         // MST-LED ON
     else                        opr->stscode1 &= (~LED_LINK_ONLINE);      // MST-LED ON            
         
     /* -------------------------------- */
-    /*  SCU¸ğµâ Åë½Å»óÅÂ Ç¥½Ã           */
+    /*  SCUëª¨ë“ˆ í†µì‹ ìƒíƒœ í‘œì‹œ           */
     /* -------------------------------- */       
     if(scuCfg->online)  opr->stscode1 |= LED_SCU_ONLINE;
     else                opr->stscode1 &= (~LED_SCU_ONLINE);    
  
     /* -------------------------------- */
-    /* »ó´ÜºÎ Àü¸é LED »óÅÂÇ¥Ãâ ...     */
+    /* ìƒë‹¨ë¶€ ì „ë©´ LED ìƒíƒœí‘œì¶œ ...     */
     /* -------------------------------- */
     write_led(ledPort1.id, opr->stscode);
     write_led(ledPort2.id, opr->stscode1);
@@ -1288,7 +1488,7 @@ void mpu_LED_Update()
 }
 
 /*
-*   ESIO °ü·Ã ÃÊ±âÈ­
+*   ESIO ê´€ë ¨ ì´ˆê¸°í™”
 */
 void    WDT_sdp_initial()
 {
@@ -1297,10 +1497,10 @@ void    WDT_sdp_initial()
     
     for(sioid = 0; sioid < MAX_ESIO; sioid++)
     {
-        esio   = (ESIO_CONFIG *) esioCFG[sioid];       // ESIO ÀåÄ¡ Config 
+        esio   = (ESIO_CONFIG *) esioCFG[sioid];       // ESIO ì¥ì¹˜ Config 
            
-        esio->rackInstall   = 3;        // RACK ½ÇÀå»óÅÂ : ÀÌ»ó
-        esio->sioRunFail    = 3;        // SIO µ¿ÀÛ»óÅÂ : Á¤»ó
+        esio->rackInstall   = 3;        // RACK ì‹¤ì¥ìƒíƒœ : ì´ìƒ
+        esio->sioRunFail    = 3;        // SIO ë™ì‘ìƒíƒœ : ì •ìƒ
         esio->online        = 0;    
     }
     
@@ -1309,9 +1509,9 @@ void    WDT_sdp_initial()
     
     for(sioid = 0; sioid < MAX_VME_SIO; sioid++)
    	{ 
-    	vmeRunTick[sioid] = 0;        //¸ğµâµ¿ÀÛ ÀÌ»ó
-		vmeFailTick[sioid] = 0;       //¸ğµâµ¿ÀÛ ÀÌ»ó
-		vmeFailType[sioid] = 0;       //¸ğµâÀåÂø ÀÌ»ó
+    	vmeRunTick[sioid] = 0;        //ëª¨ë“ˆë™ì‘ ì´ìƒ
+		vmeFailTick[sioid] = 0;       //ëª¨ë“ˆë™ì‘ ì´ìƒ
+		vmeFailType[sioid] = 0;       //ëª¨ë“ˆì¥ì°© ì´ìƒ
 		vmeActCount[sioid] = 0;
 	}
 	
@@ -1320,7 +1520,7 @@ void    WDT_sdp_initial()
 
 /*
 *   FUNCTION : hostDCBInitial()
-*   - °èÀü±â ÀåÄ¡ ±¸Á¶Ã¼ ... ÃÊ±âÈ­
+*   - ê³„ì „ê¸° ì¥ì¹˜ êµ¬ì¡°ì²´ ... ì´ˆê¸°í™”
 */
 void WDT_hostDCBInitial()
 {
@@ -1332,7 +1532,7 @@ void WDT_hostDCBInitial()
     
     VME_SIODCB      *dnpHostSIO;
     
-    // dnpHostSIO  °³¹ß VME board¸¦ Áö½ÃÇÏ´Â º¯¼ö..
+    // dnpHostSIO  ê°œë°œ VME boardë¥¼ ì§€ì‹œí•˜ëŠ” ë³€ìˆ˜..
     dnpHostSIO = (VME_SIODCB *) vmeSioDCB[0];
     
     /* --------------------------- */
@@ -1340,7 +1540,7 @@ void WDT_hostDCBInitial()
     /* --------------------------- */
     for(i = 0; i < 8; i++)
     {
-        // vmeChan ÀÌ °¢ Channel º° À§Ä¡ º¯¼ö
+        // vmeChan ì´ ê° Channel ë³„ ìœ„ì¹˜ ë³€ìˆ˜
         vmeChan = (VME_CHAN_DCB *) &dnpHostSIO->vmeChan[i];
         vmeChan->rxFront = 0;
         vmeChan->rxRear  = 0;
@@ -1352,11 +1552,11 @@ void WDT_hostDCBInitial()
     }    
     
     /* --------------------------- */
-    /*    HOST º° ¿î¿µÁ¤º¸ init    */
+    /*    HOST ë³„ ìš´ì˜ì •ë³´ init    */
     /* --------------------------- */        
     for(i = 0; i < MAX_HOST; i++)
     {
-        host = (HOST_DCB *) hostDCB[i];                 /* ÁÖÀåÄ¡ #1 ¼Ó¼ºÁ¤ÀÇ */
+        host = (HOST_DCB *) hostDCB[i];                 /* ì£¼ì¥ì¹˜ #1 ì†ì„±ì •ì˜ */
         
         host->id = i;
         host->initial	= SET;
@@ -1364,34 +1564,34 @@ void WDT_hostDCBInitial()
         /* DNP initialize ... */
         host->sndFlag    = RESET;
         host->sndLinkSts = RESET;
-        host->rcvLinkSts = RESET;           // LINK RESET »óÅÂ 
+        host->rcvLinkSts = RESET;           // LINK RESET ìƒíƒœ 
         host->rcvEndOk   = SET;
 
-        host->diIndexWord = RESET;          // DI Point ÃÖ´ë ¼ö : 256º¸´Ù Å«°æ¿ì WORD Ã³¸® 
-        host->aiIndexWord = RESET;          // AI Point ÃÖ´ë ¼ö : 256º¸´Ù Å«°æ¿ì WORD Ã³¸® 
+        host->diIndexWord = RESET;          // DI Point ìµœëŒ€ ìˆ˜ : 256ë³´ë‹¤ í°ê²½ìš° WORD ì²˜ë¦¬ 
+        host->aiIndexWord = RESET;          // AI Point ìµœëŒ€ ìˆ˜ : 256ë³´ë‹¤ í°ê²½ìš° WORD ì²˜ë¦¬ 
 
         host->online[MASTER_PORT]      = 0;    // default OFFLINE
         host->online[SLAVE_PORT]       = 0;    // default OFFLINE
         
         /* ---------------------------------------------------- */
-        /*  »óÀ§ HOSTº° DI/AI Æ÷ÀÎÆ® ¼ö¿¡ µû¸¥ µ¥ÀÌÅÍ Ã³¸®      */
+        /*  ìƒìœ„ HOSTë³„ DI/AI í¬ì¸íŠ¸ ìˆ˜ì— ë”°ë¥¸ ë°ì´í„° ì²˜ë¦¬      */
         /* ---------------------------------------------------- */
         if(host->diPtNum > 255) host->diIndexWord    = SET;
         if(host->aiPtNum > 255) host->aiIndexWord    = SET; 
             
-        /* HOST ¹ÌÁöÁ¤½Ã... */
+        /* HOST ë¯¸ì§€ì •ì‹œ... */
         if(host->hostDualMode == HOST_NOT_USE)  continue;
         if(host->hostComType == COM_TCPIP)      continue;    
 
         /* ------------------------------------ */
-        /* Default VME Channel ÁöÁ¤             */
+        /* Default VME Channel ì§€ì •             */
         /* ------------------------------------ */
-        host->vmeChan[0] = (VME_CHAN_DCB *) &dnpHostSIO->vmeChan[host->vmeMstChan];       /* MASTER Æ÷Æ® VME ÃÊ±âÈ­ */  
-        host->vmeChan[1] = (VME_CHAN_DCB *) &dnpHostSIO->vmeChan[host->vmeSlvChan];       /* SLAVE  Æ÷Æ® VME ÃÊ±âÈ­ */   
+        host->vmeChan[0] = (VME_CHAN_DCB *) &dnpHostSIO->vmeChan[host->vmeMstChan];       /* MASTER í¬íŠ¸ VME ì´ˆê¸°í™” */  
+        host->vmeChan[1] = (VME_CHAN_DCB *) &dnpHostSIO->vmeChan[host->vmeSlvChan];       /* SLAVE  í¬íŠ¸ VME ì´ˆê¸°í™” */   
         
         if(host->hostProtocol == HOST_IEC_101)
         {
-            host->vmeChan[0]->protocolType = SCAN_IEC;        // HOST º° ÇÁ·ÎÅäÄİ Å¸ÀÔ ÁöÁ¤ 
+            host->vmeChan[0]->protocolType = SCAN_IEC;        // HOST ë³„ í”„ë¡œí† ì½œ íƒ€ì… ì§€ì • 
             host->vmeChan[1]->protocolType = SCAN_IEC;
             host->vmeChan[0]->cfgParity    = PARITY_EVEN;
             host->vmeChan[1]->cfgParity    = PARITY_EVEN;
@@ -1403,7 +1603,7 @@ void WDT_hostDCBInitial()
         }
         else if(host->hostProtocol == HOST_DNP)
         {
-            host->vmeChan[0]->protocolType = SCAN_DNP;        // HOST º° ÇÁ·ÎÅäÄİ Å¸ÀÔ ÁöÁ¤ 
+            host->vmeChan[0]->protocolType = SCAN_DNP;        // HOST ë³„ í”„ë¡œí† ì½œ íƒ€ì… ì§€ì • 
             host->vmeChan[1]->protocolType = SCAN_DNP;
             host->vmeChan[0]->cfgParity    = PARITY_NONE;
             host->vmeChan[1]->cfgParity    = PARITY_NONE;
@@ -1415,7 +1615,7 @@ void WDT_hostDCBInitial()
         }
         else if(host->hostProtocol == HOST_MODBUS)
         {
-            host->vmeChan[0]->protocolType = SCAN_MODBUS;        // HOST º° ÇÁ·ÎÅäÄİ Å¸ÀÔ ÁöÁ¤ 
+            host->vmeChan[0]->protocolType = SCAN_MODBUS;        // HOST ë³„ í”„ë¡œí† ì½œ íƒ€ì… ì§€ì • 
             host->vmeChan[1]->protocolType = SCAN_MODBUS;
             host->vmeChan[0]->cfgParity    = PARITY_NONE;
             host->vmeChan[1]->cfgParity    = PARITY_NONE;
@@ -1427,7 +1627,7 @@ void WDT_hostDCBInitial()
         }
         else if(host->hostProtocol == HOST_HARRIS)
         {
-            host->vmeChan[0]->protocolType = SCAN_HARRIS;        // HOST º° ÇÁ·ÎÅäÄİ Å¸ÀÔ ÁöÁ¤ 
+            host->vmeChan[0]->protocolType = SCAN_HARRIS;        // HOST ë³„ í”„ë¡œí† ì½œ íƒ€ì… ì§€ì • 
             host->vmeChan[1]->protocolType = SCAN_HARRIS;
             host->vmeChan[0]->cfgParity    = PARITY_ODD;
             host->vmeChan[1]->cfgParity    = PARITY_ODD;
@@ -1439,7 +1639,7 @@ void WDT_hostDCBInitial()
         }
         else
         {
-            host->vmeChan[0]->protocolType = SCAN_ASYNC;        // HOST º° ÇÁ·ÎÅäÄİ Å¸ÀÔ ÁöÁ¤ 
+            host->vmeChan[0]->protocolType = SCAN_ASYNC;        // HOST ë³„ í”„ë¡œí† ì½œ íƒ€ì… ì§€ì • 
             host->vmeChan[1]->protocolType = SCAN_ASYNC;
             host->vmeChan[0]->cfgParity    = PARITY_NONE;
             host->vmeChan[1]->cfgParity    = PARITY_NONE;
@@ -1469,7 +1669,7 @@ void WDT_hostDCBInitial()
 
 
 /*
-*   SDP ÀåÄ¡º° - SIO/ESIO º¸µå ÀåÂø Check...
+*   SDP ì¥ì¹˜ë³„ - SIO/ESIO ë³´ë“œ ì¥ì°© Check...
 */
 void vmeModule_Check()
 {
@@ -1480,18 +1680,18 @@ void vmeModule_Check()
     ESIO_CONFIG     *esio;
     
     /* -------------------------------------------- */
-	/*	VME Module »óÅÂ Check (MAX_VME_SIO : 5)      */
+	/*	VME Module ìƒíƒœ Check (MAX_VME_SIO : 5)      */
 	/* -------------------------------------------- */
     for(sioid = 0; sioid < MAX_VME_SIO; sioid++)
     {    
         vmeSIO = (VME_SIODCB *) vmeSioDCB[sioid];            // VME SPACE
-        esio   = (ESIO_CONFIG *) esioCFG[sioid];             // ESIO ÀåÄ¡ Config 
+        esio   = (ESIO_CONFIG *) esioCFG[sioid];             // ESIO ì¥ì¹˜ Config 
         
-        /* ESIO# À» »ç¿ëÇÏÁö ¾Ê´Â°æ¿ì... */
+        /* ESIO# ì„ ì‚¬ìš©í•˜ì§€ ì•ŠëŠ”ê²½ìš°... */
         if(esio->useFlag == RESET)
         {
-            esio->rackInstall  = RESET;     // RACK ½ÇÀå»óÅÂ : ÀÌ»ó
-            esio->sioRunFail   = RESET;     // SIO µ¿ÀÛ»óÅÂ : Á¤»ó
+            esio->rackInstall  = RESET;     // RACK ì‹¤ì¥ìƒíƒœ : ì´ìƒ
+            esio->sioRunFail   = RESET;     // SIO ë™ì‘ìƒíƒœ : ì •ìƒ
             vmeFailType[sioid] = 0;
             vmeFailTick[sioid] = 0;
             vmeRunTick[sioid] = 0;
@@ -1499,14 +1699,14 @@ void vmeModule_Check()
         }
         
         /* -------------------------------------------- */
-        /*  ESIO# ÀåÂø»óÅÂ : Valid Info Check ..0x1234  */
+        /*  ESIO# ì¥ì°©ìƒíƒœ : Valid Info Check ..0x1234  */
         /* -------------------------------------------- */                  
         if(vmeSIO->sioValid != 0x1234)
         {
             vmeFailType[sioid]++;
 
             /* ---------------------------------------- */
-            /*  º¸µåº° ÀåÂø»óÅÂ Check...                */  
+            /*  ë³´ë“œë³„ ì¥ì°©ìƒíƒœ Check...                */  
             /* ---------------------------------------- */          
             if(vmeFailType[sioid] > 5)
             {
@@ -1516,21 +1716,21 @@ void vmeModule_Check()
                 if(esio->rackInstall == SET)
                 {
                     /* ------------------------------------------------ */
-                    /*  MPU ±âµ¿ Event...                               */
+                    /*  MPU ê¸°ë™ Event...                               */
                     /* ------------------------------------------------ */
-                    logEvent_MPU(shmPtr, ENT_VME_UNINSTALL, sioid+1, 0, 0, sioid+1, NULL);     // MPU Àç±âµ¿ Event...
+                    logEvent_MPU(shmPtr, ENT_VME_UNINSTALL, sioid+1, 0, 0, sioid+1, NULL);     // MPU ì¬ê¸°ë™ Event...
                     Debug(console,"wdt> check VME : *Invalid SIO(%d) TYPE (Valid=0x1234) : SIO=%04x\n", sioid+1, vmeSIO->sioValid);
                     
-                    /* LOG File ÀúÀå */
+                    /* LOG File ì €ì¥ */
                     sprintf(buffer, "*ESIO[%d] Invalid TYPE...(%04x)  ", sioid+1, vmeSIO->sioValid);
                     LogFile_MPU (shmPtr, ENT_VME_UNINSTALL, buffer, strlen(buffer));
                 }
                      
-                esio->rackInstall  = RESET;    // // RACK ½ÇÀå»óÅÂ : ÀÌ»ó
-                esio->sioRunFail   = SET;    // SIO µ¿ÀÛ»óÅÂ : ÀÌ»ó
+                esio->rackInstall  = RESET;    // // RACK ì‹¤ì¥ìƒíƒœ : ì´ìƒ
+                esio->sioRunFail   = SET;    // SIO ë™ì‘ìƒíƒœ : ì´ìƒ
                 vmeFailType[sioid] = 0;
                 
-                if(sioid == 0)  esio->online = RESET;     // SIOÀÇ °æ¿ì... 
+                if(sioid == 0)  esio->online = RESET;     // SIOì˜ ê²½ìš°... 
             }
             
             continue;
@@ -1540,26 +1740,26 @@ void vmeModule_Check()
             if(esio->rackInstall == RESET)
             {
                 /* ------------------------------------------------ */
-                /*  MPU ±âµ¿ Event...                               */
+                /*  MPU ê¸°ë™ Event...                               */
                 /* ------------------------------------------------ */
-                logEvent_MPU(shmPtr, ENT_VME_INSTALL, sioid+1, 0, 0, sioid+1, NULL);     // MPU Àç±âµ¿ Event...
+                logEvent_MPU(shmPtr, ENT_VME_INSTALL, sioid+1, 0, 0, sioid+1, NULL);     // MPU ì¬ê¸°ë™ Event...
                 Debug(console,"wdt> check VME : Valid SIO(%d) TYPE (Valid=0x1234) : SIO=%04x\n", sioid+1, vmeSIO->sioValid);
                 
-                /* LOG File ÀúÀå */
+                /* LOG File ì €ì¥ */
                 sprintf(buffer, "ESIO[%d] TYPE...(%04x)  ", sioid+1, vmeSIO->sioValid);
                 LogFile_MPU (shmPtr, ENT_VME_INSTALL, buffer, strlen(buffer));
             }   
             
-            esio->rackInstall  = SET;    // RACK ½ÇÀå»óÅÂ : Á¤»ó
+            esio->rackInstall  = SET;    // RACK ì‹¤ì¥ìƒíƒœ : ì •ìƒ
             vmeFailType[sioid] = 0;
             
-            if(sioid == 0)  esio->online = SET;     // SIOÀÇ °æ¿ì... 
+            if(sioid == 0)  esio->online = SET;     // SIOì˜ ê²½ìš°... 
         } 
         
         /* -------------------------------------------- */
-        /*  ESIO# µ¿ÀÛ»óÅÂ : MPU/SIO Count Check ...    */
+        /*  ESIO# ë™ì‘ìƒíƒœ : MPU/SIO Count Check ...    */
         /* -------------------------------------------- */
-        if(vmeActCount[sioid] != vmeSIO->sioCount)  // ¸Ç Ã³À½¿¡´Â...1¹øÀº ¹ß»ıÇÏ³×..
+        if(vmeActCount[sioid] != vmeSIO->sioCount)  // ë§¨ ì²˜ìŒì—ëŠ”...1ë²ˆì€ ë°œìƒí•˜ë„¤..
         {
             if(opr->wdtDebug)
             Debug(console,"wdt> *Invalid SIO(%d) RUN ...: MPU=%04d / SIO=%04d\n", sioid+1, vmeActCount[sioid], vmeSIO->sioCount);
@@ -1568,26 +1768,26 @@ void vmeModule_Check()
             vmeRunTick[sioid] = 0;
             
             /* ---------------------------------------- */
-            /*  º¸µåº° ÀåÂø»óÅÂ Check...                */  
+            /*  ë³´ë“œë³„ ì¥ì°©ìƒíƒœ Check...                */  
             /* ---------------------------------------- */          
             if(vmeFailTick[sioid] > 5)
             {
                 if(esio->sioRunFail == RESET)
                 {
                     /* ------------------------------------------------ */
-                    /*  MPU ±âµ¿ Event...                               */
+                    /*  MPU ê¸°ë™ Event...                               */
                     /* ------------------------------------------------ */
-                    logEvent_MPU(shmPtr, ENT_VME_OFFLINE, sioid+1, 0, 0, sioid+1, NULL);     // MPU Àç±âµ¿ Event...
+                    logEvent_MPU(shmPtr, ENT_VME_OFFLINE, sioid+1, 0, 0, sioid+1, NULL);     // MPU ì¬ê¸°ë™ Event...
                     Debug(console,"wdt> check VME : *Offline SIO(%d) \n", sioid+1);
                     
-                    /* LOG File ÀúÀå */
+                    /* LOG File ì €ì¥ */
                     sprintf(buffer, "*ESIO[%d] Offline ", sioid+1);
                     LogFile_MPU (shmPtr, ENT_VME_OFFLINE, buffer, strlen(buffer));
                 }
-                esio->sioRunFail   = SET;    // SIO µ¿ÀÛ»óÅÂ : ÀÌ»ó
+                esio->sioRunFail   = SET;    // SIO ë™ì‘ìƒíƒœ : ì´ìƒ
                 vmeFailTick[sioid] = 0;
                 
-                if(sioid == 0)  esio->online = RESET;     // SIOÀÇ °æ¿ì...
+                if(sioid == 0)  esio->online = RESET;     // SIOì˜ ê²½ìš°...
             }
         }
         else
@@ -1600,58 +1800,58 @@ void vmeModule_Check()
                 if(esio->sioRunFail == SET)
                 {
                     /* ------------------------------------------------ */
-                    /*  MPU ±âµ¿ Event...                               */
+                    /*  MPU ê¸°ë™ Event...                               */
                     /* ------------------------------------------------ */
-                    logEvent_MPU(shmPtr, ENT_VME_ONLINE, sioid+1, 0, 0, sioid+1, NULL);     // MPU Àç±âµ¿ Event...
+                    logEvent_MPU(shmPtr, ENT_VME_ONLINE, sioid+1, 0, 0, sioid+1, NULL);     // MPU ì¬ê¸°ë™ Event...
                     Debug(console,"wdt> check VME : Online SIO(%d) \n", sioid+1);
                     
-                    /* LOG File ÀúÀå */
+                    /* LOG File ì €ì¥ */
                     sprintf(buffer, "ESIO[%d] Online ", sioid+1);
                     LogFile_MPU (shmPtr, ENT_VME_ONLINE, buffer, strlen(buffer));
                 }
                 
-                esio->sioRunFail   = RESET;      // SIO µ¿ÀÛ»óÅÂ : Á¤»ó
+                esio->sioRunFail   = RESET;      // SIO ë™ì‘ìƒíƒœ : ì •ìƒ
             }   
 
             vmeFailTick[sioid] = 0;
-            if(sioid == 0)  esio->online = SET;     // SIOÀÇ °æ¿ì... 
+            if(sioid == 0)  esio->online = SET;     // SIOì˜ ê²½ìš°... 
         } 
             
         /* ---------------------------------------- */
-        /*  MPU µ¿ÀÛ»óÅÂ => SIO ¿¬°è                */
+        /*  MPU ë™ì‘ìƒíƒœ => SIO ì—°ê³„                */
         /* ---------------------------------------- */
-        vmeActCount[sioid]++;  // ÀÌ°Ç local º¯¼öÁö..
+        vmeActCount[sioid]++;  // ì´ê±´ local ë³€ìˆ˜ì§€..
         vmeSIO->activeCount = vmeActCount[sioid];     // VME Read/Write Check
         
         /* ---------------------------------------- */
-        /*  MPU µ¿ÀÛ¸ğµå => SIO ¿¬°è                */
+        /*  MPU ë™ì‘ëª¨ë“œ => SIO ì—°ê³„                */
         /* ---------------------------------------- */
-        if(opr->runMode == LOCAL_MASTER)    vmeSIO->localMaster = SET;                      // SIO º¸µå : Active »óÅÂÁ¤º¸... 
-        else                                vmeSIO->localMaster = RESET;                    // SIO º¸µå : Active »óÅÂÁ¤º¸...      
+        if(opr->runMode == LOCAL_MASTER)    vmeSIO->localMaster = SET;                      // SIO ë³´ë“œ : Active ìƒíƒœì •ë³´... 
+        else                                vmeSIO->localMaster = RESET;                    // SIO ë³´ë“œ : Active ìƒíƒœì •ë³´...      
             
     }
     
     /* ------------------------------------------------ */
-    /*  SDP - RACK ½ÇÀå»óÅÂ Ç¥½Ã....                    */
+    /*  SDP - RACK ì‹¤ì¥ìƒíƒœ í‘œì‹œ....                    */
     /* ------------------------------------------------ */
     rackStatus = 0;
-    if(esioCFG[0]->rackInstall)     rackStatus = 0x01;      // SIO ¸ğµâ ÀåÂø »óÅÂ
-    if(esioCFG[1]->rackInstall)     rackStatus |= 0x02;     // ESIO#1 : Àü·ÂÁ¦¾îºÎ ÀåÂø »óÅÂ    
-    if(esioCFG[2]->rackInstall)     rackStatus |= 0x04;     // ESIO#2 : ¿ø°İÁø´ÜºÎ ÀåÂø »óÅÂ    
-    if(esioCFG[3]->rackInstall)     rackStatus |= 0x08;     // ESIO#3 : Àü·ÂÇ°ÁúºÎ ÀåÂø »óÅÂ            
-    if(esioCFG[4]->rackInstall)     rackStatus |= 0x10;     // ESIO#4 : 61850      ÀåÂø »óÅÂ        
+    if(esioCFG[0]->rackInstall)     rackStatus = 0x01;      // SIO ëª¨ë“ˆ ì¥ì°© ìƒíƒœ
+    if(esioCFG[1]->rackInstall)     rackStatus |= 0x02;     // ESIO#1 : ì „ë ¥ì œì–´ë¶€ ì¥ì°© ìƒíƒœ    
+    if(esioCFG[2]->rackInstall)     rackStatus |= 0x04;     // ESIO#2 : ì›ê²©ì§„ë‹¨ë¶€ ì¥ì°© ìƒíƒœ    
+    if(esioCFG[3]->rackInstall)     rackStatus |= 0x08;     // ESIO#3 : ì „ë ¥í’ˆì§ˆë¶€ ì¥ì°© ìƒíƒœ            
+    if(esioCFG[4]->rackInstall)     rackStatus |= 0x10;     // ESIO#4 : 61850      ì¥ì°© ìƒíƒœ        
 
-    if(esioCFG[5]->online)          rackStatus |= 0x20;     // RTU : ÀåÂø »óÅÂ => ONLINE »óÅÂ    
-    if(scuCfg->online)              rackStatus |= 0x40;     // SCU : ÀåÂø »óÅÂ => ONLINE »óÅÂ  
+    if(esioCFG[5]->online)          rackStatus |= 0x20;     // RTU : ì¥ì°© ìƒíƒœ => ONLINE ìƒíƒœ    
+    if(scuCfg->online)              rackStatus |= 0x40;     // SCU : ì¥ì°© ìƒíƒœ => ONLINE ìƒíƒœ  
         
-    mpuCFG->mpuRackSts = rackStatus;          // Master-MPU RACK »óÅÂÁ¤º¸    
+    mpuCFG->mpuRackSts = rackStatus;          // Master-MPU RACK ìƒíƒœì •ë³´    
     
     
 }
 
 /*
-*   SDP ÀåÄ¡º° - ESIO Network ±¸¼ºÁ¤º¸ ÂüÁ¶...
-*   VME ¸¦ ÅëÇØ Network ±¸¼ºÁ¤º¸¸¦ º¸³½´Ù.---> Ã³À½ DB°¡ Æ²¸° °æ¿ì ÀÌ°ÍÀ¸·Î DB¸¦ ¹Ş´Â´Ù 
+*   SDP ì¥ì¹˜ë³„ - ESIO Network êµ¬ì„±ì •ë³´ ì°¸ì¡°...
+*   VME ë¥¼ í†µí•´ Network êµ¬ì„±ì •ë³´ë¥¼ ë³´ë‚¸ë‹¤.---> ì²˜ìŒ DBê°€ í‹€ë¦° ê²½ìš° ì´ê²ƒìœ¼ë¡œ DBë¥¼ ë°›ëŠ”ë‹¤ 
 */
 void WDT_ESIO_Config()
 {
@@ -1671,44 +1871,44 @@ void WDT_ESIO_Config()
     netCount =3 ;    
 #endif 
     
-    
+
     /* ------------------------------------------------ */
-	/*	MPU¿¡¼­ ESIO Config - Network Á¤º¸¸¦ ÃÊ±âÈ­ ÇÔ  */
+	/*	MPUì—ì„œ ESIO Config - Network ì •ë³´ë¥¼ ì´ˆê¸°í™” í•¨  */
 	/* ------------------------------------------------ */
-    for(sioid = 1; sioid < MAX_VME_SIO; sioid++)  // SIO Á¦¿ÜÇÏ°í
+    for(sioid = 1; sioid < MAX_VME_SIO; sioid++)  // SIO ì œì™¸í•˜ê³ 
     {    
-        // VME ¿µ¿ª
+        // VME ì˜ì—­
         vmeSIO = (VME_SIODCB *) vmeSioDCB[sioid];
-        // esio ¿µ¿ª
-        esio   = (ESIO_CONFIG *) esioCFG[sioid];             // ESIO ÀåÄ¡ Config 
+        // esio ì˜ì—­
+        esio   = (ESIO_CONFIG *) esioCFG[sioid];             // ESIO ì¥ì¹˜ Config 
         
         //printf("ESIO[%d] ... %d %d %d \n", sioid, esio->useFlag, esio->rackInstall, esio->sioRunFail);
         
-        if(esio->useFlag == RESET)  	continue;  // »ç¿ë¾ÈÇÏ°í
-        if(esio->rackInstall == RESET)  continue;  // ÀåÂøÀÌ ¾È µÇ ÀÖ°í
-        if(esio->sioRunFail == SET)  	continue;  // run ÀÌ ¾È µÇ°í ÀÖÀ½.  
+        if(esio->useFlag == RESET)  	continue;  // ì‚¬ìš©ì•ˆí•˜ê³ 
+        if(esio->rackInstall == RESET)  continue;  // ì¥ì°©ì´ ì•ˆ ë˜ ìˆê³ 
+        if(esio->sioRunFail == SET)  	continue;  // run ì´ ì•ˆ ë˜ê³  ìˆìŒ.  
 
 #if 0
-        if(sioid != 1)  continue;       // ½ÃÇè¿ë...
+        if(sioid != 1)  continue;       // ì‹œí—˜ìš©...
 #endif
             
       //  printf("WDT> ESIO[%d] ... VME config Check.... !\n", sioid);
          
-        /* MPU ¸ğµå ÁöÁ¤ */
+        /* MPU ëª¨ë“œ ì§€ì • */
         vmeSIO->mpuMode = opr->cpuMode;  // mastr or slave
                   
         /* -------------------------------------------- */
-        /*  ESIO º¸µå¿Í ºñÁ¤»ó Åë½Å½Ã...                */   
+        /*  ESIO ë³´ë“œì™€ ë¹„ì •ìƒ í†µì‹ ì‹œ...                */   
         /* -------------------------------------------- */ 
-        // ¿¬°áÀÌ ¾È µÈ °æ¿ì¸¸..
+        // ì—°ê²°ì´ ì•ˆ ëœ ê²½ìš°ë§Œ..
         if((esio->connectStatus == RESET) || (esio->online != SET))
         {
             //if((vmeSIO->netChangeReq == 0x1234) || (esio->vmeNetConfig == SET))
                
-            if(vmeSIO->netChangeReq == 0x1234) // esio°¡ ¿äÃ»À» ÇÏ¸é 
+            if(vmeSIO->netChangeReq == 0x1234) // esioê°€ ìš”ì²­ì„ í•˜ë©´ 
             {
-                /* Network Á¤º¸ ...Update */
-                // 2026-05-26 ¿ÀÈÄ 4:20:23 
+                /* Network ì •ë³´ ...Update */
+                // 2026-05-26 ì˜¤í›„ 4:20:23 
                 for(i=0; i < netCount; i++)
                 {
                     if(opr->cpuMode == MPU_A)   enetCfg = (ESIO_NET_ENTRY *) &esio->mstNetConfig[i]; 
@@ -1716,14 +1916,14 @@ void WDT_ESIO_Config()
             
                     vmeSIO->useFlag[i] = enetCfg->useFlag;
 
-// endian ¶¡½Ã                    
+// endian ë•€ì‹œ                    
 //                   printf("ipAddr %s\r\n",enetCfg->ipAddr);
 //                   printf("gwAddr %s\r\n",enetCfg->gwAddr);
 //                   printf("subMask %s\r\n",enetCfg->subMask);                   
 
-// esio·Î ³Ñ±æ ¶§ byt ´ÜÀ§ ¹®Á¦·Î..
+// esioë¡œ ë„˜ê¸¸ ë•Œ byt ë‹¨ìœ„ ë¬¸ì œë¡œ..
 #ifdef __ARM_ARCH__  // MPU-ARM <->ESIO-ARM        
-                    for(j=0; j <16; j++) // byte  ´ÜÀ§·Î ¾´´Ù.
+                    for(j=0; j <16; j++) // byte  ë‹¨ìœ„ë¡œ ì“´ë‹¤.
                     {   // 
                         vmeSIO->ipAddr[i][j] = enetCfg->ipAddr[j];
                         vmeSIO->gwAddr[i][j] = enetCfg->gwAddr[j];
@@ -1731,7 +1931,7 @@ void WDT_ESIO_Config()
                     }
 #else  // MPU-ARM <-> ESIO-PPC
  
-                    for(k=0,j=0; k<8 ;j+=2,k++) // byte  ´ÜÀ§·Î ¾´´Ù.
+                    for(k=0,j=0; k<8 ;j+=2,k++) // byte  ë‹¨ìœ„ë¡œ ì“´ë‹¤.
                     {   // 
                         vmeSIO->ipAddr[i][k] = enetCfg->ipAddr[j+1] +  (enetCfg->ipAddr[j] << 8) ;
 //                        printf("%04X-%02X:%02X - ", vmeSIO->ipAddr[i][k],  enetCfg->ipAddr[j ],enetCfg->ipAddr[j+1]  ) ;
@@ -1746,18 +1946,18 @@ void WDT_ESIO_Config()
                     printf("WDT_ESIO[%d]_Config[%d]\r\n",sioid,i);                    
                     printf("ipADDR ") ;
                     
-                    for(j=0; j <16; j++) // byte  ´ÜÀ§·Î ¾´´Ù.
+                    for(j=0; j <16; j++) // byte  ë‹¨ìœ„ë¡œ ì“´ë‹¤.
                    {                           
                         printf("[%c]" ,   vmeSIO->ipAddr[i][j]);                        
                     }                    
                     printf("gwADDR ") ;                    
-                    for(j=0; j <16; j++) // byte  ´ÜÀ§·Î ¾´´Ù.
+                    for(j=0; j <16; j++) // byte  ë‹¨ìœ„ë¡œ ì“´ë‹¤.
                    {                           
                         printf("[%c]" ,   vmeSIO->gwAddr[i][j]);                        
 
                     }   
                     printf("subMask ") ;  
-                    for(j=0; j <16; j++) // byte  ´ÜÀ§·Î ¾´´Ù.
+                    for(j=0; j <16; j++) // byte  ë‹¨ìœ„ë¡œ ì“´ë‹¤.
                    {                           
                         printf("[%c]" ,   vmeSIO->subMask[i][j]);                        
 
@@ -1769,17 +1969,19 @@ void WDT_ESIO_Config()
                     
                 }
                 
+                Debug(console,"wdt> ESIO_CONFIG : the num of NET %d\r\n",netCount);
+                
                 if(vmeSIO->netChangeReq == 0x1234)      Debug(console,"wdt> *** ESIO: VME REQ... ESIO(%d) Network Initial...[%02d:%02d:%02d] \n", sioid, rtc->hour, rtc->min, rtc->sec);
                 else                                    Debug(console,"wdt> *** MPU : ESIO(%d) Network Initial...[%02d:%02d:%02d] \n", sioid, rtc->hour, rtc->min, rtc->sec);
                 
                 esio->vmeNetConfig  	= 0;
-                vmeSIO->netChangeReq 	= 0; //¿äÃ»Àº Áö¿ì°í 
-                vmeSIO->netCfgChange 	= 0x1234;   // ½á´Ù.     
+                vmeSIO->netChangeReq 	= 0; //ìš”ì²­ì€ ì§€ìš°ê³  
+                vmeSIO->netCfgChange 	= 0x1234;   // ì¨ë‹¤.     
                     
             }   
                 
         }
-        // Áß°£¿¡ param ÀÌ º¯°æ¤·µÈ °æ¿ì
+        // ì¤‘ê°„ì— param ì´ ë³€ê²½ã…‡ëœ ê²½ìš°
     }
         
 }
@@ -1809,13 +2011,13 @@ unsigned char   read_i2c ( int fd )
 }
 
 /*
-*   CPU ÀÌÁßÈ­ »óÅÂ Check...
+*   CPU ì´ì¤‘í™” ìƒíƒœ Check...
 */
 int	checkCPU_mode()
 {
 
 	/* -------------------------------------------- */
-	/*  ÀÌÁßÈ­ CPU »óÅÂ Check...I2C Read            */
+	/*  ì´ì¤‘í™” CPU ìƒíƒœ Check...I2C Read            */
 	/* -------------------------------------------- */
     linkCfg->cpuStatus =  read_i2c (devInput.id);
 	
@@ -1823,7 +2025,7 @@ int	checkCPU_mode()
     printf("wdt> CPU status = %02x ...\n",linkCfg->cpuStatus);
     
     /* ---------------------------------------- */
-  	/*  MASTER-CPU ÀÇ °æ¿ì...                   */
+  	/*  MASTER-CPU ì˜ ê²½ìš°...                   */
     /* ---------------------------------------- */
   	if(linkCfg->cpuStatus & SYS_MASTER_BIT)  
     {
@@ -1850,7 +2052,7 @@ static	int	cpu_change_count = 0;
 
 
 /*
-*   MPU RACK µ¿ÀÛ»óÅÂ Check....
+*   MPU RACK ë™ì‘ìƒíƒœ Check....
 */
 void update_MPU_status()
 {
@@ -1862,20 +2064,20 @@ void update_MPU_status()
     ESIO_CONFIG     *esio;
     
     /* -------------------------------------------------------- */
-    /*  SDP RACK µ¿ÀÛ»óÅÂ Á¤º¸                                  */
+    /*  SDP RACK ë™ì‘ìƒíƒœ ì •ë³´                                  */
     /*  0: SIO, 1: ESIO1, 2:ESIO2; 3:ESIO3, 4:ESIO4, 5: RTU     */
     /* -------------------------------------------------------- */
     runStatus = 0;
  
-    if(esioCFG[0]->rackInstall)     runStatus = 0x01;       // SIO ¸ğµâ µ¿ÀÛ»óÅÂ
+    if(esioCFG[0]->rackInstall)     runStatus = 0x01;       // SIO ëª¨ë“ˆ ë™ì‘ìƒíƒœ
     
-    if(esioCFG[1]->online == SET)   runStatus |= 0x02;     // ESIO#1 : Àü·ÂÁ¦¾îºÎ ÀåÂø »óÅÂ    
-    if(esioCFG[2]->online == SET)   runStatus |= 0x04;     // ESIO#2 : ¿ø°İÁø´ÜºÎ ÀåÂø »óÅÂ    
-    if(esioCFG[3]->online == SET)   runStatus |= 0x08;     // ESIO#3 : Àü·ÂÇ°ÁúºÎ ÀåÂø »óÅÂ            
-    if(esioCFG[4]->online == SET)   runStatus |= 0x10;     // ESIO#4 : 61850      ÀåÂø »óÅÂ        
+    if(esioCFG[1]->online == SET)   runStatus |= 0x02;     // ESIO#1 : ì „ë ¥ì œì–´ë¶€ ì¥ì°© ìƒíƒœ    
+    if(esioCFG[2]->online == SET)   runStatus |= 0x04;     // ESIO#2 : ì›ê²©ì§„ë‹¨ë¶€ ì¥ì°© ìƒíƒœ    
+    if(esioCFG[3]->online == SET)   runStatus |= 0x08;     // ESIO#3 : ì „ë ¥í’ˆì§ˆë¶€ ì¥ì°© ìƒíƒœ            
+    if(esioCFG[4]->online == SET)   runStatus |= 0x10;     // ESIO#4 : 61850      ì¥ì°© ìƒíƒœ        
 
-    if(esioCFG[5]->online == SET)   runStatus |= 0x20;     // RTU : ÀåÂø »óÅÂ     
-    if(scuCfg->online == SET)       runStatus |= 0x40;     // SCU : ÀåÂø »óÅÂ   
+    if(esioCFG[5]->online == SET)   runStatus |= 0x20;     // RTU : ì¥ì°© ìƒíƒœ     
+    if(scuCfg->online == SET)       runStatus |= 0x40;     // SCU : ì¥ì°© ìƒíƒœ   
             
     mpuCFG->mpuRunSts = runStatus;
 
@@ -1906,8 +2108,8 @@ void update_MPU_status()
 
 #if 0
     /* ---------------------------------------------------------------- */
-    /* ICCP Active status ¿¡ µû¸¥ ÀÌÁßÈ­ CPU ÀÚµ¿ÀıÃ¼ 							*/
-    /* - 2019-05-24 : ICCP Åë½Å»óÅÂ¿¡ µû¸¥ SDP ÀıÃ¼±â´É => ÁßÁö						*/
+    /* ICCP Active status ì— ë”°ë¥¸ ì´ì¤‘í™” CPU ìë™ì ˆì²´ 							*/
+    /* - 2019-05-24 : ICCP í†µì‹ ìƒíƒœì— ë”°ë¥¸ SDP ì ˆì²´ê¸°ëŠ¥ => ì¤‘ì§€						*/
     /* ---------------------------------------------------------------- */
     if((opr->cpuChgMode == CHECK_SDP_FULL) && (opr->dualCpuSts == SET) && (opr->runMode == LOCAL_SLAVE) && (scuCfg->remoteMode == AUTO_MODE))
     { 
@@ -1926,15 +2128,15 @@ void update_MPU_status()
 #endif
   	  	
     /* ---------------------------------------------------------------- */
-    /* ÀÌÁßÈ­ CPU ÀÚµ¿ÀıÃ¼ : CPU ÀıÃ¼ Çã¿ë½Ã, ÀÚµ¿/LOCAL_MASTER         */
+    /* ì´ì¤‘í™” CPU ìë™ì ˆì²´ : CPU ì ˆì²´ í—ˆìš©ì‹œ, ìë™/LOCAL_MASTER         */
     /* ---------------------------------------------------------------- */
     if((opr->cpuChgMode == CHECK_SDP_FULL) && (opr->dualCpuSts == SET) && (opr->runMode == LOCAL_MASTER) && (scuCfg->remoteMode == AUTO_MODE))
     { 
-    	/* 2020.06.03 SCU Åë½Å»óÅÂ Check... */
+    	/* 2020.06.03 SCU í†µì‹ ìƒíƒœ Check... */
     	if(scuCfg->online != SET)	return;
     	
     	/* ------------------------------------------------ */
-    	/*	CPU Active ÀıÃ¼ÈÄ .. 20ÃÊ µÚ... Change Check 		*/
+    	/*	CPU Active ì ˆì²´í›„ .. 20ì´ˆ ë’¤... Change Check 		*/
     	/* ------------------------------------------------ */
         if(opr->cpuChgTick > 0)
         {
@@ -1943,32 +2145,32 @@ void update_MPU_status()
         }
               
         /* -------------------------------- */
-        /* SIO/ESIO/RTU Åë½ÅÀÌ»ó½Ã .. ÀıÃ¼  */
+        /* SIO/ESIO/RTU í†µì‹ ì´ìƒì‹œ .. ì ˆì²´  */
         /* -------------------------------- */
         chgOnline = RESET;
         //for(i=0; i < MAX_ESIO; i++)
-        for(i=0; i < MAX_ESIO - 1; i++)		// 2020.06.01, RTU Online Check... Á¦¿Ü 
+        for(i=0; i < MAX_ESIO - 1; i++)		// 2020.06.01, RTU Online Check... ì œì™¸ 
         {
-            esio   = (ESIO_CONFIG *) esioCFG[i];             // ESIO ÀåÄ¡ Config 
+            esio   = (ESIO_CONFIG *) esioCFG[i];             // ESIO ì¥ì¹˜ Config 
             if(esio->useFlag == RESET)  	continue;
-            if(esio->autoChgFlag == RESET)  continue;		// ÀÚµ¿ÀıÃ¼ Flag °¡ OFF ½Ã
+            if(esio->autoChgFlag == RESET)  continue;		// ìë™ì ˆì²´ Flag ê°€ OFF ì‹œ
             if(esio->online == 0)   chgOnline = i+1;      
         }
     
         /* -------------------------------- */
-        /* SIO/ESIO ¹ÌÀåÂø½Ã... ÀıÃ¼        */
+        /* SIO/ESIO ë¯¸ì¥ì°©ì‹œ... ì ˆì²´        */
         /* -------------------------------- */
         chgInstall = RESET;
         for(i=0; i < MAX_VME_SIO; i++)
         {
-            esio   = (ESIO_CONFIG *) esioCFG[i];             // ESIO ÀåÄ¡ Config 
+            esio   = (ESIO_CONFIG *) esioCFG[i];             // ESIO ì¥ì¹˜ Config 
             if(esio->useFlag == RESET)  	continue;
-            if(esio->autoChgFlag == RESET)  continue;		// ÀÚµ¿ÀıÃ¼ Flag °¡ OFF ½Ã	
+            if(esio->autoChgFlag == RESET)  continue;		// ìë™ì ˆì²´ Flag ê°€ OFF ì‹œ	
             if(esio->rackInstall == RESET)  chgInstall = i+1;   
         }
         
         /* -------------------------------- */
-        /* SIO/ESIO Åë½ÅÀÌ»ó/¹ÌÀåÂø½Ã... ÀÚµ¿ ÀıÃ¼   */
+        /* SIO/ESIO í†µì‹ ì´ìƒ/ë¯¸ì¥ì°©ì‹œ... ìë™ ì ˆì²´   */
         /* -------------------------------- */
         if( chgOnline + chgInstall)
         {        
@@ -1980,7 +2182,7 @@ void update_MPU_status()
                 Debug(console,"wdt> *** ESIO OFFLINE CPU-CHANGE ... %d\n", chgOnline);
                 Debug(console,"==================================\n");
                 
-                /* LOG File ÀúÀå */
+                /* LOG File ì €ì¥ */
     			sprintf(buffer, "%s", "*** CPU Change : ESIO OFFLINE Change ...");
     			LogFile_MPU (shmPtr, ENT_NOT_DEFINED, buffer, strlen(buffer));
             }
@@ -1991,13 +2193,13 @@ void update_MPU_status()
                 Debug(console,"wdt> *** ESIO NOT-INSTALL  CPU-CHANGE ... %d\n", chgInstall);
                 Debug(console,"==================================\n");
                 
-                /* LOG File ÀúÀå */
+                /* LOG File ì €ì¥ */
     			sprintf(buffer, "%s", "*** CPU Change : ESIO NOT-INSTALL Change ...");
     			LogFile_MPU (shmPtr, ENT_NOT_DEFINED, buffer, strlen(buffer));
             }
                                 
             opr->cpuChange = SET;
-            opr->cpuChgTick = 20;		// 20ÃÊ µÚ¿¡ ÀÚµ¿ÀıÃ¼ Check...
+            opr->cpuChgTick = 20;		// 20ì´ˆ ë’¤ì— ìë™ì ˆì²´ Check...
         }
                     
     }      
@@ -2014,7 +2216,7 @@ void    update_SystemTime()
     ESIO_CONFIG     *esio;
     
      /* ------------------------------------ */
-	/* MPU Time º¯°æÈÄ  ¸ğµâ ÃÊ±âÈ­  ....   */
+	/* MPU Time ë³€ê²½í›„  ëª¨ë“ˆ ì´ˆê¸°í™”  ....   */
 	/* ------------------------------------ */
     for(i = 0; i < MAX_DEVICE; i++)
     {
@@ -2025,7 +2227,7 @@ void    update_SystemTime()
     }
 
     /* ------------------------------------ */
-	/* MPU Time º¯°æÈÄ  ESIO ÃÊ±âÈ­  ....   */
+	/* MPU Time ë³€ê²½í›„  ESIO ì´ˆê¸°í™”  ....   */
 	/* ------------------------------------ */
     for(i = 0; i < MAX_ESIO; i++)
     {
@@ -2037,18 +2239,18 @@ void    update_SystemTime()
 
 // hkkim
 /*
-* VME ¹ö½º»óÀÇ SIO ¸ğµâ Time-Sync
+* VME ë²„ìŠ¤ìƒì˜ SIO ëª¨ë“ˆ Time-Sync
 */
 static void vmeTimeSync()
 {
 	int	year;
 	
 	/* ---------------------------------------- */
-	/*	SLAVE ¸ğµå¿¡¼­ VME Access ¸¦ ÇÏÁö ¾ÊÀ½  */
+	/*	SLAVE ëª¨ë“œì—ì„œ VME Access ë¥¼ í•˜ì§€ ì•ŠìŒ  */
 	/* ---------------------------------------- */
 	if(opr->runMode == LOCAL_SLAVE)     return;
 
-    /* VME BUS »óÀÇ SIOº¸µå - Time Sync...  */        
+    /* VME BUS ìƒì˜ SIOë³´ë“œ - Time Sync...  */        
 	year = (rtc->year % 100) + 2000;
     vmeSioDCB[0]->year  = year;
     vmeSioDCB[0]->month = rtc->month;
@@ -2062,13 +2264,44 @@ static void vmeTimeSync()
     
     if(opr->wdtDebug)
 	Debug(console,"[vme Time-Sync] %04d:%02d:%02d-%02d-%02d:%02d:%02d ...\n", 	year, rtc->month, rtc->day, rtc->week, rtc->hour, rtc->min, rtc->sec);
-    
+
 }
-    
 
 
 /* ======================================================== */
-/*  SDP MAIN ÇÁ·Î±×·¥ Start Routine ....                    */
+/*  í˜„ì¬ system time ì„ ë°±ì—…íŒŒì¼ì— ì €ì¥í•œë‹¤.                */
+/*  - RTC backup ìœ ì§€ì‹œê°„(ì•½ 5ë¶„)ì´ ì§§ì•„, ì¥ì‹œê°„ ë¬´ì „ì› í›„   */
+/*    ë¶€íŒ…í•˜ë©´ RTC ê°€ 1970 ìœ¼ë¡œ ë¦¬ì…‹ëœë‹¤. ê·¸ë•Œ ë³µêµ¬í•  ê°’ì„    */
+/*    ë¯¸ë¦¬ ë¹„íœ˜ë°œì„± íŒŒì¼ì— ë‚¨ê²¨ë‘ëŠ” ê²ƒì´ ëª©ì .               */
+/*  - system time ìì²´ê°€ ë¬´íš¨(ë³µêµ¬ ì‹¤íŒ¨ ìƒíƒœ)ë©´ ì €ì¥í•˜ì§€      */
+/*    ì•ŠëŠ”ë‹¤. ë¬´íš¨ê°’ìœ¼ë¡œ ë®ì–´ì“°ë©´ ë‹¤ìŒ ë¶€íŒ… ë•Œ ë³µêµ¬í•  ìˆ˜ë‹¨ì´  */
+/*    ì•„ì˜ˆ ì—†ì–´ì§€ê¸° ë•Œë¬¸.                                    */
+/*  - ì„±ê³µ ì‹œ hour ì¹´ìš´í„°ë¥¼ ë¦¬ì…‹í•œë‹¤. ì‹¤íŒ¨í•˜ë©´ ë¦¬ì…‹í•˜ì§€       */
+/*    ì•Šìœ¼ë¯€ë¡œ ë‹¤ìŒ hour ë³€í™”ì—ì„œ ìë™ ì¬ì‹œë„ëœë‹¤.            */
+/* ======================================================== */
+static void wdt_TimeBackupSave(const char *reason)
+{
+    time_t  now = time(NULL);
+
+    if(now < WDT_TIME_MIN_VALID)
+    {
+        Debug(console, "wdt> time-backup skip (%s) : system time invalid (%ld)\n", reason, (long)now);
+        return;
+    }
+
+    if(time_backup_save(TIME_BACKUP_DEFAULT_PATH) < 0)
+    {
+        Debug(console, "WDT-ERR> *** time-backup save FAIL (%s) : %s\n", reason, strerror(errno));
+        return;
+    }
+
+    timeBackupHourCnt = 0;
+    Debug(console, "wdt> time-backup saved (%s) : %ld\n", reason, (long)now);
+}
+
+
+/* ======================================================== */
+/*  SDP MAIN í”„ë¡œê·¸ë¨ Start Routine ....                    */
 /* ======================================================== */
 int	main(int argc, char **argv)
 {
@@ -2110,7 +2343,7 @@ int	main(int argc, char **argv)
 
     if ((rc= check_already_running("WDT")) < 0)
     {
-        printf("WDT-ERR>> already running..\r\n");
+        // printf("WDT-ERR>> already running..\r\n");
         exit(0);
         
     }
@@ -2121,18 +2354,49 @@ int	main(int argc, char **argv)
 
 
     /* ------------------------------------------------ */
-	/*  ÀÛ¾÷ È¯°æÀ» ÃÊ±âÈ­ÇÑ´Ù                          */
+    /*  RTC backup ë°©ì „ ëŒ€ë¹„ ì‹œê° ë³µêµ¬                  */
+    /*  - HW RTC ì˜ backup ìœ ì§€ì‹œê°„ì´ ì•½ 5ë¶„ë¿ì´ë¯€ë¡œ,   */
+    /*    ì¥ì‹œê°„ ë¬´ì „ì› í›„ì—ëŠ” RTC ê°€ 1970 ìœ¼ë¡œ ë¦¬ì…‹ë¨.  */
+    /*  - ë°˜ë“œì‹œ InitEnv() ë³´ë‹¤ ë¨¼ì € í˜¸ì¶œí•´ì•¼ í•œë‹¤:      */
+    /*    /dev/rtc0 ëŠ” í•œ í”„ë¡œì„¸ìŠ¤ë§Œ open í•  ìˆ˜ ìˆëŠ”ë°   */
+    /*    InitEnv() ê°€ ì—´ê³  ë‚˜ë©´ ì¢…ë£Œê¹Œì§€ ì ìœ í•˜ë¯€ë¡œ,    */
+    /*    ê·¸ ë’¤ì—ëŠ” RTC ì¬ì„¤ì •ì´ EBUSY ë¡œ ì‹¤íŒ¨í•œë‹¤.      */
+    /*  - ê³µìœ ë©”ëª¨ë¦¬ê°€ ì•„ì§ ì—†ìœ¼ë¯€ë¡œ printf ë¡œ ê¸°ë¡.     */
+    /*  - ë°˜í™˜ê°’ -1 ì€ "RTC ë¬´íš¨ + ë°±ì—…íŒŒì¼ ì—†ìŒ" ì¸     */
+    /*    ìµœì´ˆ ê¸°ë™ì—ì„œë„ ë‚˜ì˜¤ëŠ” ì •ìƒ ìƒí™©ì´ë¯€ë¡œ,        */
+    /*    í”„ë¡œì„¸ìŠ¤ë¥¼ ì¤‘ë‹¨ì‹œí‚¤ì§€ ì•Šê³  ë¡œê·¸ë§Œ ë‚¨ê¸´ë‹¤.      */
+    /* ------------------------------------------------ */
+    if(time_backup_sync_on_boot(TIME_BACKUP_DEFAULT_PATH, WDT_TIME_MIN_VALID) < 0)
+    {
+        printf("WDT> *** time-backup restore FAIL : %s\n", strerror(errno));
+    }
+    else
+    {
+        time_t  bootTime = time(NULL);
+        printf("WDT> time-backup check OK ... %s", ctime(&bootTime));
+    }
+
+
+    /* ------------------------------------------------ */
+	/*  ì‘ì—… í™˜ê²½ì„ ì´ˆê¸°í™”í•œë‹¤                          */
 	/* ------------------------------------------------ */
-	if ((termExec = InitEnv()) == 1)
+	if ((termExec = InitEnv()) == 1) // ì •ìƒì´ë©´ 1 , ì‹¤íŒ¨ë©´ 0 ...
 	{
 		DisplayLogo();
 	}
-
+    else 
+    {
+        printf("WDT> [ERROR] InitEnv failed\r\n");
+        exit(0 );
+    }
+        
+    
     /* ------------------------------------------------ */
-    /*  ÇÏµå¿ş¾î WDT ±â´ÉÀ» ¼³Á¤ÇÔ...                   */
+    /*  í•˜ë“œì›¨ì–´ WDT ê¸°ëŠ¥ì„ ì„¤ì •í•¨...                   */
     /* ------------------------------------------------ */
     opr->wdtEnable = 1;
 
+    // 2026-08-24 ì˜¤í›„ 7:39:21  ì—¬ê¸°ì„œ WDT ì‹¤íŒ¨ì‹œ exití•˜ëŠ” ì´ìœ ëŠ” WDTê°€ êµ¬í˜„ì´ ì•ˆ ë˜ìˆë‚˜ ???
     if ((wdtid=open("/dev/esio_wdt",O_RDWR|O_NDELAY)) < 0)  
 	{
 		printf("wdt> ***/dev/wdt can't open file\n");
@@ -2141,11 +2405,14 @@ int	main(int argc, char **argv)
     else
     {
 	    if(ioctl(wdtid,PMU_WDT_CTR_ON ,  NULL) < 0 )
-		printf("wdt> ioctl fail\n");
+		{ 
+		    printf("wdt> ioctl fail\n");
+		    opr->wdtEnable = 0;    
+        }
     }
     
 	
-    /* ³»ºÎº¯¼ö ÃÊ±âÈ­ */
+    /* ë‚´ë¶€ë³€ìˆ˜ ì´ˆê¸°í™” */
     init_variable();
 
 /* hhkim */
@@ -2155,17 +2422,17 @@ int	main(int argc, char **argv)
     
     
     /* ------------------------------------------------ */
-    /*  MPU µ¿ÀÛ¸ğµå - MPU-A/B °áÁ¤                     */
+    /*  MPU ë™ì‘ëª¨ë“œ - MPU-A/B ê²°ì •                     */
     /* ------------------------------------------------ */
     checkCPU_mode();
     
     ioctl(wdtid, PMU_WDT_CTR_CLR, NULL);   /* WDT Clear.... */
     
-    size = sizeof(RTU_DATABASE);
-    if(dbFileRead(opr, rtudb) < 0)
+    size = sizeof(RTU_DATABASE); // ì•„ë˜ ì¶œë ¥ì— ì‚¬ìš©ëœë‹¤.
+    if(dbFileRead(opr, rtudb) < 0) // oprì˜ ìš©ë„ëŠ” ????
     {
         printf("\n=======================================\n");
-        printf("wdt> *** RTUDB Read Error...!\n");
+        printf("[ERROR] wdt> *** RTUDB Read failed...!\n");
         printf("=======================================\n");        
         opr->romDBFail = 1;
         
@@ -2173,7 +2440,7 @@ int	main(int argc, char **argv)
         
         dbFileWrite(opr, rtudb);
         
-        readRTUdb();            // DB ÃÊ±âÈ­...
+        readRTUdb();            // DB ì´ˆê¸°í™”...  ROMDB->runTimeDB
     }
     else
     {   
@@ -2182,22 +2449,26 @@ int	main(int argc, char **argv)
         printf("=======================================\n");
         pause(100);
         
-        readRTUdb();            // DB ÃÊ±âÈ­...
+        readRTUdb();            // DB ì´ˆê¸°í™”...ROMDB->runTimeDB
     }
 
     /* ------------------------------------------------ */
-    /*  LOCAL Controller TIME ÃÊ±âÈ­ ....               */
-    /*  - RTC Chip °ªÀ» ÀĞ¾î¼­... System Clock ·Î       */
+    /*  LOCAL Controller TIME ì´ˆê¸°í™” ....               */
+    /*  - RTC Chip ê°’ì„ ì½ì–´ì„œ... System Clock ë¡œ       */
     /* ------------------------------------------------ */
 	read_RTC1340();
 	writeClock(rtc->year, rtc->month, rtc->day, rtc->hour, rtc->min, rtc->sec, rtc->week);
 	printf("read RTC  : %4d/%02d/%02d-w(%d)-%02d:%02d:%02d\n", rtc->year,rtc->month, rtc->day, rtc->week, rtc->hour, rtc->min, rtc->sec);
 
 	oldsec = rtc->sec;
+	// 2026-09-30 ì˜¤í›„ 5:25:26 by recommned from Claude
+	oldhour = rtc->hour;
+	
+	
 	opr->stscode = 0;
 	ntpSyncFail  = 0;
 
-	/* LOG File ÀúÀå */
+	/* LOG File ì €ì¥ */
 	sprintf(buffer, " %s WDT-MAIN PROCESS Activated ... !", TARGET_NAME);
     LogFile_MPU (shmPtr, ENT_NOT_DEFINED, buffer, strlen(buffer));
     
@@ -2206,26 +2477,28 @@ int	main(int argc, char **argv)
     ioctl(wdtid, PMU_WDT_CTR_CLR, NULL);   /* WDT Clear.... */
     
     /* ------------------------------------------------ */
-    /*  MPU ±âµ¿ Event...                               */
+    /*  MPU ê¸°ë™ Event...                               */
     /* ------------------------------------------------ */
     logEvent_MPU(shmPtr, ENT_UNDER_LINE, 0, 0, 0, opr->cpuMode, NULL); 
-    logEvent_MPU(shmPtr, ENT_CU_RESTART, 0, 0, 0, opr->cpuMode, NULL);     // MPU Àç±âµ¿ Event...
+    logEvent_MPU(shmPtr, ENT_CU_RESTART, 0, 0, 0, opr->cpuMode, NULL);     // MPU ì¬ê¸°ë™ Event...
 
-    /* LOG File ÀúÀå */
+    /* LOG File ì €ì¥ */
     sprintf(buffer, "%s", "=====================================================");
     LogFile_MPU (shmPtr, ENT_NOT_DEFINED, buffer, strlen(buffer));
     
-    if(opr->cpuMode == MPU_A)       sprintf(buffer, "%s", "SDP-A System Àç±âµ¿---------------------");
-    else if(opr->cpuMode == MPU_B)  sprintf(buffer, "%s", "SDP-B System Àç±âµ¿---------------------");    
+    
+    // 2026-08-25 ì˜¤í›„ 1:59:45 ì™œ?  ì¬ê¸°ë™ì¼ê¹Œ...ì•„...ì£½ì—‡ë‹¤ ì‚´ì•„ì„œ...
+    if(opr->cpuMode == MPU_A)       sprintf(buffer, "%s", "SDP-A System ì¬ê¸°ë™---------------------");
+    else if(opr->cpuMode == MPU_B)  sprintf(buffer, "%s", "SDP-B System ì¬ê¸°ë™---------------------");    
     LogFile_MPU (shmPtr, ENT_CU_RESTART, buffer, strlen(buffer));
     
     sprintf(buffer, "%s", "=====================================================");
     LogFile_MPU (shmPtr, ENT_NOT_DEFINED, buffer, strlen(buffer));
     
     /* ------------------------------------------------ */
-    /*  SDP  ±¸Á¶Ã¼ º¯¼ö ÃÊ±âÈ­ ....                    */
-    /*  - MPU/ESIO ±¸Á¶Ã¼ Á¤º¸ ÃÊ±âÈ­                   */
-    /*  - HOST VMESIO Æ÷ÀÎÆ® ÁöÁ¤ & ASYNC PORT ÁöÁ¤     */
+    /*  SDP  êµ¬ì¡°ì²´ ë³€ìˆ˜ ì´ˆê¸°í™” ....                    */
+    /*  - MPU/ESIO êµ¬ì¡°ì²´ ì •ë³´ ì´ˆê¸°í™”                   */
+    /*  - HOST VMESIO í¬ì¸íŠ¸ ì§€ì • & ASYNC PORT ì§€ì •     */
     /* ------------------------------------------------ */
     WDT_sdp_initial();
     WDT_hostDCBInitial();
@@ -2247,13 +2520,13 @@ int	main(int argc, char **argv)
 	        {
 	        	rtc_TimeUpdate();           // RTC Update...
 	            opr->getClockNTP = 0;
-                update_SystemTime();        // ESIO Time Update...
+                update_SystemTime();        // ESIO & DEV Time Update.. ì•„ë˜ë‘ ë¹„êµí•˜ë©´ SIOê°€ ì—†ë‹¤.
 	        }
 	        else
 	        {
 	            if(++ntpSyncFail > 5)
 	            {
-	                Debug(console, "wdt>> *** NTP TIME-SYNC ....Fail...\n");
+	                Debug(console, "[ERROR] wdt> *** NTP TIME-SYNC ....Fail...\n");
 	                ntpSyncFail = 0;
 	                opr->getClockNTP = 0;
 	            }
@@ -2261,50 +2534,56 @@ int	main(int argc, char **argv)
 	    }
 	          
 	    /* ---------------------------------------- */
-        /* DNP-HOST ½Ã°¢µ¿±â ...                    */
+        /* DNP-HOST ì‹œê°ë™ê¸° ...                    */
         /* ---------------------------------------- */
         if(opr->rtcUpdateFlag)
         {
             opr->rtcUpdateFlag = 0;
+            
+            // update hwclock & ESIO,dev set updateFlag            
             writeClock( opr->year, opr->month, opr->day, opr->hour, opr->min, opr->sec, opr->week);
+            // update rtc
             readClock();
             //update_SystemTime();        // ESIO Time Update...
-            vmeTimeSync();
+            vmeTimeSync();                // SIO time update
+
+            /* ìƒìœ„ì‹œìŠ¤í…œ ì‹œê°ë™ê¸°ë¡œ ì‹œê°ì´ ê°±ì‹ ë¨ => ë°±ì—…íŒŒì¼ì—ë„ ë°˜ì˜  */
+            wdt_TimeBackupSave("rtc-update");
 
 
-#ifdef	VITZRO_FEP_ENABLE	
+#ifdef	VITZRO_FEP_ENABLE
 #else
             /* ---------------------------------------- */
-            /*  ICCP-HOST : SDP ½Ã°¢º¯°æ Report         	*/
-            /* - ºñÃ÷·Î½Ã½º FEP ÀÇ °æ¿ì : SOE Á¤º¸¸¦ »ı¼ºÇÏÁö ¾ÊÀ½ 	*/
+            /*  ICCP-HOST : SDP ì‹œê°ë³€ê²½ Report         	*/
+            /* - ë¹„ì¸ ë¡œì‹œìŠ¤ FEP ì˜ ê²½ìš° : SOE ì •ë³´ë¥¼ ìƒì„±í•˜ì§€ ì•ŠìŒ 	*/
             /* ---------------------------------------- */
             if((opr->iccpEnbFlag == SET) && (opr->rtcUpdateICCP == SET))
           	{  	
-          		opr->rtcUpdateICCP = 0;		// ICCP-HOST Time-Sync Á¤º¸ 
+          		opr->rtcUpdateICCP = 0;		// ICCP-HOST Time-Sync ì •ë³´ 
           		
-	            devPtIndex = ICCP_SDP_TIMESYNC;                         // ICCP-Device Æ÷ÀÎÆ® = 69
-    	        devPoint   = (POINT_BUF *) devPtBuf[devPtIndex];      	// Device Point Á¤º¸
-        	    devPoint->status = 1;   // ¿äÃ»: 1   
-            	//devPoint->status = (devPoint->status + 1) & 0x01;   // ¿äÃ»: 1    
+	            devPtIndex = ICCP_SDP_TIMESYNC;                         // ICCP-Device í¬ì¸íŠ¸ = 69
+    	        devPoint   = (POINT_BUF *) devPtBuf[devPtIndex];      	// Device Point ì •ë³´
+        	    devPoint->status = 1;   // ìš”ì²­: 1   
+            	//devPoint->status = (devPoint->status + 1) & 0x01;   // ìš”ì²­: 1    
 	            gettimeofday(&devPoint->updateTime, NULL);
 
     	        devEvent.eventCode = ENT_DEVICE_SOE;
         	    devEvent.devNo   = devPtIndex + 1;           // Devie Point,,,1,2
 	            devEvent.pointNo = 0;
-    	        devEvent.state   = devPoint->status;    // ÀåÄ¡»óÅÂ : ÀÌ»ó
-        	    devEvent.esioNo  = opr->cpuMode;            // ÀÌº¥Æ® ¹ß»ıÁÖÃ¼ : [0] CPU-A, [1] CPU-B
+    	        devEvent.state   = devPoint->status;    // ì¥ì¹˜ìƒíƒœ : ì´ìƒ
+        	    devEvent.esioNo  = opr->cpuMode;            // ì´ë²¤íŠ¸ ë°œìƒì£¼ì²´ : [0] CPU-A, [1] CPU-B
             
 	            memcpy( &devEvent.updateTime, &devPoint->updateTime, sizeof(struct timeval));
             
     	        Debug(console, "wdt> ===> ICCP TIME-SYNC REQ [RTC]....state=%d\n", devPoint->status);
-        	    Create_Device_SOE(shmPtr, &devEvent);   // ICCP : SDP TIME-SYNC Àü¼Û
+        	    Create_Device_SOE(shmPtr, &devEvent);   // ICCP : SDP TIME-SYNC ì „ì†¡
          	}               
 #endif         	
         }
 
 
 	    /* ---------------------------------------- */
-       	/*  Á¦¾î±â WDT & System-REBOOT Check        */
+       	/*  ì œì–´ê¸° WDT & System-REBOOT Check        */
 	    /* ---------------------------------------- */
         if(opr->wdtEnable == SET)
 	    {
@@ -2312,12 +2591,12 @@ int	main(int argc, char **argv)
         }      
 	    
 	    /* ---------------------------------------- */
-       	/* ½Ã½ºÅÛ ÀÌº¥Æ®  ³»¿ë ÀúÀå ...             */
+       	/* ì‹œìŠ¤í…œ ì´ë²¤íŠ¸  ë‚´ìš© ì €ì¥ ...             */
    	    /* ---------------------------------------- */
    	    if(opr->eventLogging == RESET)
    	    {   
        		/* -------------------------------- */
-           	/* ¿î¿µ ÄÜ¼Ö ÀÌº¥Æ®  ³»¿ë ÀúÀå ...       */
+           	/* ìš´ì˜ ì½˜ì†” ì´ë²¤íŠ¸  ë‚´ìš© ì €ì¥ ...       */
        	    /* -------------------------------- */
            	oldFront = framHque->front & HISTORY_QUE_MASK;
        	    if(hque->clear == 255)              clearHistoryQ();
@@ -2325,14 +2604,14 @@ int	main(int argc, char **argv)
 
 	    }
 	    
-	    mpu_LED_Update();               // MPU LED »óÅÂ Update...
+	    mpu_LED_Update();               // MPU LED ìƒíƒœ Update...
 	    
         /* -------------------------------- */
-        /*  ÃÊ´ÜÀ§ Ã³¸®·çÆ¾                 */
+        /*  ì´ˆë‹¨ìœ„ ì²˜ë¦¬ë£¨í‹´                 */
         /* -------------------------------- */          
         if(oldsec == rtc->sec)   
         {
-        	/* RTC °ªÀÌ °íÁ¤µÇ´Â Çö»ó ¹æÁö.... RESTART */
+        	/* RTC ê°’ì´ ê³ ì •ë˜ëŠ” í˜„ìƒ ë°©ì§€.... RESTART */
         	if(++rtcCheckTick > 60)
         	{
         		sprintf(buffer, "%s", "wdt> *** RTC Not Changed ... RESTART !");
@@ -2351,12 +2630,12 @@ int	main(int argc, char **argv)
 		rtcCheckTick = 0;
 		
 		/* -------------------------------- */
-	    /* VMEBUS »óÀÇ ±â´É¸ğµâºÎ µ¿ÀÛ Check...		*/
+	    /* VMEBUS ìƒì˜ ê¸°ëŠ¥ëª¨ë“ˆë¶€ ë™ì‘ Check...		*/
 	    /* -------------------------------- */
-		vmeModule_Check();              // ESIO RACK ½ÇÀåÁ¤º¸ Check...       
+		vmeModule_Check();              // ESIO RACK ì‹¤ì¥ì •ë³´ Check...       
 		
 		/* -------------------------------- */
-		/* ICCP-SDP-RESET ¸í·É Ã³¸®...			*/
+		/* ICCP-SDP-RESET ëª…ë ¹ ì²˜ë¦¬...			*/
 		/* -------------------------------- */
 		if((opr->iccpResetENB != 0) && (opr->iccpResetFlag == SET))
 		{
@@ -2371,7 +2650,7 @@ int	main(int argc, char **argv)
 		}
 	
 		/* -------------------------------- */
-		/* ¿¬»êÆ÷ÀÎÆ® °è»ê±â´É ¼öÇà : ÁöÁ¤ ÁÖ±âº° ¿¬»ê 		*/
+		/* ì—°ì‚°í¬ì¸íŠ¸ ê³„ì‚°ê¸°ëŠ¥ ìˆ˜í–‰ : ì§€ì • ì£¼ê¸°ë³„ ì—°ì‚° 		*/
 		/* -------------------------------- */
 		if(opr->calCalcFlag)
 		{			
@@ -2379,37 +2658,53 @@ int	main(int argc, char **argv)
         }
         
         /* -------------------------------- */
-        /* MPU »óÅÂÁ¤º¸ Update...           */
+        /* MPU ìƒíƒœì •ë³´ Update...           */
         /* -------------------------------- */
         update_MPU_status();
 
 
 //#ifdef  VME_NETWORK_INITIAL
-        WDT_ESIO_Config();              // ESIO Network ±¸¼ºÁ¤º¸
+        WDT_ESIO_Config();              // ESIO Network êµ¬ì„±ì •ë³´
 //#endif
         
         /* ------------------------------------------------ */
-        /*  MFCU-PROCESS µ¿ÀÛ»óÅÂ °¨½Ã                      */
+        /*  MFCU-PROCESS ë™ì‘ìƒíƒœ ê°ì‹œ                      */
         /* ------------------------------------------------ */                           
-		CheckProcess();					// ÇÁ·Î¼¼½º µ¿ÀÛ »óÅÂ °¨½Ã
+		CheckProcess();					// í”„ë¡œì„¸ìŠ¤ ë™ì‘ ìƒíƒœ ê°ì‹œ
 		
 		/* ------------------------------------------------ */
-		/*  µ¥ÀÌÅÍº£ÀÌ½º º¯°æ½Ã... Àç±¸¼º ·Îµå              */
+		/*  ë°ì´í„°ë² ì´ìŠ¤ ë³€ê²½ì‹œ... ì¬êµ¬ì„± ë¡œë“œ              */
 		/* ------------------------------------------------ */
 		sdp_DBChange_Check();
 		
         /* -------------------------------- */
-        /*  ÃÊ´ÜÀ§ Ã³¸®·çÆ¾                 */
-        /* -------------------------------- */          
+        /*  ì‹œê°„ë‹¨ìœ„ ì²˜ë¦¬ë£¨í‹´               */
+        /* -------------------------------- */
         if(oldhour == rtc->hour)   continue;
         oldhour = rtc->hour;
-        
-        /* ¸Å½Ã°£¸¶´Ù ÁÖ±âÀû Time Sync ... */
+
+        /* ë§¤ì‹œê°„ë§ˆë‹¤ ì£¼ê¸°ì  Time Sync ... */
+        // set updateFlag for ESIO & DEV
         update_SystemTime();
+
+        /* ---------------------------------------------------- */
+        /*  RTC ì‹œê° ë°±ì—… : ë§ˆì§€ë§‰ ì €ì¥ í›„ 12ì‹œê°„ ê²½ê³¼ ì‹œ       */
+        /*  - ë³´í†µì€ ìƒìœ„ì‹œìŠ¤í…œì´ 1ì‹œê°„ ì£¼ê¸°ë¡œ rtcUpdateFlag ë¥¼ */
+        /*    set í•˜ë¯€ë¡œ ì—¬ê¸°ê¹Œì§€ ì˜¤ì§€ ì•ŠëŠ”ë‹¤.                  */
+        /*    (ì €ì¥í•  ë•Œë§ˆë‹¤ timeBackupHourCnt ê°€ 0 ì´ ë¨)       */
+        /*  - ìƒìœ„ì‹œìŠ¤í…œì´ ì—†ëŠ” í™˜ê²½ì—ì„œ ì¥ì‹œê°„ aging ì„ í•˜ê¸°    */
+        /*    ìœ„í•œ ê²½ë¡œ.                                        */
+        /*  - hour ë³€í™” íšŸìˆ˜ë§Œ ì„¸ë¯€ë¡œ ì •í™•íˆ 12ì‹œê°„ì€ ì•„ë‹ˆë‹¤     */
+        /*    (ë¶€íŒ… ì‹œê°ì— ë”°ë¼ ìµœì´ˆ 1íšŒëŠ” 11~12ì‹œê°„).           */
+        /* ---------------------------------------------------- */
+        if(++timeBackupHourCnt >= WDT_TIME_BACKUP_HOURS)
+        {
+            wdt_TimeBackupSave("12h-period");
+        }
 	}
 
     /* -------------------------------------------- */
-    /* CPU µ¿ÀÛ ÁßÁö Ç¥½Ã... Shutdown/live OFF      */
+    /* CPU ë™ì‘ ì¤‘ì§€ í‘œì‹œ... Shutdown/live OFF      */
     /* -------------------------------------------- */
     linkCfg->cpuControl = 0x03;
     write_led(devOutput.id, linkCfg->cpuControl);  
@@ -2420,7 +2715,7 @@ int	main(int argc, char **argv)
     
     if(ioctl(wdtid,PMU_WDT_CTR_OFF, NULL) < 0 )  printf("wdt> *** ioctl fail\n");
     
-	/*  ÀÛ¾÷ È¯°æÀ» Á¤¸®ÇÑ´Ù    */
+	/*  ì‘ì—… í™˜ê²½ì„ ì •ë¦¬í•œë‹¤    */
 	ClearEnv();
 
     return (0);	

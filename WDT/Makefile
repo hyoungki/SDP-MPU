@@ -18,10 +18,10 @@ LIBRARYS = $(USER_LIB)/$(LIBLOCALNAME).$(LIB_EXTENSION)
 
 # Define objects used in the executable
 #OBJS = wdtMain.o wdtRtc1340.o wdtConfig.o
-OBJS = wdtMain.o wdtRtc1340.o wdtConfig.o wdtCalculate.o wdtParser.o wdtNtpClient.o gpio_lan_ctrl.o
-#SRCS = $(OBJS:.o=.c)
-#SRCS = 
-all:  $(LIBLOCALNAME) $(TARGET)
+OBJS = wdtMain.o wdtRtc1340.o wdtConfig.o wdtCalculate.o wdtParser.o wdtNtpClient.o gpio_lan_ctrl.o time_backup.o
+# wdtParser.cpp is C++; the rest are C, so SRCS cannot be derived from OBJS with a single .o=.c substitution.
+SRCS = wdtMain.c wdtRtc1340.c wdtConfig.c wdtCalculate.c wdtParser.cpp wdtNtpClient.c gpio_lan_ctrl.c time_backup.c
+all: depend $(LIBLOCALNAME) $(TARGET)
 
 $(TARGET) : $(OBJS) $(LIBRARYS)
 	@echo ""
@@ -51,10 +51,10 @@ clean:
 	@echo "Cleaning $(TARGET)..."
 	$(RM) -f $(OBJS) $(TARGET) $(TARGET)~ $(TEMP_FILES) .depend
 
-#depend: Makefile $(SRCS)
-#	@echo "make depend $(TARGET)..."
-#	$(CC) -M $(INCDIRS) $(CFLAGS) $(SRCS) > .$@
-#-include .depend
+depend: Makefile $(SRCS)
+	@echo "make depend $(TARGET)..."
+	$(CC) -M $(INCDIRS) $(CFLAGS) $(SRCS) > .$@
+-include .depend
 
 tags: Makefile $(SRCS)
 	@echo ""

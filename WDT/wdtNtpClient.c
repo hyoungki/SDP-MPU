@@ -1,8 +1,8 @@
 /* 
  *****************************************************************************
- * SYSTEM   : ACE-VMECU-NET-V5 (Ã¶µµÃ» VMECU : °øÅëÁ¦¾îºÎ )
+ * SYSTEM   : ACE-VMECU-NET-V5 (ì² ë„ì²­ VMECU : ê³µí†µì œì–´ë¶€ )
  * FileName : CONFIG.C  
- * File ³»¿ë: µ¥ÀÌÅÍº£ÀÌ½º °ü·Ã ÀúÀå ¹× ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+ * File ë‚´ìš©: ë°ì´í„°ë² ì´ìŠ¤ ê´€ë ¨ ì €ìž¥ ë° ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
  * Designed : TRATEK ... by LHS
  *****************************************************************************
 */   
@@ -99,7 +99,7 @@ static int set_time(struct ntptime *new)
     }
     
     /* -------------------------------------------- */
-    /* ¼ö½Å Time Sync ½Ã°£ ÃßÃâ                    */
+    /* ìˆ˜ì‹  Time Sync ì‹œê°„ ì¶”ì¶œ                    */
     /* -------------------------------------------- */
     localtime_r (&tv_set.tv_sec, &cTime);
     
@@ -251,7 +251,7 @@ int  ntpdate( char *hostname)
  
  
 /*
-*   NTP ¼­¹ö·ÎºÎÅÍ ½Ã°¢µ¿±âÈ­ È£Ãâ...
+*   NTP ì„œë²„ë¡œë¶€í„° ì‹œê°ë™ê¸°í™” í˜¸ì¶œ...
 */
 int     get_NTP_Info()
 {
@@ -261,7 +261,7 @@ int     get_NTP_Info()
     MPU_NET_ENTRY   *serverNet;
     
     /* ------------------------------------------------ */
-    /*  MPU-A/B °£ ¸µÅ©¿ë Network ... eth0 »ç¿ë         */
+    /*  MPU-A/B ê°„ ë§í¬ìš© Network ... eth0 ì‚¬ìš©         */
     /* ------------------------------------------------ */
     if(opr->cpuMode == MPU_A)   serverNet = (MPU_NET_ENTRY *) &mpuCFG->slave_netCfg[0];
     else                        serverNet = (MPU_NET_ENTRY *) &mpuCFG->master_netCfg[0];

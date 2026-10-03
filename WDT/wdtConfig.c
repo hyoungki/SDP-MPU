@@ -1,8 +1,8 @@
 /* 
  *****************************************************************************
- * SYSTEM   : ACE-VMECU-NET-V5 (Ã¶µµÃ» VMECU : °øÅëÁ¦¾îºÎ )
+ * SYSTEM   : ACE-VMECU-NET-V5 (ì² ë„ì²­ VMECU : ê³µí†µì œì–´ë¶€ )
  * FileName : CONFIG.C  
- * File ³»¿ë: µ¥ÀÌÅÍº£ÀÌ½º °ü·Ã ÀúÀå ¹× ÃÊ±âÈ­ °ü·Ã ÇÔ¼ö
+ * File ë‚´ìš©: ë°ì´í„°ë² ì´ìŠ¤ ê´€ë ¨ ì €ì¥ ë° ì´ˆê¸°í™” ê´€ë ¨ í•¨ìˆ˜
  * Designed : TRATEK ... by LHS
  *****************************************************************************
 */   
@@ -19,7 +19,7 @@ extern  SHM_MEMORY	    *shmPtr;
 
 
 /*
-*   SDP-¿¬»êÆ÷ÀÎÆ® [»óÅÂ] Æ÷ÀÎÆ® ÃÊ±âÈ­ 
+*   SDP-ì—°ì‚°í¬ì¸íŠ¸ [ìƒíƒœ] í¬ì¸íŠ¸ ì´ˆê¸°í™” 
 */
 int update_iccpInfo(int devNo, int devPt, POINT_BUF *ptBuf)
 {
@@ -29,18 +29,18 @@ int update_iccpInfo(int devNo, int devPt, POINT_BUF *ptBuf)
 #if 0
 typedef struct
 {
-    byte            devNo;          // SDP POINT : device ¹øÈ£ [1..32] 
-    word            devPt;          // SDP POINT : device Æ÷ÀÎÆ® ¹øÈ£ [1..1024] 
+    byte            devNo;          // SDP POINT : device ë²ˆí˜¸ [1..32] 
+    word            devPt;          // SDP POINT : device í¬ì¸íŠ¸ ë²ˆí˜¸ [1..1024] 
     byte            devType;        // SDP POINT : devic TYPE      
         
-    byte            config;         // Device Config Type, [0]¹ÌÁ¤ÀÇ, [1] Á¤ÀÇ
-    byte            ptNameStr[40];  // SDP POINT : Æ÷ÀÎÆ® ÀÌ¸§
+    byte            config;         // Device Config Type, [0]ë¯¸ì •ì˜, [1] ì •ì˜
+    byte            ptNameStr[40];  // SDP POINT : í¬ì¸íŠ¸ ì´ë¦„
             
     int             reportFlag;     // ICCP-HOST Report Status...[0] X, [1] Report
         
 	int				online;			// 0:online, 1:offline
-	float			value;			// Æ÷ÀÎÆ® Á¤º¸ : »óÅÂ/°èÃø Æ÷ÀÎÆ® Á¤º¸
-	struct timeval	updateTime;		// Æ÷ÀÎÆ® Á¤º¸ Update Time
+	float			value;			// í¬ì¸íŠ¸ ì •ë³´ : ìƒíƒœ/ê³„ì¸¡ í¬ì¸íŠ¸ ì •ë³´
+	struct timeval	updateTime;		// í¬ì¸íŠ¸ ì •ë³´ Update Time
 	
 } __attribute__ ((packed)) I60870_DATA;
 #endif
@@ -114,7 +114,7 @@ typedef struct
 }
 
 /*
-*   SDP-¿¬»êÆ÷ÀÎÆ® [»óÅÂ] Æ÷ÀÎÆ® ÃÊ±âÈ­ 
+*   SDP-ì—°ì‚°í¬ì¸íŠ¸ [ìƒíƒœ] í¬ì¸íŠ¸ ì´ˆê¸°í™” 
 */
 int sdp_vdiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 {
@@ -124,7 +124,7 @@ int sdp_vdiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
     word    dnpPoint;
     
     SDP_DEVICE      *dev=NULL;
-    POINT_BUF       *ptBuf=NULL;             // °èÀü±â Æ÷ÀÎÆ® ±¸Á¶Ã¼
+    POINT_BUF       *ptBuf=NULL;             // ê³„ì „ê¸° í¬ì¸íŠ¸ êµ¬ì¡°ì²´
     HOST_DCB        *host=NULL;
     
     DIPOINT_INFO    *hostSts=NULL;
@@ -132,37 +132,37 @@ int sdp_vdiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
     //DIPOINT_INFO    *rtuSts=NULL;
     
     /* ------------------------------------ */
-    /*  °èÀü±â Á¤º¸ ÃßÃâ                    */
+    /*  ê³„ì „ê¸° ì •ë³´ ì¶”ì¶œ                    */
     /* ------------------------------------ */
     dev   = (SDP_DEVICE *) deviceCFG[devNo - 1]; 
     ptBuf = (POINT_BUF *) &dev->diPtBuf[devPt - 1];
 
     /* ------------------------------------ */
-    /* °èÀü±â/POINT ±¸Á¶Ã¼ Á¤º¸ ÃÊ±âÈ­      */
+    /* ê³„ì „ê¸°/POINT êµ¬ì¡°ì²´ ì •ë³´ ì´ˆê¸°í™”      */
     /* ------------------------------------ */
     memcpy((byte *) ptBuf, (byte *) dPtBuf, sizeof(POINT_BUF));
     ptBuf->config = SET;
     
-    dev->regDiPointNum++;	// °èÀü±âº° DI µî·Ï Æ÷ÀÎÆ® ¼ö 
+    dev->regDiPointNum++;	// ê³„ì „ê¸°ë³„ DI ë“±ë¡ í¬ì¸íŠ¸ ìˆ˜ 
 
     /* ------------------------------------ */
-    /*  ¿¬»êÆ÷ÀÎÆ® ±×·ì ÁöÁ¤...             */
+    /*  ì—°ì‚°í¬ì¸íŠ¸ ê·¸ë£¹ ì§€ì •...             */
     /* ------------------------------------ */
-    calPoint = ptBuf->localIndex;                   // CAL-POINT ¿ë ÀÎµ¦½º
+    calPoint = ptBuf->localIndex;                   // CAL-POINT ìš© ì¸ë±ìŠ¤
     
     if(calPoint > 0)
     {
         calPoint = (calPoint - 1) & 0x1f;
         calBuf = (CAL_POINT_BUF *) calPtBuf[calPoint];    
         
-        calBuf->devNo   = devNo;          // SDP POINT : device ¹øÈ£ [1..32] 
-        calBuf->devPt   = devPt;          // SDP POINT : device Æ÷ÀÎÆ® ¹øÈ£ [1..1024] 
+        calBuf->devNo   = devNo;          // SDP POINT : device ë²ˆí˜¸ [1..32] 
+        calBuf->devPt   = devPt;          // SDP POINT : device í¬ì¸íŠ¸ ë²ˆí˜¸ [1..1024] 
         calBuf->config  = SET;           
     }
           
     
     /* ------------------------------------ */
-    /* DNP-HOST º° »óÅÂÆ÷ÀÎÆ® Á¤º¸ ÀúÀå ... */
+    /* DNP-HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ ì •ë³´ ì €ì¥ ... */
     /* ------------------------------------ */            
     for(hostid = 0; hostid < MAX_HOST; hostid++)
     {
@@ -171,14 +171,14 @@ int sdp_vdiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
                 
         if((dnpPoint > 0) && (dnpPoint < MAX_DNP_DI_POINT))
         {
-            /* HOSTº° ÃÖ´ë Æ÷ÀÎÆ® µî·Ï */
+            /* HOSTë³„ ìµœëŒ€ í¬ì¸íŠ¸ ë“±ë¡ */
             if(dnpPoint >= diPtmax[hostid]) diPtmax[hostid] = dnpPoint;
             host->diPtNum = diPtmax[hostid];
                     
-            /* HOST º° »óÅÂÆ÷ÀÎÆ® ±¸Á¶Ã¼ ÃÊ±âÈ­ */
+            /* HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ êµ¬ì¡°ì²´ ì´ˆê¸°í™” */
             hostSts = (DIPOINT_INFO *) &host->stateInfo[dnpPoint-1];
-            hostSts->devNo = devNo;     // °èÀü±â ¹øÈ£, 1...64                                         
-            hostSts->devPt = devPt;     // °èÀü±â³» Æ÷ÀÎÆ® ¹øÈ£, 1...4096
+            hostSts->devNo = devNo;     // ê³„ì „ê¸° ë²ˆí˜¸, 1...64                                         
+            hostSts->devPt = devPt;     // ê³„ì „ê¸°ë‚´ í¬ì¸íŠ¸ ë²ˆí˜¸, 1...4096
             hostSts->config= SET;   
         }                
     }
@@ -187,7 +187,7 @@ int sdp_vdiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 }
 
 /*
-*   SDP-¿¬»êÆ÷ÀÎÆ® [°èÃø] Æ÷ÀÎÆ® ÃÊ±âÈ­ 
+*   SDP-ì—°ì‚°í¬ì¸íŠ¸ [ê³„ì¸¡] í¬ì¸íŠ¸ ì´ˆê¸°í™” 
 */
 int sdp_vaiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 {
@@ -197,7 +197,7 @@ int sdp_vaiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
     word    dnpPoint;
     
     SDP_DEVICE      *dev=NULL;
-    POINT_BUF       *ptBuf=NULL;             // °èÀü±â Æ÷ÀÎÆ® ±¸Á¶Ã¼
+    POINT_BUF       *ptBuf=NULL;             // ê³„ì „ê¸° í¬ì¸íŠ¸ êµ¬ì¡°ì²´
     HOST_DCB        *host=NULL;
     
     AIPOINT_INFO    *hostAna=NULL;
@@ -205,38 +205,38 @@ int sdp_vaiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
     //DIPOINT_INFO    *rtuSts=NULL;
     
     /* ------------------------------------ */
-    /*  °èÀü±â Á¤º¸ ÃßÃâ                    */
+    /*  ê³„ì „ê¸° ì •ë³´ ì¶”ì¶œ                    */
     /* ------------------------------------ */
     dev   = (SDP_DEVICE *) deviceCFG[devNo - 1]; 
     ptBuf = (POINT_BUF *) &dev->aiPtBuf[devPt - 1];
 
     /* ------------------------------------ */
-    /* °èÀü±â/POINT ±¸Á¶Ã¼ Á¤º¸ ÃÊ±âÈ­      */
+    /* ê³„ì „ê¸°/POINT êµ¬ì¡°ì²´ ì •ë³´ ì´ˆê¸°í™”      */
     /* ------------------------------------ */
     memcpy((byte *) ptBuf, (byte *) dPtBuf, sizeof(POINT_BUF));
     ptBuf->config = SET;
     
-    dev->regAiPointNum++;	// °èÀü±âº° AI µî·Ï Æ÷ÀÎÆ® ¼ö 
+    dev->regAiPointNum++;	// ê³„ì „ê¸°ë³„ AI ë“±ë¡ í¬ì¸íŠ¸ ìˆ˜ 
 
     /* ------------------------------------ */
-    /*  ¿¬»êÆ÷ÀÎÆ® ±×·ì Áö¾û...             */
+    /*  ì—°ì‚°í¬ì¸íŠ¸ ê·¸ë£¹ ì§€ì—‰...             */
     /* ------------------------------------ */
-    calPoint = ptBuf->localIndex;                   // CAL-POINT ¿ë ÀÎµ¦½º
+    calPoint = ptBuf->localIndex;                   // CAL-POINT ìš© ì¸ë±ìŠ¤
     
     if(calPoint > 0)
     {
         calPoint = (calPoint - 1) & 0x1f;
         calBuf = (CAL_POINT_BUF *) calPtBuf[calPoint];    
         
-        calBuf->devNo = devNo;          // SDP POINT : device ¹øÈ£ [1..32] 
-        calBuf->devPt = devPt;          // SDP POINT : device Æ÷ÀÎÆ® ¹øÈ£ [1..1024] 
+        calBuf->devNo = devNo;          // SDP POINT : device ë²ˆí˜¸ [1..32] 
+        calBuf->devPt = devPt;          // SDP POINT : device í¬ì¸íŠ¸ ë²ˆí˜¸ [1..1024] 
         
         calBuf->config = SET;           
     }
           
     
     /* ------------------------------------ */
-    /* DNP-HOST º° »óÅÂÆ÷ÀÎÆ® Á¤º¸ ÀúÀå ... */
+    /* DNP-HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ ì •ë³´ ì €ì¥ ... */
     /* ------------------------------------ */            
     for(hostid = 0; hostid < MAX_HOST; hostid++)
     {
@@ -245,14 +245,14 @@ int sdp_vaiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
                 
         if((dnpPoint > 0) && (dnpPoint < MAX_DNP_DI_POINT))
         {
-            /* HOSTº° ÃÖ´ë Æ÷ÀÎÆ® µî·Ï */
+            /* HOSTë³„ ìµœëŒ€ í¬ì¸íŠ¸ ë“±ë¡ */
             if(dnpPoint >= aiPtmax[hostid]) aiPtmax[hostid] = dnpPoint;
             host->aiPtNum = aiPtmax[hostid];
                     
-            /* HOST º° »óÅÂÆ÷ÀÎÆ® ±¸Á¶Ã¼ ÃÊ±âÈ­ */
+            /* HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ êµ¬ì¡°ì²´ ì´ˆê¸°í™” */
             hostAna = (AIPOINT_INFO *) &host->analogInfo[dnpPoint-1];
-            hostAna->devNo = devNo;     // °èÀü±â ¹øÈ£, 1...64                                         
-            hostAna->devPt = devPt;     // °èÀü±â³» Æ÷ÀÎÆ® ¹øÈ£, 1...4096
+            hostAna->devNo = devNo;     // ê³„ì „ê¸° ë²ˆí˜¸, 1...64                                         
+            hostAna->devPt = devPt;     // ê³„ì „ê¸°ë‚´ í¬ì¸íŠ¸ ë²ˆí˜¸, 1...4096
             hostAna->config= SET;   
         }                
     }
@@ -261,7 +261,7 @@ int sdp_vaiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 }
 
 /*
-*   SDP-°èÀü±â- »óÅÂÆ÷ÀÎÆ® ÃÊ±âÈ­ 
+*   SDP-ê³„ì „ê¸°- ìƒíƒœí¬ì¸íŠ¸ ì´ˆê¸°í™” 
 */
 int sdp_diPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 {
@@ -269,28 +269,28 @@ int sdp_diPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
     int     hostid;
     word    dnpPoint;
     SDP_DEVICE      *dev=NULL;
-    POINT_BUF       *ptBuf=NULL;             // °èÀü±â Æ÷ÀÎÆ® ±¸Á¶Ã¼
+    POINT_BUF       *ptBuf=NULL;             // ê³„ì „ê¸° í¬ì¸íŠ¸ êµ¬ì¡°ì²´
     HOST_DCB        *host=NULL;
     
     DIPOINT_INFO    *hostSts=NULL;
     //DIPOINT_INFO    *rtuSts=NULL;
     
     /* ------------------------------------ */
-    /*  °èÀü±â Á¤º¸ ÃßÃâ                    */
+    /*  ê³„ì „ê¸° ì •ë³´ ì¶”ì¶œ                    */
     /* ------------------------------------ */
     dev   = (SDP_DEVICE *) deviceCFG[devNo - 1]; 
     ptBuf = (POINT_BUF *) &dev->diPtBuf[devPt - 1];
 
     /* ------------------------------------ */
-    /* °èÀü±â/POINT ±¸Á¶Ã¼ Á¤º¸ ÃÊ±âÈ­      */
+    /* ê³„ì „ê¸°/POINT êµ¬ì¡°ì²´ ì •ë³´ ì´ˆê¸°í™”      */
     /* ------------------------------------ */
     memcpy((byte *) ptBuf, (byte *) dPtBuf, sizeof(POINT_BUF));
     
     ptBuf->config = SET;
-    dev->regDiPointNum++;	// °èÀü±âº° DI µî·Ï Æ÷ÀÎÆ® ¼ö 
+    dev->regDiPointNum++;	// ê³„ì „ê¸°ë³„ DI ë“±ë¡ í¬ì¸íŠ¸ ìˆ˜ 
 
     /* ------------------------------------ */
-    /* DNP-HOST º° »óÅÂÆ÷ÀÎÆ® Á¤º¸ ÀúÀå ... */
+    /* DNP-HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ ì •ë³´ ì €ì¥ ... */
     /* ------------------------------------ */            
     for(hostid = 0; hostid < MAX_HOST; hostid++)
     {
@@ -299,14 +299,14 @@ int sdp_diPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
                 
         if((dnpPoint > 0) && (dnpPoint < MAX_DNP_DI_POINT))
         {
-            /* HOSTº° ÃÖ´ë Æ÷ÀÎÆ® µî·Ï */
+            /* HOSTë³„ ìµœëŒ€ í¬ì¸íŠ¸ ë“±ë¡ */
             if(dnpPoint >= diPtmax[hostid]) diPtmax[hostid] = dnpPoint;
             host->diPtNum = diPtmax[hostid];
                     
-            /* HOST º° »óÅÂÆ÷ÀÎÆ® ±¸Á¶Ã¼ ÃÊ±âÈ­ */
+            /* HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ êµ¬ì¡°ì²´ ì´ˆê¸°í™” */
             hostSts = (DIPOINT_INFO *) &host->stateInfo[dnpPoint-1];
-            hostSts->devNo = devNo;     // °èÀü±â ¹øÈ£, 1...64                                         
-            hostSts->devPt = devPt;     // °èÀü±â³» Æ÷ÀÎÆ® ¹øÈ£, 1...4096
+            hostSts->devNo = devNo;     // ê³„ì „ê¸° ë²ˆí˜¸, 1...64                                         
+            hostSts->devPt = devPt;     // ê³„ì „ê¸°ë‚´ í¬ì¸íŠ¸ ë²ˆí˜¸, 1...4096
             hostSts->config= SET;   
         }                
     }
@@ -315,7 +315,7 @@ int sdp_diPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 }
 
 /*
-*   SDP-°èÀü±â- Á¦¾îÆ÷ÀÎÆ® ÃÊ±âÈ­ 
+*   SDP-ê³„ì „ê¸°- ì œì–´í¬ì¸íŠ¸ ì´ˆê¸°í™” 
 */
 int sdp_doPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 {
@@ -323,27 +323,27 @@ int sdp_doPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
     int     hostid;
     word    dnpPoint;
     SDP_DEVICE      *dev=NULL;
-    POINT_BUF       *ptBuf=NULL;             // °èÀü±â Æ÷ÀÎÆ® ±¸Á¶Ã¼
+    POINT_BUF       *ptBuf=NULL;             // ê³„ì „ê¸° í¬ì¸íŠ¸ êµ¬ì¡°ì²´
     HOST_DCB        *host=NULL;
     
     CONTROL_INFO    *hostCntr=NULL;
     //DOPOINT_INFO    *rtuCntr=NULL;
     
     /* ------------------------------------ */
-    /*  °èÀü±â Á¤º¸ ÃßÃâ                    */
+    /*  ê³„ì „ê¸° ì •ë³´ ì¶”ì¶œ                    */
     /* ------------------------------------ */
     dev   = (SDP_DEVICE *) deviceCFG[devNo - 1]; 
     ptBuf = (POINT_BUF *) &dev->doPtBuf[devPt - 1];
 
     /* ------------------------------------ */
-    /* °èÀü±â/POINT ±¸Á¶Ã¼ Á¤º¸ ÃÊ±âÈ­      */
+    /* ê³„ì „ê¸°/POINT êµ¬ì¡°ì²´ ì •ë³´ ì´ˆê¸°í™”      */
     /* ------------------------------------ */
     memcpy((byte *) ptBuf, (byte *) dPtBuf, sizeof(POINT_BUF));
     
     ptBuf->config = SET;
 
     /* ------------------------------------ */
-    /* DNP-HOST º° Á¦¾îÁ¤º¸ ÀúÀå ...        */
+    /* DNP-HOST ë³„ ì œì–´ì •ë³´ ì €ì¥ ...        */
     /* ------------------------------------ */
     for(hostid = 0; hostid < MAX_HOST; hostid++)
     {
@@ -355,33 +355,33 @@ int sdp_doPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
             if(dnpPoint >= doPtmax[hostid]) doPtmax[hostid] = dnpPoint;
             host->doPtNum = doPtmax[hostid];
             
-            /* HOST º° Á¦¾îÆ÷ÀÎÆ® ±¸Á¶Ã¼ ÃÊ±âÈ­ */
+            /* HOST ë³„ ì œì–´í¬ì¸íŠ¸ êµ¬ì¡°ì²´ ì´ˆê¸°í™” */
             hostCntr = (CONTROL_INFO *) &host->controlInfo[dnpPoint-1];
-            hostCntr->devNo = devNo;                        // °èÀü±â ¹øÈ£, 1,2,..64
-            hostCntr->devPt = devPt;                        // °èÀü±â Æ÷ÀÎÆ® ¹øÈ£, 1,2...64
+            hostCntr->devNo = devNo;                        // ê³„ì „ê¸° ë²ˆí˜¸, 1,2,..64
+            hostCntr->devPt = devPt;                        // ê³„ì „ê¸° í¬ì¸íŠ¸ ë²ˆí˜¸, 1,2...64
             
-            hostCntr->type  = CONTROL_POINT;                // °èÀü±â Æ÷ÀÎÆ® Á¦¾î
+            hostCntr->type  = CONTROL_POINT;                // ê³„ì „ê¸° í¬ì¸íŠ¸ ì œì–´
             hostCntr->dbmax = ptBuf->pointMax;
             hostCntr->config= SET;
-            hostCntr->cntrConfig = ptBuf->ptConfig;       // Á¦¾îÆ÷ÀÎÆ® ¼Ó¼º ÁöÁ¤ (Pulse, Latch)
+            hostCntr->cntrConfig = ptBuf->ptConfig;       // ì œì–´í¬ì¸íŠ¸ ì†ì„± ì§€ì • (Pulse, Latch)
         }                
     }
 
 #if 0    
     /* ------------------------------------ */
-    /* SLAVE-RTU Á¦¾îÆ÷ÀÎÆ® Á¤º¸ ÀúÀå ... */
+    /* SLAVE-RTU ì œì–´í¬ì¸íŠ¸ ì •ë³´ ì €ì¥ ... */
     /* ------------------------------------ */   
     if(ptBuf->localIndex > 0)
     {
-        /* HOST º° »óÅÂÆ÷ÀÎÆ® ±¸Á¶Ã¼ ÃÊ±âÈ­ */
+        /* HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ êµ¬ì¡°ì²´ ì´ˆê¸°í™” */
         rtuCntr = (CONTROL_INFO *) &rtuDCB->controlInfo[ptBuf->localIndex - 1];
-        rtuCntr->devNo = devNo;          // ¹°¸®Àû °èÀü±â ¹øÈ£, 1...64                               
-        rtuCntr->devPt = devPt;          // ¹°¸®Àû °èÀü±â³» Æ÷ÀÎÆ® ¹øÈ£, 1...4096
+        rtuCntr->devNo = devNo;          // ë¬¼ë¦¬ì  ê³„ì „ê¸° ë²ˆí˜¸, 1...64                               
+        rtuCntr->devPt = devPt;          // ë¬¼ë¦¬ì  ê³„ì „ê¸°ë‚´ í¬ì¸íŠ¸ ë²ˆí˜¸, 1...4096
         
-        rtuCntr->type  = CONTROL_POINT;                // °èÀü±â Æ÷ÀÎÆ® Á¦¾î
+        rtuCntr->type  = CONTROL_POINT;                // ê³„ì „ê¸° í¬ì¸íŠ¸ ì œì–´
         rtuCntr->dbmax = ptBuf->pointMax;
         rtuCntr->config= SET;
-        rtuCntr->cntrConfig = ptBuf->ptConfig;       // Á¦¾îÆ÷ÀÎÆ® ¼Ó¼º ÁöÁ¤ (Pulse, Latch)
+        rtuCntr->cntrConfig = ptBuf->ptConfig;       // ì œì–´í¬ì¸íŠ¸ ì†ì„± ì§€ì • (Pulse, Latch)
     }
 #endif
     
@@ -389,7 +389,7 @@ int sdp_doPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 }
 
 /*
-*   SDP-°èÀü±â- °èÃøÆ÷ÀÎÆ® ÃÊ±âÈ­ 
+*   SDP-ê³„ì „ê¸°- ê³„ì¸¡í¬ì¸íŠ¸ ì´ˆê¸°í™” 
 */
 int sdp_aiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 {
@@ -397,28 +397,28 @@ int sdp_aiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
     int     hostid;
     word    dnpPoint;
     SDP_DEVICE      *dev=NULL;
-    POINT_BUF       *ptBuf=NULL;             // °èÀü±â Æ÷ÀÎÆ® ±¸Á¶Ã¼
+    POINT_BUF       *ptBuf=NULL;             // ê³„ì „ê¸° í¬ì¸íŠ¸ êµ¬ì¡°ì²´
     HOST_DCB        *host=NULL;
     
     AIPOINT_INFO    *hostAna=NULL;
     //AIPOINT_INFO    *rtuAna=NULL;
     
     /* ------------------------------------ */
-    /*  °èÀü±â Á¤º¸ ÃßÃâ                    */
+    /*  ê³„ì „ê¸° ì •ë³´ ì¶”ì¶œ                    */
     /* ------------------------------------ */
     dev   = (SDP_DEVICE *) deviceCFG[devNo - 1]; 
     ptBuf = (POINT_BUF *) &dev->aiPtBuf[devPt - 1];
 
     /* ------------------------------------ */
-    /* °èÀü±â/POINT ±¸Á¶Ã¼ Á¤º¸ ÃÊ±âÈ­      */
+    /* ê³„ì „ê¸°/POINT êµ¬ì¡°ì²´ ì •ë³´ ì´ˆê¸°í™”      */
     /* ------------------------------------ */
     memcpy((byte *) ptBuf, (byte *) dPtBuf, sizeof(POINT_BUF));
     
     ptBuf->config = SET;
-    dev->regAiPointNum++;	// °èÀü±âº° AI µî·Ï Æ÷ÀÎÆ® ¼ö 
+    dev->regAiPointNum++;	// ê³„ì „ê¸°ë³„ AI ë“±ë¡ í¬ì¸íŠ¸ ìˆ˜ 
 
     /* ------------------------------------ */
-    /* DNP-HOST º° °èÃøÁ¤º¸ ÀúÀå ...        */
+    /* DNP-HOST ë³„ ê³„ì¸¡ì •ë³´ ì €ì¥ ...        */
     /* ------------------------------------ */
     for(hostid = 0; hostid < MAX_HOST; hostid++)
     {
@@ -430,7 +430,7 @@ int sdp_aiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
             if(dnpPoint >= aiPtmax[hostid]) aiPtmax[hostid] = dnpPoint;
             host->aiPtNum = aiPtmax[hostid];
             
-            /* HOST º° °èÃøÆ÷ÀÎÆ® ±¸Á¶Ã¼ ÃÊ±âÈ­ */
+            /* HOST ë³„ ê³„ì¸¡í¬ì¸íŠ¸ êµ¬ì¡°ì²´ ì´ˆê¸°í™” */
             hostAna = (AIPOINT_INFO *) &host->analogInfo[dnpPoint-1];
             hostAna->devNo = devNo; 
             hostAna->devPt = devPt; 
@@ -440,14 +440,14 @@ int sdp_aiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 
 #if 0    
     /* ------------------------------------ */
-    /* SLAVE-RTU °èÃøÆ÷ÀÎÆ® Á¤º¸ ÀúÀå ...   */
+    /* SLAVE-RTU ê³„ì¸¡í¬ì¸íŠ¸ ì •ë³´ ì €ì¥ ...   */
     /* ------------------------------------ */   
     if(ptBuf->localIndex > 0)
     {
-        /* HOST º° »óÅÂÆ÷ÀÎÆ® ±¸Á¶Ã¼ ÃÊ±âÈ­ */
+        /* HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ êµ¬ì¡°ì²´ ì´ˆê¸°í™” */
         rtuAna = (AIPOINT_INFO *) &rtuDCB->analogInfo[ptBuf->localIndex - 1];
-        rtuAna->devNo = devNo;          // ¹°¸®Àû °èÀü±â ¹øÈ£, 1...64                               
-        rtuAna->devPt = devPt;          // ¹°¸®Àû °èÀü±â³» Æ÷ÀÎÆ® ¹øÈ£, 1...4096
+        rtuAna->devNo = devNo;          // ë¬¼ë¦¬ì  ê³„ì „ê¸° ë²ˆí˜¸, 1...64                               
+        rtuAna->devPt = devPt;          // ë¬¼ë¦¬ì  ê³„ì „ê¸°ë‚´ í¬ì¸íŠ¸ ë²ˆí˜¸, 1...4096
         
         rtuAna->config= SET;
     }
@@ -457,38 +457,39 @@ int sdp_aiPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 }
 
 /*
-*   SDP-°èÀü±â- Device Æ÷ÀÎÆ® ÃÊ±âÈ­ 
+*   SDP-ê³„ì „ê¸°- Device í¬ì¸íŠ¸ ì´ˆê¸°í™” 
 */
 int sdp_devPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 {
     int     hostid;
     int     index;
     word    dnpPoint;
-    POINT_BUF       *ptBuf=NULL;             // °èÀü±â Æ÷ÀÎÆ® ±¸Á¶Ã¼
+    POINT_BUF       *ptBuf=NULL;             // ê³„ì „ê¸° í¬ì¸íŠ¸ êµ¬ì¡°ì²´
     POINT_BUF       *diptBuf=NULL;
     HOST_DCB        *host=NULL;
     
     CONTROL_INFO    *hostCntr=NULL;
     DIPOINT_INFO    *hostSts=NULL;
     SDP_DEVICE      *dev=NULL;
-    
-    printf("DEV-TYPE [%d][%d]\r\n",devNo, devPt) ;
+
+//  2026-09-11 ì˜¤í›„ 2:35:47    
+//  printf("DEV-TYPE [%d][%d]\r\n",devNo, devPt) ;
     
     /* ---------------------------------------- */
-    /*  °èÀü±â Type == DEVICE ÀÎ°æ¿ì...         */
+    /*  ê³„ì „ê¸° Type == DEVICE ì¸ê²½ìš°...         */
     /* ---------------------------------------- */
     /* RDEVPT : real Dev ?    CNTRPT : control   MCPUPT : */
-    if(dPtBuf->ptType == RALLPT)        index = 0;            			// °¡»ó Æ÷ÀÎÆ® : ÀüÃ¼ °èÀü±â Åë½Å»óÅÂ
+    if(dPtBuf->ptType == RALLPT)        index = 0;            			// ê°€ìƒ í¬ì¸íŠ¸ : ì „ì²´ ê³„ì „ê¸° í†µì‹ ìƒíƒœ
 
-    // Áö±İ DB¸¦ º¸¸é devNo¸¦ ¸ğµÎ 1·Î ³Ö´Âµ¥¤Ä         ¾Æ´Ï±º..
-    else if(dPtBuf->ptType == RDEVPT)   index = devNo;        			// °¡»ó Æ÷ÀÎÆ® : °³º° °èÀü±â Åë½Å»óÅÂ , °èÀü±â ¹øÈ£,1,2,3...      
-    // ´Ù¸¥ °ÍµéÀº devNo°¡ Áßº¸ÇÏÁö ¾Ê°í..ptType °¡ Áß¿äÇÏ±º.
-    else if(dPtBuf->ptType == MCPUPT)   index = INDEX_AUTO_MANUAL;      // °¡»ó Æ÷ÀÎÆ® : ÀÚµ¿/¼öµ¿ »óÅÂ
-    else if(dPtBuf->ptType == CNTRPT)   index = INDEX_CNTR_CHANGE;      // °¡»ó Æ÷ÀÎÆ® : ÀÌÁßÈ­ ÀıÃ¼Á¦¾î
+    // ì§€ê¸ˆ DBë¥¼ ë³´ë©´ devNoë¥¼ ëª¨ë‘ 1ë¡œ ë„£ëŠ”ë°ã…”         ì•„ë‹ˆêµ°..
+    else if(dPtBuf->ptType == RDEVPT)   index = devNo;        			// ê°€ìƒ í¬ì¸íŠ¸ : ê°œë³„ ê³„ì „ê¸° í†µì‹ ìƒíƒœ , ê³„ì „ê¸° ë²ˆí˜¸,1,2,3...      
+    // ë‹¤ë¥¸ ê²ƒë“¤ì€ devNoê°€ ì¤‘ë³´í•˜ì§€ ì•Šê³ ..ptType ê°€ ì¤‘ìš”í•˜êµ°.
+    else if(dPtBuf->ptType == MCPUPT)   index = INDEX_AUTO_MANUAL;      // ê°€ìƒ í¬ì¸íŠ¸ : ìë™/ìˆ˜ë™ ìƒíƒœ
+    else if(dPtBuf->ptType == CNTRPT)   index = INDEX_CNTR_CHANGE;      // ê°€ìƒ í¬ì¸íŠ¸ : ì´ì¤‘í™” ì ˆì²´ì œì–´
     else
-    {
+    { // ìœ„ PtTypeë¥¼ ì œì™¸í•˜ê³ ..?
 #ifdef	VITZRO_FEP_ENABLE    
-		/* ºñÃ÷·Î½Ã½º : ÀüÃ¼ Device-Point Á¤ÀÇ */
+		/* ë¹„ì¸ ë¡œì‹œìŠ¤ : ì „ì²´ Device-Point ì •ì˜ */
     	index = dPtBuf->iccpIndex;
     	if(index >= MAX_DEV_POINT)	 index = MAX_DEV_POINT - 1;
 #else    		
@@ -497,35 +498,35 @@ int sdp_devPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
     }
      
     /* ------------------------------------ */                 
-    /* ÀåÄ¡ Æ÷ÀÎÆ® ±¸Á¶Ã¼ ÃÊ±âÈ­            */           
+    /* ì¥ì¹˜ í¬ì¸íŠ¸ êµ¬ì¡°ì²´ ì´ˆê¸°í™”            */           
     /* ------------------------------------ */             
     ptBuf = (POINT_BUF *) devPtBuf[index];
 
     /* ------------------------------------ */
-    /* ÀåÄ¡ Æ÷ÀÎÆ®  ±¸Á¶Ã¼ Á¤º¸ ÃÊ±âÈ­      */
+    /* ì¥ì¹˜ í¬ì¸íŠ¸  êµ¬ì¡°ì²´ ì •ë³´ ì´ˆê¸°í™”      */
     /* ------------------------------------ */
     memcpy((byte *) ptBuf, (byte *) dPtBuf, sizeof(POINT_BUF));           
     
-    // ÀÌ °ÍÀÌ dbÀÇ Æ÷ÀÎÆ®¼Ó¼º->CONFIG°¡ ¾Æ´Ï°í db°¡ ¼³Á¤µÇ¾ú´Ù´Â °ÍÀÌ³×
-    ptBuf->config = SET;
+    // ì´ ê²ƒì´ dbì˜ í¬ì¸íŠ¸ì†ì„±->CONFIGê°€ ì•„ë‹ˆê³  dbê°€ ì„¤ì •ë˜ì—ˆë‹¤ëŠ” ê²ƒì´ë„¤
+    ptBuf->config = SET; // config=SET ì˜ ì˜ë¯¸ëŠ”  ptBufê°€ ì˜ë¯¸ê°€ ìˆë‹¤ëŠ” ê²ƒ.
 
     /* ------------------------------------ */
-    /*  °èÀü±â-DI Æ÷ÀÎÆ® Á¤º¸ Update        */
+    /*  ê³„ì „ê¸°-DI í¬ì¸íŠ¸ ì •ë³´ Update        */
     /* ------------------------------------ */
-    /* ÀÌ point°¡ updateµÇ°í »ç¿ëµÇ´Â °ÍÀ» Ã£¾Æº¸Àğ..*/
+    /* ì´ pointê°€ updateë˜ê³  ì‚¬ìš©ë˜ëŠ” ê²ƒì„ ì°¾ì•„ë³´ìŸˆ..*/
     dev   = (SDP_DEVICE *) deviceCFG[devNo - 1]; 
     diptBuf = (POINT_BUF *) &dev->diPtBuf[devPt - 1];
     memcpy((byte *) diptBuf, (byte *) dPtBuf, sizeof(POINT_BUF));           
     diptBuf->config = SET;
     
-    dev->regDiPointNum++;	// °èÀü±âº° DI µî·Ï Æ÷ÀÎÆ® ¼ö 
+    dev->regDiPointNum++;	// ê³„ì „ê¸°ë³„ DI ë“±ë¡ í¬ì¸íŠ¸ ìˆ˜ 
  
     /* ------------------------------------ */
-    /* ÀÌÁßÈ­ ÀıÃ¼ Æ÷ÀÎÆ®(Á¦¾î)Á¤º¸ ÀúÀå .. */
+    /* ì´ì¤‘í™” ì ˆì²´ í¬ì¸íŠ¸(ì œì–´)ì •ë³´ ì €ì¥ .. */
     /* ------------------------------------ */
     if(dPtBuf->ptType == CNTRPT)
     {   
-        /* DNP-HOST Á¦¾î ±¸Á¶Ã¼ Á¤º¸ Ãß°¡ */     
+        /* DNP-HOST ì œì–´ êµ¬ì¡°ì²´ ì •ë³´ ì¶”ê°€ */     
         for(hostid = 0; hostid < MAX_HOST; hostid++)
         {
             host = (HOST_DCB *) hostDCB[hostid];
@@ -536,16 +537,16 @@ int sdp_devPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
                 if(dnpPoint >= doPtmax[hostid]) doPtmax[hostid] = dnpPoint;
                 host->doPtNum = doPtmax[hostid];
             
-                /* HOST º° Á¦¾îÆ÷ÀÎÆ® ±¸Á¶Ã¼ ÃÊ±âÈ­ */
+                /* HOST ë³„ ì œì–´í¬ì¸íŠ¸ êµ¬ì¡°ì²´ ì´ˆê¸°í™” */
                 hostCntr = (CONTROL_INFO *) &host->controlInfo[dnpPoint-1];
                 hostCntr->devNo = devNo; 
                 hostCntr->devPt = devPt; 
             
-                hostCntr->type  = CONTROL_SYSTEM;               // ÀÌÁßÈ­ ÀıÃ¼ Æ÷ÀÎÆ® Á¦¾î
+                hostCntr->type  = CONTROL_SYSTEM;               // ì´ì¤‘í™” ì ˆì²´ í¬ì¸íŠ¸ ì œì–´
                 
                 hostCntr->dbmax = ptBuf->pointMax;
                 hostCntr->config= SET;
-                hostCntr->cntrConfig = ptBuf->ptConfig;         // Á¦¾îÆ÷ÀÎÆ® ¼Ó¼º ÁöÁ¤ (Pulse, Latch)
+                hostCntr->cntrConfig = ptBuf->ptConfig;         // ì œì–´í¬ì¸íŠ¸ ì†ì„± ì§€ì • (Pulse, Latch)
                 
                 //printf("*** CNTRPT config... host=%d, dnpPoint=%d... dev=%d, pt=%d\n", hostid, dnpPoint, devNo, devPt);
             }
@@ -554,7 +555,7 @@ int sdp_devPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
     else
     {
 	    /* ------------------------------------ */
-	    /* DNP-HOST º° »óÅÂÆ÷ÀÎÆ® Á¤º¸ ÀúÀå ... */
+	    /* DNP-HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ ì •ë³´ ì €ì¥ ... */
     	/* ------------------------------------ */            
 	    for(hostid = 0; hostid < MAX_HOST; hostid++)
     	{
@@ -563,14 +564,14 @@ int sdp_devPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
                 
 	        if((dnpPoint > 0) && (dnpPoint < MAX_DNP_DI_POINT))
     	    {
-	            /* HOSTº° ÃÖ´ë Æ÷ÀÎÆ® µî·Ï */
+	            /* HOSTë³„ ìµœëŒ€ í¬ì¸íŠ¸ ë“±ë¡ */
     	        if(dnpPoint >= diPtmax[hostid]) diPtmax[hostid] = dnpPoint;
         	    host->diPtNum = diPtmax[hostid];
                     
-	            /* HOST º° »óÅÂÆ÷ÀÎÆ® ±¸Á¶Ã¼ ÃÊ±âÈ­ */
+	            /* HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ êµ¬ì¡°ì²´ ì´ˆê¸°í™” */
     	        hostSts = (DIPOINT_INFO *) &host->stateInfo[dnpPoint-1];
-        	    hostSts->devNo = devNo;     // °èÀü±â ¹øÈ£, 1...64                                         
-            	hostSts->devPt = devPt;     // °èÀü±â³» Æ÷ÀÎÆ® ¹øÈ£, 1...4096
+        	    hostSts->devNo = devNo;     // ê³„ì „ê¸° ë²ˆí˜¸, 1...64                                         
+            	hostSts->devPt = devPt;     // ê³„ì „ê¸°ë‚´ í¬ì¸íŠ¸ ë²ˆí˜¸, 1...4096
 	            hostSts->config= SET;   
     	    }                
     	}
@@ -581,7 +582,8 @@ int sdp_devPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 }
 
 /*
-*   SDP-°èÀü±â- VIRTUAL Device Æ÷ÀÎÆ® ÃÊ±âÈ­ 
+*   SDP-ê³„ì „ê¸°- VIRTUAL Device í¬ì¸íŠ¸ ì´ˆê¸°í™” 
+* 2026-09-11 ì˜¤í›„ 4:28:12 sdp_devPoint_initial ì—ì„œ í•˜ëŠ” ê²ƒ ë§ê³ ëŠ” ì—¬ê¸°ì„œ ì²˜ë¦¬í•˜ë‚˜..
 */
 int sdp_virPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 {
@@ -589,88 +591,88 @@ int sdp_virPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 	int     hostid;
     word    dnpPoint;
     HOST_DCB        *host=NULL;
-    POINT_BUF       *ptBuf=NULL;             // °èÀü±â Æ÷ÀÎÆ® ±¸Á¶Ã¼
+    POINT_BUF       *ptBuf=NULL;             // ê³„ì „ê¸° í¬ì¸íŠ¸ êµ¬ì¡°ì²´
     POINT_BUF       *diptBuf=NULL;
     SDP_DEVICE      *dev=NULL;
     DIPOINT_INFO    *hostSts=NULL;
 
     /* ---------------------------------------- */
-    /*  °èÀü±â Type == °¡»óÆ÷ÀÎÆ® °ü·Ã...       */
+    /*  ê³„ì „ê¸° Type == ê°€ìƒí¬ì¸íŠ¸ ê´€ë ¨...       */
     /* ---------------------------------------- */
     if(dPtBuf->devType == SDP_STS_POINT)        
     {
-        if(dPtBuf->ptType == MCPUPT)            index = INDEX_SDP_TIMESYNC;    // °¡»ó Æ÷ÀÎÆ® : SDP ½Ã°¢µ¿±â ¿äÃ»(»óÅÂ) 
-        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_SDP_STS;         // °¡»ó Æ÷ÀÎÆ® : SDP-STATUS (»óÅÂ) 
-        else                                    index = INDEX_SDP_STS;         // °¡»ó Æ÷ÀÎÆ® : SDP-STATUS (»óÅÂ)     
+        if(dPtBuf->ptType == MCPUPT)            index = INDEX_SDP_TIMESYNC;    // ê°€ìƒ í¬ì¸íŠ¸ : SDP ì‹œê°ë™ê¸° ìš”ì²­(ìƒíƒœ) 
+        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_SDP_STS;         // ê°€ìƒ í¬ì¸íŠ¸ : SDP-STATUS (ìƒíƒœ) 
+        else                                    index = INDEX_SDP_STS;         // ê°€ìƒ í¬ì¸íŠ¸ : SDP-STATUS (ìƒíƒœ)     
     }            
-    else if(dPtBuf->devType == CPU_RUN_POINT)   index = INDEX_SDP_RUN_MODE;    // °¡»ó Æ÷ÀÎÆ® : CPU µ¿ÀÛÁ¤º¸ ,[0] 1°è, [1] 2°è µ¿ÀÛÁ¤º¸  
+    else if(dPtBuf->devType == CPU_RUN_POINT)   index = INDEX_SDP_RUN_MODE;    // ê°€ìƒ í¬ì¸íŠ¸ : CPU ë™ì‘ì •ë³´ ,[0] 1ê³„, [1] 2ê³„ ë™ì‘ì •ë³´  
     else if(dPtBuf->devType == CPU_STS_POINT)  
     {
-        if(dPtBuf->ptType == MCPUPT)            index = INDEX_SDP_RUN_A;        // °¡»ó Æ÷ÀÎÆ® : CPU 1°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó
-        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_SDP_RUN_B;        // °¡»ó Æ÷ÀÎÆ® : CPU 2°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó  
-        else 									index = INDEX_SDP_RUN_A;        // °¡»ó Æ÷ÀÎÆ® : CPU 1°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó	  
+        if(dPtBuf->ptType == MCPUPT)            index = INDEX_SDP_RUN_A;        // ê°€ìƒ í¬ì¸íŠ¸ : CPU 1ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ
+        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_SDP_RUN_B;        // ê°€ìƒ í¬ì¸íŠ¸ : CPU 2ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ  
+        else 									index = INDEX_SDP_RUN_A;        // ê°€ìƒ í¬ì¸íŠ¸ : CPU 1ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ	  
     }
-    else if(dPtBuf->devType == RTU_RUN_POINT)   index = INDEX_RTU_MODE;         // °¡»ó Æ÷ÀÎÆ® : RTU µ¿ÀÛÁ¤º¸ ,[0] 1°è, [1] 2°è µ¿ÀÛÁ¤º¸ 
+    else if(dPtBuf->devType == RTU_RUN_POINT)   index = INDEX_RTU_MODE;         // ê°€ìƒ í¬ì¸íŠ¸ : RTU ë™ì‘ì •ë³´ ,[0] 1ê³„, [1] 2ê³„ ë™ì‘ì •ë³´ 
     else if(dPtBuf->devType == RTU_STS_POINT)  
     {
-        if(dPtBuf->ptType == MCPUPT)            index = INDEX_RTU_RUN_A;        // °¡»ó Æ÷ÀÎÆ® : RTU 1°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó
-        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_RTU_RUN_B;        // °¡»ó Æ÷ÀÎÆ® : RTU 2°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó  
-        else 									index = INDEX_RTU_RUN_A;        // °¡»ó Æ÷ÀÎÆ® : RTU 1°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó	
+        if(dPtBuf->ptType == MCPUPT)            index = INDEX_RTU_RUN_A;        // ê°€ìƒ í¬ì¸íŠ¸ : RTU 1ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ
+        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_RTU_RUN_B;        // ê°€ìƒ í¬ì¸íŠ¸ : RTU 2ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ  
+        else 									index = INDEX_RTU_RUN_A;        // ê°€ìƒ í¬ì¸íŠ¸ : RTU 1ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ	
     }
-    else if(dPtBuf->devType == CU_RUN_POINT)    index = INDEX_SCADA_MODE;       // °¡»ó Æ÷ÀÎÆ® : ÀüÃ¶Á¦¾î¹İ µ¿ÀÛÁ¤º¸ ,[0] 1°è, [1] 2°è µ¿ÀÛÁ¤º¸ 
+    else if(dPtBuf->devType == CU_RUN_POINT)    index = INDEX_SCADA_MODE;       // ê°€ìƒ í¬ì¸íŠ¸ : ì „ì² ì œì–´ë°˜ ë™ì‘ì •ë³´ ,[0] 1ê³„, [1] 2ê³„ ë™ì‘ì •ë³´ 
     else if(dPtBuf->devType == CU_STS_POINT)  
     {
-        if(dPtBuf->ptType == MCPUPT)            index = INDEX_SCADA_RUN_A;      // °¡»ó Æ÷ÀÎÆ® : ÀüÃ¶Á¦¾î¹İ 1°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó
-        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_SCADA_RUN_B;      // °¡»ó Æ÷ÀÎÆ® : ÀüÃ¶Á¦¾î¹İ 2°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó
-      	else 									index = INDEX_SCADA_RUN_A;      // °¡»ó Æ÷ÀÎÆ® : ÀüÃ¶Á¦¾î¹İ 1°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó
+        if(dPtBuf->ptType == MCPUPT)            index = INDEX_SCADA_RUN_A;      // ê°€ìƒ í¬ì¸íŠ¸ : ì „ì² ì œì–´ë°˜ 1ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ
+        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_SCADA_RUN_B;      // ê°€ìƒ í¬ì¸íŠ¸ : ì „ì² ì œì–´ë°˜ 2ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ
+      	else 									index = INDEX_SCADA_RUN_A;      // ê°€ìƒ í¬ì¸íŠ¸ : ì „ì² ì œì–´ë°˜ 1ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ
     }
-    else if(dPtBuf->devType == DIG_RUN_POINT)   index = INDEX_REMOTE_MODE;      // °¡»ó Æ÷ÀÎÆ® : ¿ø°İÁø´ÜºÎ µ¿ÀÛÁ¤º¸ ,[0] 1°è, [1] 2°è µ¿ÀÛÁ¤º¸ 
+    else if(dPtBuf->devType == DIG_RUN_POINT)   index = INDEX_REMOTE_MODE;      // ê°€ìƒ í¬ì¸íŠ¸ : ì›ê²©ì§„ë‹¨ë¶€ ë™ì‘ì •ë³´ ,[0] 1ê³„, [1] 2ê³„ ë™ì‘ì •ë³´ 
     else if(dPtBuf->devType == DIG_STS_POINT)  
     {
-        if(dPtBuf->ptType == MCPUPT)            index = INDEX_REMOTE_RUN_A;     // °¡»ó Æ÷ÀÎÆ® : ¿ø°İÁø´ÜºÎ 1°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó
-        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_REMOTE_RUN_B;     // °¡»ó Æ÷ÀÎÆ® : ¿ø°İÁø´ÜºÎ 2°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó
-        else      								index = INDEX_REMOTE_RUN_A;     // °¡»ó Æ÷ÀÎÆ® : ¿ø°İÁø´ÜºÎ 1°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó	
+        if(dPtBuf->ptType == MCPUPT)            index = INDEX_REMOTE_RUN_A;     // ê°€ìƒ í¬ì¸íŠ¸ : ì›ê²©ì§„ë‹¨ë¶€ 1ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ
+        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_REMOTE_RUN_B;     // ê°€ìƒ í¬ì¸íŠ¸ : ì›ê²©ì§„ë‹¨ë¶€ 2ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ
+        else      								index = INDEX_REMOTE_RUN_A;     // ê°€ìƒ í¬ì¸íŠ¸ : ì›ê²©ì§„ë‹¨ë¶€ 1ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ	
     }
-    else if(dPtBuf->devType == EQM_RUN_POINT)   index = INDEX_ELECQ_MODE;       // °¡»ó Æ÷ÀÎÆ® : Àü·ÂÇ°ÁúºÎ µ¿ÀÛÁ¤º¸ ,[0] 1°è, [1] 2°è µ¿ÀÛÁ¤º¸ 
+    else if(dPtBuf->devType == EQM_RUN_POINT)   index = INDEX_ELECQ_MODE;       // ê°€ìƒ í¬ì¸íŠ¸ : ì „ë ¥í’ˆì§ˆë¶€ ë™ì‘ì •ë³´ ,[0] 1ê³„, [1] 2ê³„ ë™ì‘ì •ë³´ 
     else if(dPtBuf->devType == EQM_STS_POINT)  
     {
-        if(dPtBuf->ptType == MCPUPT)            index = INDEX_ELECQ_RUN_A;      // °¡»ó Æ÷ÀÎÆ® : Àü·ÂÇ°ÁúºÎ »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó
-        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_ELECQ_RUN_B;      // °¡»ó Æ÷ÀÎÆ® : Àü·ÂÇ°ÁúºÎ »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó
-       	else  									index = INDEX_ELECQ_RUN_A;      // °¡»ó Æ÷ÀÎÆ® : Àü·ÂÇ°ÁúºÎ »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó
+        if(dPtBuf->ptType == MCPUPT)            index = INDEX_ELECQ_RUN_A;      // ê°€ìƒ í¬ì¸íŠ¸ : ì „ë ¥í’ˆì§ˆë¶€ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ
+        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_ELECQ_RUN_B;      // ê°€ìƒ í¬ì¸íŠ¸ : ì „ë ¥í’ˆì§ˆë¶€ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ
+       	else  									index = INDEX_ELECQ_RUN_A;      // ê°€ìƒ í¬ì¸íŠ¸ : ì „ë ¥í’ˆì§ˆë¶€ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ
     }
-    else if(dPtBuf->devType == IEC_RUN_POINT)   index = INDEX_61850_MODE;       // °¡»ó Æ÷ÀÎÆ® : 61850 µ¿ÀÛÁ¤º¸ ,[0] 1°è, [1] 2°è µ¿ÀÛÁ¤º¸ 
+    else if(dPtBuf->devType == IEC_RUN_POINT)   index = INDEX_61850_MODE;       // ê°€ìƒ í¬ì¸íŠ¸ : 61850 ë™ì‘ì •ë³´ ,[0] 1ê³„, [1] 2ê³„ ë™ì‘ì •ë³´ 
     else if(dPtBuf->devType == IEC_STS_POINT)  
     {
-        if(dPtBuf->ptType == MCPUPT)            index = INDEX_61850_RUN_A;      // °¡»ó Æ÷ÀÎÆ® : 61850 1°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó
-        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_61850_RUN_B;      // °¡»ó Æ÷ÀÎÆ® : 61850 2°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó
-        else    								index = INDEX_61850_RUN_A;      // °¡»ó Æ÷ÀÎÆ® : 61850 1°è »óÅÂÁ¤º¸, [0] Á¤»ó,[1] ÀÌ»ó	
+        if(dPtBuf->ptType == MCPUPT)            index = INDEX_61850_RUN_A;      // ê°€ìƒ í¬ì¸íŠ¸ : 61850 1ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ
+        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_61850_RUN_B;      // ê°€ìƒ í¬ì¸íŠ¸ : 61850 2ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ
+        else    								index = INDEX_61850_RUN_A;      // ê°€ìƒ í¬ì¸íŠ¸ : 61850 1ê³„ ìƒíƒœì •ë³´, [0] ì •ìƒ,[1] ì´ìƒ	
     }
     else
     {
         return (0);
     }     
         
-    /* ÀåÄ¡ Æ÷ÀÎÆ® ±¸Á¶Ã¼ ÃÊ±âÈ­ */                        
+    /* ì¥ì¹˜ í¬ì¸íŠ¸ êµ¬ì¡°ì²´ ì´ˆê¸°í™” */                        
     ptBuf = (POINT_BUF *) devPtBuf[index];
 
     /* ------------------------------------ */
-    /* °èÀü±â/POINT ±¸Á¶Ã¼ Á¤º¸ ÃÊ±âÈ­      */
+    /* ê³„ì „ê¸°/POINT êµ¬ì¡°ì²´ ì •ë³´ ì´ˆê¸°í™”      */
     /* ------------------------------------ */
     memcpy((byte *) ptBuf, (byte *) dPtBuf, sizeof(POINT_BUF));           
     ptBuf->config = SET;
 
     /* ------------------------------------ */
-    /*  °èÀü±â-DI Æ÷ÀÎÆ® Á¤º¸ Update        */
+    /*  ê³„ì „ê¸°-DI í¬ì¸íŠ¸ ì •ë³´ Update        */
     /* ------------------------------------ */
     dev   = (SDP_DEVICE *) deviceCFG[devNo - 1]; 
     diptBuf = (POINT_BUF *) &dev->diPtBuf[devPt - 1];
     memcpy((byte *) diptBuf, (byte *) dPtBuf, sizeof(POINT_BUF));           
     diptBuf->config = SET;
     
-    dev->regDiPointNum++;	// °èÀü±âº° DI µî·Ï Æ÷ÀÎÆ® ¼ö 
+    dev->regDiPointNum++;	// ê³„ì „ê¸°ë³„ DI ë“±ë¡ í¬ì¸íŠ¸ ìˆ˜ 
 
     /* ------------------------------------ */
-    /* DNP-HOST º° »óÅÂÆ÷ÀÎÆ® Á¤º¸ ÀúÀå ... */
+    /* DNP-HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ ì •ë³´ ì €ì¥ ... */
     /* ------------------------------------ */            
     for(hostid = 0; hostid < MAX_HOST; hostid++)
     {
@@ -679,14 +681,14 @@ int sdp_virPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
                 
         if((dnpPoint > 0) && (dnpPoint < MAX_DNP_DI_POINT))
         {
-            /* HOSTº° ÃÖ´ë Æ÷ÀÎÆ® µî·Ï */
+            /* HOSTë³„ ìµœëŒ€ í¬ì¸íŠ¸ ë“±ë¡ */
             if(dnpPoint >= diPtmax[hostid]) diPtmax[hostid] = dnpPoint;
             host->diPtNum = diPtmax[hostid];
                     
-            /* HOST º° »óÅÂÆ÷ÀÎÆ® ±¸Á¶Ã¼ ÃÊ±âÈ­ */
+            /* HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ êµ¬ì¡°ì²´ ì´ˆê¸°í™” */
             hostSts = (DIPOINT_INFO *) &host->stateInfo[dnpPoint-1];
-            hostSts->devNo = devNo;     // °èÀü±â ¹øÈ£, 1...64                                         
-            hostSts->devPt = devPt;     // °èÀü±â³» Æ÷ÀÎÆ® ¹øÈ£, 1...4096
+            hostSts->devNo = devNo;     // ê³„ì „ê¸° ë²ˆí˜¸, 1...64                                         
+            hostSts->devPt = devPt;     // ê³„ì „ê¸°ë‚´ í¬ì¸íŠ¸ ë²ˆí˜¸, 1...4096
             hostSts->config= SET;   
         }                
     }
@@ -697,10 +699,10 @@ int sdp_virPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
 
 /*----------------------------------------------------------------------------
 * Function Name : pointParaConfig()
-* ¼öÇà³»¿ë: µ¥ÀÌÅÍº£ÀÌ½ºÁß Runtime Æ÷ÀÎÆ® Á¤º¸¸¦ DB¿¡¼­ ÀĞ¾î ¿Â´Ù.
+* ìˆ˜í–‰ë‚´ìš©: ë°ì´í„°ë² ì´ìŠ¤ì¤‘ Runtime í¬ì¸íŠ¸ ì •ë³´ë¥¼ DBì—ì„œ ì½ì–´ ì˜¨ë‹¤.
 * ArgList :
-*   1. ioid - ÃÊ±âÈ­ µÇ°íÀÚ ÇÏ´Â ¸ğµâ¹øÈ£
-*   2. buf  - ÃÊ±âÈ­ µÇ´Â µ¥ÀÌÅÍº£ÀÌ½º»óÀÇ Pointer Address
+*   1. ioid - ì´ˆê¸°í™” ë˜ê³ ì í•˜ëŠ” ëª¨ë“ˆë²ˆí˜¸
+*   2. buf  - ì´ˆê¸°í™” ë˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ìƒì˜ Pointer Address
 * Return  :  
 ---------------------------------------------------------------------------- */   
 void pointParaConfig()
@@ -709,18 +711,18 @@ void pointParaConfig()
     int     hostid;
     int     devNo, devPt;
     
-    DB_POINT_BUF    *devPoint;      // DB¿ë Point ±¸Á¶Ã¼
-    POINT_BUF       dPtBuf;         // running °èÀü±â Æ÷ÀÎÆ® ±¸Á¶Ã¼
-    SDP_DEVICE      *dev;           // running Device ±¸Á¶Ã¼
+    DB_POINT_BUF    *devPoint;      // DBìš© Point êµ¬ì¡°ì²´
+    POINT_BUF       dPtBuf;         // running ê³„ì „ê¸° í¬ì¸íŠ¸ êµ¬ì¡°ì²´
+    SDP_DEVICE      *dev;           // running Device êµ¬ì¡°ì²´
     
     /* ------------------------------------ */
-    /*  Æ÷ÀÎÆ® DB ÃÊ±âÈ­ .... Update ´ë±â   */
-    /*  - ÀåÄ¡ Æ÷ÀÎÆ® ÃÊ±âÁ¤º¸              */
+    /*  í¬ì¸íŠ¸ DB ì´ˆê¸°í™” .... Update ëŒ€ê¸°   */
+    /*  - ì¥ì¹˜ í¬ì¸íŠ¸ ì´ˆê¸°ì •ë³´              */
     /* ------------------------------------ */
     for(devNo=0; devNo < MAX_DEVICE; devNo++)
     {
         /* -------------------------------------------- */
-        /* °èÀü±â µ¥ÀÌÅÍº£ÀÌ½º ÃÊ±âÈ­                   */
+        /* ê³„ì „ê¸° ë°ì´í„°ë² ì´ìŠ¤ ì´ˆê¸°í™”                   */
         /* -------------------------------------------- */
         dev   = (SDP_DEVICE *) deviceCFG[devNo];  
         dev->regDiPointNum = 0;
@@ -728,7 +730,7 @@ void pointParaConfig()
     }
         
     /* ------------------------------------ */
-    /*  HOST ±¸Á¶Ã¼ ÃÊ±âÈ­                  */
+    /*  HOST êµ¬ì¡°ì²´ ì´ˆê¸°í™”                  */
     /* ------------------------------------ */    
     for(i=0; i< MAX_HOST; i++)
     {
@@ -744,75 +746,75 @@ void pointParaConfig()
     }
 
     /* ------------------------------------ */
-    /*  ICCP-INFO ±¸Á¶Ã¼ ÃÊ±âÈ­             */
+    /*  ICCP-INFO êµ¬ì¡°ì²´ ì´ˆê¸°í™”             */
     /* ------------------------------------ */ 
     bzero( iccpInfo, sizeof(ICCP_60870_DCB));
     
     opr->max_sdpPoint = 0;
     
     /* -------------------------------------------------------- */
-    /*  µ¥ÀÌÅÍº£ÀÌ½º »óÀÇ Æ÷ÀÎÆ® DB ÃÊ±âÈ­...(max 4096)         */
-    /*  rtudb¿¡ DB_POINT¸¦ SDP POINT·Î ¿Å±â±â À§ÇØ local dPtBuf ¸¦ ÀÌ¿ë
+    /*  ë°ì´í„°ë² ì´ìŠ¤ ìƒì˜ í¬ì¸íŠ¸ DB ì´ˆê¸°í™”...(max 4096)         */
+    /*  rtudbì— DB_POINTë¥¼ SDP POINTë¡œ ì˜®ê¸°ê¸° ìœ„í•´ local dPtBuf ë¥¼ ì´ìš©
     /* -------------------------------------------------------- */
     for(i = 0; i < MAX_DBASE_POINT; i++)
     {
-        /* DB »óÀÇ Æ÷ÀÎÆ® ±¸Á¶Ã¼ ... */
+        /* DB ìƒì˜ í¬ì¸íŠ¸ êµ¬ì¡°ì²´ ... */
         devPoint = (DB_POINT_BUF *) &rtudb->pointBuf[i];
 
-        devNo = devPoint->devNo;                                        // ÀåÄ¡ ID [1..64]
-        devPt = (devPoint->devPt[0]*256) + devPoint->devPt[1];          // ÀåÄ¡-Æ÷ÀÎÆ® [1...4096]
+        devNo = devPoint->devNo;                                        // ì¥ì¹˜ ID [1..64]
+        devPt = (devPoint->devPt[0]*256) + devPoint->devPt[1];          // ì¥ì¹˜-í¬ì¸íŠ¸ [1...4096]
         
         /* ---------------------------------------- */
-        /* ÀÔ·Â»óÀÇ ¿À·ù °ËÁõ...                    */
+        /* ì…ë ¥ìƒì˜ ì˜¤ë¥˜ ê²€ì¦...                    */
         /* ---------------------------------------- */
         if((devNo < 1) || (devNo > MAX_DEVICE))         continue;
         if((devPt < 1) || (devPt > MAX_DEV_DI_POINT))   continue;
         if(devPoint->devType == NULL_DEV)   			continue;
 
         /* ------------------------------------------------ */
-        /*  °èÀü±â Á¤º¸ ÃßÃâ : °èÀü±âº° Æ÷ÀÎÆ® ±¸¼ºÁ¤º¸     */
+        /*  ê³„ì „ê¸° ì •ë³´ ì¶”ì¶œ : ê³„ì „ê¸°ë³„ í¬ì¸íŠ¸ êµ¬ì„±ì •ë³´     */
         /* ------------------------------------------------ */
         bzero((byte *) &dPtBuf, sizeof(POINT_BUF));
         
-        dPtBuf.devNo = devNo;                           // SDP POINT : device ¹øÈ£ [1..32] */
-        dPtBuf.devPt = devPt;                           // SDP POINT : device Æ÷ÀÎÆ® ¹øÈ£ [1..1024] */
+        dPtBuf.devNo = devNo;                           // SDP POINT : device ë²ˆí˜¸ [1..32] */
+        dPtBuf.devPt = devPt;                           // SDP POINT : device í¬ì¸íŠ¸ ë²ˆí˜¸ [1..1024] */
         dPtBuf.devType = devPoint->devType;		        // SDP POINT : devic TYPE  */
      
-        dPtBuf.ptType   = devPoint->ptType;             // SDP POINT : device Æ÷ÀÎÆ® TYPE  */    
+        dPtBuf.ptType   = devPoint->ptType;             // SDP POINT : device í¬ì¸íŠ¸ TYPE  */    
         dPtBuf.ptConfig = devPoint->ptConfig;           // SDP POINT : Point Config
         
-        /* ICCP °ü·Ã Æ÷ÀÎÆ® Á¤º¸ ÃßÃâ */
-        dPtBuf.iccpType    = devPoint->iccpPointType;		                                    // SDP POINT : ICCP Æ÷ÀÎÆ® TYPE, SDI/SDO/SAI/DDI/DAI/QDI/QAI/TDI/TAI/DEV
-        dPtBuf.iccpIndex   = (devPoint->iccpPointIndex[0]*256) + devPoint->iccpPointIndex[1];   // SDP POINT : ICCP Æ÷ÀÎÆ® ÀÎµ¦½º, [0: ¹ÌÁöÁ¤, 1 ~ 1024]
+        /* ICCP ê´€ë ¨ í¬ì¸íŠ¸ ì •ë³´ ì¶”ì¶œ */
+        dPtBuf.iccpType    = devPoint->iccpPointType;		                                    // SDP POINT : ICCP í¬ì¸íŠ¸ TYPE, SDI/SDO/SAI/DDI/DAI/QDI/QAI/TDI/TAI/DEV
+        dPtBuf.iccpIndex   = (devPoint->iccpPointIndex[0]*256) + devPoint->iccpPointIndex[1];   // SDP POINT : ICCP í¬ì¸íŠ¸ ì¸ë±ìŠ¤, [0: ë¯¸ì§€ì •, 1 ~ 1024]
         dPtBuf.iccpRes1    = devPoint->reserved1;
         dPtBuf.iccpRes2    = devPoint->reserved2;
         
-        /* °èÀü±â °ü·Ã Æ÷ÀÎÆ® Á¤º¸ ÃßÃâ */
-        dPtBuf.pointMax    = (devPoint->pointMax[0]*256) + devPoint->pointMax[1];          // SDP POINT :Point MAX Scale °ª
-        dPtBuf.pointOffset = (devPoint->pointOffset[0]*256) + devPoint->pointOffset[1];    // SDP POINT :Point Offset Scale °ª
-        dPtBuf.pointDelta  = devPoint->pointDelta;                                         // SDP POINT :Point Delts Scale °ª
+        /* ê³„ì „ê¸° ê´€ë ¨ í¬ì¸íŠ¸ ì •ë³´ ì¶”ì¶œ */
+        dPtBuf.pointMax    = (devPoint->pointMax[0]*256) + devPoint->pointMax[1];          // SDP POINT :Point MAX Scale ê°’
+        dPtBuf.pointOffset = (devPoint->pointOffset[0]*256) + devPoint->pointOffset[1];    // SDP POINT :Point Offset Scale ê°’
+        dPtBuf.pointDelta  = devPoint->pointDelta;                                         // SDP POINT :Point Delts Scale ê°’
         
         dPtBuf.localIndex  = (devPoint->localIndex[0]*256) + devPoint->localIndex[1];      // SDP POINT : Local Index
         
         dPtBuf.modBase  = (devPoint->modBase[0]*256) + devPoint->modBase[1];               // SDP POINT :MODBUS base Address
         dPtBuf.modIndex = (devPoint->modIndex[0]*256) + devPoint->modIndex[1];             // SDP POINT :MODBUS index
         
-        dPtBuf.dbport   = devPoint->port;            // SDP POINT :ÁÖÀåÄ¡ PORT ¹øÈ£  [1..16]
-        dPtBuf.dbpoint  = devPoint->point;           // SDP POINT :ÁÖÀåÄ¡ POINT ¹øÈ£ [1..64] 
+        dPtBuf.dbport   = devPoint->port;            // SDP POINT :ì£¼ì¥ì¹˜ PORT ë²ˆí˜¸  [1..16]
+        dPtBuf.dbpoint  = devPoint->point;           // SDP POINT :ì£¼ì¥ì¹˜ POINT ë²ˆí˜¸ [1..64] 
         
         for(hostid = 0; hostid < MAX_HOST; hostid++)
         {
-            dPtBuf.hostIndex[hostid] = (devPoint->hostIndex[hostid][0]*256) + devPoint->hostIndex[hostid][1];     // SDP POINT : »óÀ§ È£½ºÆ® Index ¹øÈ£ [1..1024]
+            dPtBuf.hostIndex[hostid] = (devPoint->hostIndex[hostid][0]*256) + devPoint->hostIndex[hostid][1];     // SDP POINT : ìƒìœ„ í˜¸ìŠ¤íŠ¸ Index ë²ˆí˜¸ [1..1024]
         }
 
-        /* Æ÷ÀÎÆ®/ON/OFF ÀÌ¸§ Á¤º¸ */
+        /* í¬ì¸íŠ¸/ON/OFF ì´ë¦„ ì •ë³´ */
         memcpy( (byte *) dPtBuf.ptNameStr, (byte *) devPoint->ptNameStr, 40);
         memcpy( (byte *) dPtBuf.onStr, (byte *) devPoint->onStr, 10);
         memcpy( (byte *) dPtBuf.offStr, (byte *) devPoint->offStr, 10);
 
-        /* ÀÌ °ÍµéÀº ³»·Á¿À´Â°ÍÀÌ ¾Æ´Ï±º..*/
-        /* ICCP Mapping Æ÷ÀÎÆ® Index... */
-        dPtBuf.dbPtIndex = i;                   // µ¥ÀÌÅÍº£ÀÌ½º »óÀÇ Æ÷ÀÎÆ® DB Index ...[0...4095]     
+        /* ì´ ê²ƒë“¤ì€ ë‚´ë ¤ì˜¤ëŠ”ê²ƒì´ ì•„ë‹ˆêµ°..*/
+        /* ICCP Mapping í¬ì¸íŠ¸ Index... */
+        dPtBuf.dbPtIndex = i;                   // ë°ì´í„°ë² ì´ìŠ¤ ìƒì˜ í¬ì¸íŠ¸ DB Index ...[0...4095]     
         
         dPtBuf.debounce = dPtBuf.pointMax & 0xff;
         dPtBuf.cntrTime = dPtBuf.pointMax;
@@ -821,23 +823,23 @@ void pointParaConfig()
         if(dPtBuf.cntrTime <= 500)   	dPtBuf.cntrTime = 500;   
         
         /* ------------------------------------------------ */
-        /* °èÀü±â/ÀåÄ¡ TYPE¿¡ µû¸¥ ... Æ÷ÀÎÆ® ÃÊ±âÈ­        */
-        /* rtudb¿¡ DB_POINT¸¦ SDP POINT·Î ¿Å±â±â À§ÇØ local dPtBuf ¸¦ ÀÌ¿ëÇØ¼­ À§ÇØ¼­ º¹»çÇÏ°í */
-        /* ¿©±â¼­ SDP ¿¡ ³Ö´Â´Ù */
+        /* ê³„ì „ê¸°/ì¥ì¹˜ TYPEì— ë”°ë¥¸ ... í¬ì¸íŠ¸ ì´ˆê¸°í™”        */
+        /* rtudbì— DB_POINTë¥¼ SDP POINTë¡œ ì˜®ê¸°ê¸° ìœ„í•´ local dPtBuf ë¥¼ ì´ìš©í•´ì„œ ìœ„í•´ì„œ ë³µì‚¬í•˜ê³  */
+        /* ì—¬ê¸°ì„œ SDP ì— ë„£ëŠ”ë‹¤ */
         /* ------------------------------------------------ */
         
-         /* devPoint´Â rtuDB »óÀÇ Æ÷ÀÎÆ® ±¸Á¶Ã¼ */
+         /* devPointëŠ” rtuDB ìƒì˜ í¬ì¸íŠ¸ êµ¬ì¡°ì²´ */
         if(devPoint->devType == DI_POINT)           sdp_diPoint_initial(devNo, devPt, &dPtBuf);
         else if(devPoint->devType == DO_POINT)      sdp_doPoint_initial(devNo, devPt, &dPtBuf);
         else if(devPoint->devType == AI_POINT)      sdp_aiPoint_initial(devNo, devPt, &dPtBuf);
-        else if(devPoint->devType == VDI_POINT)     sdp_vdiPoint_initial(devNo, devPt, &dPtBuf);            // ¿¬»êÆ÷ÀÎÆ® : »óÅÂ
-        else if(devPoint->devType == VAI_POINT)     sdp_vaiPoint_initial(devNo, devPt, &dPtBuf);            // ¿¬»êÆ÷ÀÎÆ® : °èÃø    
-// devPoint ¿Í vritPoint´Â ´Ù¸¥ °Å±º..        
-        else if(devPoint->devType == DEV_POINT)     sdp_devPoint_initial(devNo, devPt, &dPtBuf);            // ÀåÄ¡ DEVICE 
-        else                                        sdp_virPoint_initial(devNo, devPt, &dPtBuf);            // ÀåÄ¡ DEVICE 
+        else if(devPoint->devType == VDI_POINT)     sdp_vdiPoint_initial(devNo, devPt, &dPtBuf);            // ì—°ì‚°í¬ì¸íŠ¸ : ìƒíƒœ
+        else if(devPoint->devType == VAI_POINT)     sdp_vaiPoint_initial(devNo, devPt, &dPtBuf);            // ì—°ì‚°í¬ì¸íŠ¸ : ê³„ì¸¡    
+// devPoint ì™€ vritPointëŠ” ë‹¤ë¥¸ ê±°êµ°..        
+        else if(devPoint->devType == DEV_POINT)     sdp_devPoint_initial(devNo, devPt, &dPtBuf);            // ì¥ì¹˜ DEVICE 
+        else                                        sdp_virPoint_initial(devNo, devPt, &dPtBuf);            // ì¥ì¹˜ DEVICE 
         
         /* ------------------------------------------------ */
-        /* ICCP-INFO Æ÷ÀÎÆ® ÃÊ±âÈ­                          */
+        /* ICCP-INFO í¬ì¸íŠ¸ ì´ˆê¸°í™”                          */
         /* ------------------------------------------------ */
         update_iccpInfo(devNo, devPt, &dPtBuf);
         
@@ -856,33 +858,33 @@ void pointParaConfig()
     
 /*----------------------------------------------------------------------------
 * Function Name : calPointConfig()
-* ¼öÇà³»¿ë: µ¥ÀÌÅÍº£ÀÌ½ºÁß ¿¬»ê Æ÷ÀÎÆ® Á¤º¸¸¦ DB¿¡¼­ ÀĞ¾î ¿Â´Ù.
+* ìˆ˜í–‰ë‚´ìš©: ë°ì´í„°ë² ì´ìŠ¤ì¤‘ ì—°ì‚° í¬ì¸íŠ¸ ì •ë³´ë¥¼ DBì—ì„œ ì½ì–´ ì˜¨ë‹¤.
 * ArgList :
-*   1. ioid - ÃÊ±âÈ­ µÇ°íÀÚ ÇÏ´Â ¸ğµâ¹øÈ£
-*   2. buf  - ÃÊ±âÈ­ µÇ´Â µ¥ÀÌÅÍº£ÀÌ½º»óÀÇ Pointer Address
+*   1. ioid - ì´ˆê¸°í™” ë˜ê³ ì í•˜ëŠ” ëª¨ë“ˆë²ˆí˜¸
+*   2. buf  - ì´ˆê¸°í™” ë˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ìƒì˜ Pointer Address
 * Return  :  
 ---------------------------------------------------------------------------- */   
 void calPointConfig()
 {
     int     i;
     
-    DB_CAL_POINT    *dbCalPt;           // DB - ¿¬»êÆ÷ÀÎÆ®
-    CAL_POINT_BUF   *calPt;             // ¿¬»êÆ÷ÀÎÆ® ±¸Á¶Ã¼
+    DB_CAL_POINT    *dbCalPt;           // DB - ì—°ì‚°í¬ì¸íŠ¸
+    CAL_POINT_BUF   *calPt;             // ì—°ì‚°í¬ì¸íŠ¸ êµ¬ì¡°ì²´
 
     /* -------------------------------------------------------- */
-    /*  µ¥ÀÌÅÍº£ÀÌ½º »óÀÇ Æ÷ÀÎÆ® DB ÃÊ±âÈ­...(max 4096)         */
+    /*  ë°ì´í„°ë² ì´ìŠ¤ ìƒì˜ í¬ì¸íŠ¸ DB ì´ˆê¸°í™”...(max 4096)         */
     /* -------------------------------------------------------- */
     for(i = 0; i < MAX_CAL_POINT; i++)
     {
-        /* DB »óÀÇ Æ÷ÀÎÆ® ±¸Á¶Ã¼ ... */
+        /* DB ìƒì˜ í¬ì¸íŠ¸ êµ¬ì¡°ì²´ ... */
         dbCalPt = (DB_CAL_POINT *) &rtudb->calPointBuf[i];
         calPt   = (CAL_POINT_BUF *) calPtBuf[i];
 
         
-        calPt->pointType = dbCalPt->pointType;          // SDP : ¿¬»êÆ÷ÀÎÆ® TYPE,     [0]NULL, [1] STATUS, [2]ANALOG, [3]CONTROL
-        calPt->useFlag   = dbCalPt->useFlag;            // SDP : ¿¬»êÆ÷ÀÎÆ® »ç¿ëÀ¯¹«, [0]»ç¿ë¾ÊÇÔ, [1] »ç¿ë
-        calPt->calcTime  = dbCalPt->calcTime;           // SDP : ¿¬»êÆ÷ÀÎÆ® ¿¬»êÁÖ±â, sec
-        calPt->function  = dbCalPt->function;           // SDP : ¿¬»êÆ÷ÀÎÆ® Function#
+        calPt->pointType = dbCalPt->pointType;          // SDP : ì—°ì‚°í¬ì¸íŠ¸ TYPE,     [0]NULL, [1] STATUS, [2]ANALOG, [3]CONTROL
+        calPt->useFlag   = dbCalPt->useFlag;            // SDP : ì—°ì‚°í¬ì¸íŠ¸ ì‚¬ìš©ìœ ë¬´, [0]ì‚¬ìš©ì•Ší•¨, [1] ì‚¬ìš©
+        calPt->calcTime  = dbCalPt->calcTime;           // SDP : ì—°ì‚°í¬ì¸íŠ¸ ì—°ì‚°ì£¼ê¸°, sec
+        calPt->function  = dbCalPt->function;           // SDP : ì—°ì‚°í¬ì¸íŠ¸ Function#
         
         memcpy( (byte *) calPt->calString, dbCalPt->calString, 128);
         calPt->calString[127] = '\0';
@@ -930,74 +932,74 @@ void hostParaConfig()
     HOST_NET_ENTRY      *hostNet;
 
     /* ---------------------------------------- */
-    /*  HOST Åë½Å°ü·Ã ÆÄ¶ó¸ŞÅÍ ...              */
+    /*  HOST í†µì‹ ê´€ë ¨ íŒŒë¼ë©”í„° ...              */
     /* ---------------------------------------- */
     for(hostid = 0; hostid < MAX_HOST; hostid++)
     {
     	dbHost = (DB_HOST_CONFIG *) &rtudb->hostCfg[hostid];
-        host = (HOST_DCB *) hostDCB[hostid];                 /* ÁÖÀåÄ¡ #1 ¼Ó¼ºÁ¤ÀÇ */
+        host = (HOST_DCB *) hostDCB[hostid];                 /* ì£¼ì¥ì¹˜ #1 ì†ì„±ì •ì˜ */
         
-        host->hostDualMode = dbHost->runMode;               // HOST Config : HOST ¿î¿µ¸ğµå : [0]»ç¿ë¾ÈÇÔ, [1]°³º°, [2]ÀÌÁßÈ­ 
-        host->hostProtocol = dbHost->protocol;              // HOST Config : HOST Åë½Å ÇÁ·ÎÅäÄİ : HARRIS/LANDIS/DNP/MODBUS/IEC...
-        host->hostComType  = dbHost->comMode;               // HOST Config : HOST Åë½Å¸ğµå : RS232/MODEM/RS485/TCPIP
-        host->hostComSpeed = dbHost->comSpeed;              // HOST Config : HOST Åë½Å¼Óµµ 
+        host->hostDualMode = dbHost->runMode;               // HOST Config : HOST ìš´ì˜ëª¨ë“œ : [0]ì‚¬ìš©ì•ˆí•¨, [1]ê°œë³„, [2]ì´ì¤‘í™” 
+        host->hostProtocol = dbHost->protocol;              // HOST Config : HOST í†µì‹  í”„ë¡œí† ì½œ : HARRIS/LANDIS/DNP/MODBUS/IEC...
+        host->hostComType  = dbHost->comMode;               // HOST Config : HOST í†µì‹ ëª¨ë“œ : RS232/MODEM/RS485/TCPIP
+        host->hostComSpeed = dbHost->comSpeed;              // HOST Config : HOST í†µì‹ ì†ë„ 
         
-        host->masterChan = dbHost->masterPort;              // HOST Config : HOST MASTER Åë½ÅÆ÷Æ®
-        host->slaveChan  = dbHost->slavePort;               // HOST Config : HOST SLAVE  Åë½ÅÆ÷Æ®
+        host->masterChan = dbHost->masterPort;              // HOST Config : HOST MASTER í†µì‹ í¬íŠ¸
+        host->slaveChan  = dbHost->slavePort;               // HOST Config : HOST SLAVE  í†µì‹ í¬íŠ¸
         
         /* VMEBUS-SIO Channel Index */
         host->vmeMstChan = host->masterChan % 8;            // SIO0 ~ SIO7
         host->vmeSlvChan = host->slaveChan % 8;             // SIO0 ~ SIO7
         
-        host->soeClass   = dbHost->soeClass;                // HOST Config : SOE Class ÁöÁ¤ 
-        host->cosClass   = dbHost->cosClass;                // HOST Config : COS Class ÁöÁ¤ 
-        host->coaClass   = dbHost->coaClass;                // HOST Config : COA Class ÁöÁ¤ 
-        host->unsolMode  = dbHost->unsolite;      			/* UNsolite Event : »óÀ§¿¡¼­ ³»·Á¿È. */
+        host->soeClass   = dbHost->soeClass;                // HOST Config : SOE Class ì§€ì • 
+        host->cosClass   = dbHost->cosClass;                // HOST Config : COS Class ì§€ì • 
+        host->coaClass   = dbHost->coaClass;                // HOST Config : COA Class ì§€ì • 
+        host->unsolMode  = dbHost->unsolite;      			/* UNsolite Event : ìƒìœ„ì—ì„œ ë‚´ë ¤ì˜´. */
         //host->unsolEvent    = 0;
         
-        host->comDelay   = dbHost->comDelay;               // HOST Config : HOST Åë½Å Áö¿¬ (10ms)
-        host->offCount   = dbHost->offCount;               // HOST Config : HOST Åë½Å Offline Count
+        host->comDelay   = dbHost->comDelay;               // HOST Config : HOST í†µì‹  ì§€ì—° (10ms)
+        host->offCount   = dbHost->offCount;               // HOST Config : HOST í†µì‹  Offline Count
         
-        /* 2020.06.03 HOSTº° TIME-SYNC Çã¿ë±İÁö */
-        host->timeSyncDISB = dbHost->timeSyncDISB;            // HOST Config : HOST Åë½Å function
+        /* 2020.06.03 HOSTë³„ TIME-SYNC í—ˆìš©ê¸ˆì§€ */
+        host->timeSyncDISB = dbHost->timeSyncDISB;            // HOST Config : HOST í†µì‹  function
         if(host->timeSyncDISB > 0)	host->timeSyncDISB = SET;
         	
         host->chgMode    = dbHost->chgMode;                // HOST Config : HOST Change Mode;
         
-        host->reserved1  = dbHost->reserved1;			// HOST TIME-SYNC Çã¿ë/±İÁö
+        host->reserved1  = dbHost->reserved1;			// HOST TIME-SYNC í—ˆìš©/ê¸ˆì§€
         host->reserved2  = dbHost->reserved2;
         
-        host->hostid     = (dbHost->hostAddr[0]*256) + dbHost->hostAddr[1];     // HOST Config : HOST DNP - ¼¾ÅÍ Address
+        host->hostid     = (dbHost->hostAddr[0]*256) + dbHost->hostAddr[1];     // HOST Config : HOST DNP - ì„¼í„° Address
         host->rtuAddr    = (dbHost->rtuAddr[0]*256) + dbHost->rtuAddr[1];       // HOST Config : HOST DNP - RTU Address
         host->tcpPort    = (dbHost->tcpipPort[0]*256) + dbHost->tcpipPort[1];   // HOST Config : HOST DNP - TCPIP Address
         
         memcpy((byte *)&host->hostNameStr[0], (byte *) &dbHost->hostNameStr[0], 20);
         
         /* ---------------------------- */
-        /*  HOST - ÁÖÀåÄ¡ Network Á¤º¸  */
+        /*  HOST - ì£¼ì¥ì¹˜ Network ì •ë³´  */
         /* ---------------------------- */
         for(i=0;i < 2; i++)
         {
             dbHnet  = (DB_HNET_ENTRY *) &dbHost->masterNetCfg[i];
             hostNet = (HOST_NET_ENTRY *) &host->masterNetCfg[i];
             
-            hostNet->netPort = dbHnet->netPort;                                         // Network# »ç¿ë Port, [0] NET1 ~[7] NET8
+            hostNet->netPort = dbHnet->netPort;                                         // Network# ì‚¬ìš© Port, [0] NET1 ~[7] NET8
             memcpy((byte *)&hostNet->ipAddr[0], (byte *) &dbHnet->ipAddr[0], 16);       // Network# IP-Address
         }
         
         /* ---------------------------- */
-        /*  HOST - ¿¹ºñÀåÄ¡ Network Á¤º¸*/
+        /*  HOST - ì˜ˆë¹„ì¥ì¹˜ Network ì •ë³´*/
         /* ---------------------------- */
         for(i=0;i < 2; i++)
         {
             dbHnet  = (DB_HNET_ENTRY *) &dbHost->slaveNetCfg[i];
             hostNet = (HOST_NET_ENTRY *) &host->slaveNetCfg[i];
             
-            hostNet->netPort = dbHnet->netPort;                                         // Network# »ç¿ë Port, [0] NET1 ~[7] NET8
+            hostNet->netPort = dbHnet->netPort;                                         // Network# ì‚¬ìš© Port, [0] NET1 ~[7] NET8
             memcpy((byte *)&hostNet->ipAddr[0], (byte *) &dbHnet->ipAddr[0], 16);       // Network# IP-Address
         }
         
-        host->runStatus = 0;    // 0: »ç¿ë¾ÊÇÔ.
+        host->runStatus = 0;    // 0: ì‚¬ìš©ì•Ší•¨.
     }
     
     Debug(console,"wdt> => HOST Parameter init...!\n");
@@ -1022,10 +1024,10 @@ void iccpParaConfig()
     DB_ICCP_CONFIG  *dbCfg;
     
     //ICCP_POINT_INFO *iccpPoint;
-    //ICCP_POINT_DEF	*iccpDef;		// ICCP-HOST ¿î¿µ Æ÷ÀÎÆ® ÂüÁ¶
+    //ICCP_POINT_DEF	*iccpDef;		// ICCP-HOST ìš´ì˜ í¬ì¸íŠ¸ ì°¸ì¡°
     
     /* ---------------------------------------- */
-    /*  ICCP-CONFIG ÃÊ±âÈ­ ...              */
+    /*  ICCP-CONFIG ì´ˆê¸°í™” ...              */
     /* ---------------------------------------- */
     dbCfg   = (DB_ICCP_CONFIG *) &rtudb->iccpConfig;  
     iccpCfg = (ICCP_CONFIG *) &iccpDCB->config;  
@@ -1059,15 +1061,15 @@ void scanParaConfig()
         dbScan = (DB_SCAN_CONFIG *) &rtudb->scanConfig[scanid];
         scan   = (SCAN_CONFIG *) scanCFG[scanid];                
         
-        scan->useFlag   = dbScan->useFlag;              // SDP SCAN : Channel »ç¿ëÀ¯¹«
-        scan->targetID  = dbScan->targetID;             // ESIO Target ID, 0:»ç¿ë¾ÊÇÔ, 1: SIO, 2:ESIO1, 3:ESIO2, 4:ESIO3, 5:ESIO4, 6:RTU, 7:MPU1, 8:MPU2
+        scan->useFlag   = dbScan->useFlag;              // SDP SCAN : Channel ì‚¬ìš©ìœ ë¬´
+        scan->targetID  = dbScan->targetID;             // ESIO Target ID, 0:ì‚¬ìš©ì•Ší•¨, 1: SIO, 2:ESIO1, 3:ESIO2, 4:ESIO3, 5:ESIO4, 6:RTU, 7:MPU1, 8:MPU2
         
-        scan->protocol  = dbScan->protocol;             // SDP SCAN : SCAN Åë½Å ÇÁ·ÎÅäÄİ 
-        scan->comMode   = dbScan->comMode;              // SDP SCAN : SCAN Åë½Å¸ğµå
-        scan->comPort   = dbScan->comPort;			    // SDP SCAN : SCAN Åë½ÅÆ÷Æ®
-        scan->comSpeed  = dbScan->comSpeed;             // SDP SCAN : SCAN Åë½Å¼Óµµ
+        scan->protocol  = dbScan->protocol;             // SDP SCAN : SCAN í†µì‹  í”„ë¡œí† ì½œ 
+        scan->comMode   = dbScan->comMode;              // SDP SCAN : SCAN í†µì‹ ëª¨ë“œ
+        scan->comPort   = dbScan->comPort;			    // SDP SCAN : SCAN í†µì‹ í¬íŠ¸
+        scan->comSpeed  = dbScan->comSpeed;             // SDP SCAN : SCAN í†µì‹ ì†ë„
 
-        scan->comDelay  = dbScan->comDelay;			    // SDP SCAN : SCAN Åë½Å°£°İ
+        scan->comDelay  = dbScan->comDelay;			    // SDP SCAN : SCAN í†µì‹ ê°„ê²©
         scan->offCount  = dbScan->offCount;			    // SDP SCAN : SCAN Offline Count
         scan->chgMode   = dbScan->chgMode;              // SDP SCAN : SCAN Change Mode
         
@@ -1077,7 +1079,7 @@ void scanParaConfig()
         
         memcpy((byte *)&scan->scanNameStr[0], (byte *) &dbScan->scanNameStr[0], 20);       // SDP SCAN : SCAN Name String
         
-        /* SCAN : ÇÒ´çµÈ °èÀü±â ÃÊ±âÈ­ ... */    	
+        /* SCAN : í• ë‹¹ëœ ê³„ì „ê¸° ì´ˆê¸°í™” ... */    	
         scan->scanIndex  = 0;
         for(index=0; index< MAX_DEVICE; index++)    scan->scanDevice[index] = 0;
         
@@ -1105,45 +1107,45 @@ void deviceParaConfig()
     for(ioid=0; ioid < MAX_DEVICE; ioid++)
     {
         /* -------------------------------------------- */
-        /* °èÀü±â µ¥ÀÌÅÍº£ÀÌ½º ÃÊ±âÈ­                   */
+        /* ê³„ì „ê¸° ë°ì´í„°ë² ì´ìŠ¤ ì´ˆê¸°í™”                   */
         /* -------------------------------------------- */
         dbMOD = (DB_SDP_DEVICE *) &rtudb->deviceConfig[ioid];
         dev   = (SDP_DEVICE *) deviceCFG[ioid];                
         
-        memcpy((byte *)&dev->devNameStr[0], (byte *) &dbMOD->devNameStr[0], 40);       // SDP DEVICE : °èÀü±â Name String
+        memcpy((byte *)&dev->devNameStr[0], (byte *) &dbMOD->devNameStr[0], 40);       // SDP DEVICE : ê³„ì „ê¸° Name String
 
-        dev->scan         = dbMOD->useFlag;             // SDP DEVICE : °èÀü±â »ç¿ëÀ¯¹«
-        dev->comDevID     = dbMOD->comDevID;            // SDP DEVICE : ±â´É¸ğµâ³» °èÀü±â ID 
-        dev->comDevIndex  = dbMOD->comDevIndex;         // SDP DEVICE : ±â´É¸ğµâ³» °èÀü±â Index    
-        dev->scanPort     = dbMOD->scanPort;            // SDP DEVICE : °èÀü±â Åë½Å Æ÷Æ®
-        dev->type         = dbMOD->type;           	    // SDP DEVICE : °èÀü±â TYPE
-		dev->dualENB      = dbMOD->dualENB;			    // SDP DEVICE : °èÀü±â - °èÀü±â ÀÌÁßÈ­ ¿©ºÎ
-		dev->modbusFileNo = dbMOD->modbusFileNo;		// SDP DEVICE : °èÀü±â - MODBUS ÇÁ·ÎÆÄÀÏ
+        dev->scan         = dbMOD->useFlag;             // SDP DEVICE : ê³„ì „ê¸° ì‚¬ìš©ìœ ë¬´
+        dev->comDevID     = dbMOD->comDevID;            // SDP DEVICE : ê¸°ëŠ¥ëª¨ë“ˆë‚´ ê³„ì „ê¸° ID 
+        dev->comDevIndex  = dbMOD->comDevIndex;         // SDP DEVICE : ê¸°ëŠ¥ëª¨ë“ˆë‚´ ê³„ì „ê¸° Index    
+        dev->scanPort     = dbMOD->scanPort;            // SDP DEVICE : ê³„ì „ê¸° í†µì‹  í¬íŠ¸
+        dev->type         = dbMOD->type;           	    // SDP DEVICE : ê³„ì „ê¸° TYPE
+		dev->dualENB      = dbMOD->dualENB;			    // SDP DEVICE : ê³„ì „ê¸° - ê³„ì „ê¸° ì´ì¤‘í™” ì—¬ë¶€
+		dev->modbusFileNo = dbMOD->modbusFileNo;		// SDP DEVICE : ê³„ì „ê¸° - MODBUS í”„ë¡œíŒŒì¼
 		
-		dev->devDiPoint = (dbMOD->di_ptnum[0]*256) + dbMOD->di_ptnum[1];       // SDP DEVICE : ÀåÄ¡º° DI Æ÷ÀÎÆ® ¼ö 
-		dev->devDoPoint = (dbMOD->do_ptnum[0]*256) + dbMOD->do_ptnum[1];       // SDP DEVICE : ÀåÄ¡º° DO Æ÷ÀÎÆ® ¼ö 
-		dev->devAiPoint = (dbMOD->ai_ptnum[0]*256) + dbMOD->ai_ptnum[1];       // SDP DEVICE : ÀåÄ¡º° AI Æ÷ÀÎÆ® ¼ö 
-		dev->devAoPoint = (dbMOD->ao_ptnum[0]*256) + dbMOD->ao_ptnum[1];       // SDP DEVICE : ÀåÄ¡º° AO Æ÷ÀÎÆ® ¼ö 
-		dev->devCntPoint= (dbMOD->cnt_ptnum[0]*256)+ dbMOD->cnt_ptnum[1];     // SDP DEVICE : ÀåÄ¡º° Count Æ÷ÀÎÆ® ¼ö 
+		dev->devDiPoint = (dbMOD->di_ptnum[0]*256) + dbMOD->di_ptnum[1];       // SDP DEVICE : ì¥ì¹˜ë³„ DI í¬ì¸íŠ¸ ìˆ˜ 
+		dev->devDoPoint = (dbMOD->do_ptnum[0]*256) + dbMOD->do_ptnum[1];       // SDP DEVICE : ì¥ì¹˜ë³„ DO í¬ì¸íŠ¸ ìˆ˜ 
+		dev->devAiPoint = (dbMOD->ai_ptnum[0]*256) + dbMOD->ai_ptnum[1];       // SDP DEVICE : ì¥ì¹˜ë³„ AI í¬ì¸íŠ¸ ìˆ˜ 
+		dev->devAoPoint = (dbMOD->ao_ptnum[0]*256) + dbMOD->ao_ptnum[1];       // SDP DEVICE : ì¥ì¹˜ë³„ AO í¬ì¸íŠ¸ ìˆ˜ 
+		dev->devCntPoint= (dbMOD->cnt_ptnum[0]*256)+ dbMOD->cnt_ptnum[1];     // SDP DEVICE : ì¥ì¹˜ë³„ Count í¬ì¸íŠ¸ ìˆ˜ 
 		
-		dev->netPort= (dbMOD->netPort[0]*256) + dbMOD->netPort[1];      // SDP DEVICE : HOST TCPIP Port¹øÈ£ */
+		dev->netPort= (dbMOD->netPort[0]*256) + dbMOD->netPort[1];      // SDP DEVICE : HOST TCPIP Portë²ˆí˜¸ */
 		dev->function1 = dbMOD->function1;		                        // SDP DEVICE : SCAN Function#1
 		
-		/*  °èÀü±â Network Á¤º¸ */
-        memcpy((byte *)&dev->ipString1[0], (byte *) &dbMOD->ipString1[0], 16);       // SDP DEVICE : °èÀü±â IP-Address
-        memcpy((byte *)&dev->ipString2[0], (byte *) &dbMOD->ipString2[0], 16);       // SDP DEVICE : °èÀü±â IP-Address
+		/*  ê³„ì „ê¸° Network ì •ë³´ */
+        memcpy((byte *)&dev->ipString1[0], (byte *) &dbMOD->ipString1[0], 16);       // SDP DEVICE : ê³„ì „ê¸° IP-Address
+        memcpy((byte *)&dev->ipString2[0], (byte *) &dbMOD->ipString2[0], 16);       // SDP DEVICE : ê³„ì „ê¸° IP-Address
 
         /* -------------------------------------------- */
-        /* °èÀü±â ¿î¿µÁ¤º¸ ÃÊ±âÈ­                       */
+        /* ê³„ì „ê¸° ìš´ì˜ì •ë³´ ì´ˆê¸°í™”                       */
         /* -------------------------------------------- */
         dev->ioid   = ioid + 1 ;           			            /* Target IO Address */
         dev->hostid = 50;               			            /* CU Address */      
         
-        if(dev->scan == 0)  dev->runStatus  = 0;            // °èÀü±â Åë½Å»óÅÂ(»ç¿ë¾ÊÇÔ) - 0
-        else                dev->runStatus  = 2;            // °èÀü±â Åë½Å»óÅÂ(ÀÌ»ó) - 2      
+        if(dev->scan == 0)  dev->runStatus  = 0;            // ê³„ì „ê¸° í†µì‹ ìƒíƒœ(ì‚¬ìš©ì•Ší•¨) - 0
+        else                dev->runStatus  = 2;            // ê³„ì „ê¸° í†µì‹ ìƒíƒœ(ì´ìƒ) - 2      
         
         /* -------------------------------------------- */
-        /* ESIO º° °èÀü±â ÇÒ´ç Á¤º¸ ÃÊ±âÈ­              */
+        /* ESIO ë³„ ê³„ì „ê¸° í• ë‹¹ ì •ë³´ ì´ˆê¸°í™”              */
         /* -------------------------------------------- */
         if((dev->scanPort > 0) && (dev->scanPort <= MAX_SCAN_PORT))
         {   
@@ -1153,16 +1155,16 @@ void deviceParaConfig()
             scan->scanDevice[scan->scanIndex] = ioid + 1;
             scan->scanIndex = (scan->scanIndex + 1) & 0x3f;
             
-            dev->targetID = scan->targetID;     // ESIO Target ID, 0:»ç¿ë¾ÊÇÔ, 1: SIO, 2:ESIO1, 3:ESIO2, 4:ESIO3, 5:ESIO4, 6:RTU, 7:MPU1, 8:MPU2
+            dev->targetID = scan->targetID;     // ESIO Target ID, 0:ì‚¬ìš©ì•Ší•¨, 1: SIO, 2:ESIO1, 3:ESIO2, 4:ESIO3, 5:ESIO4, 6:RTU, 7:MPU1, 8:MPU2
 			
-			/* ´ë»ó ESIO ID ÁöÁ¤ ... Default = 1 */
+			/* ëŒ€ìƒ ESIO ID ì§€ì • ... Default = 1 */
 			if(dev->targetID == 0)	dev->targetID = 1;
 
-            /* °èÀü±â Á¤º¸ Ãß°¡ */
-            esioid = scan->targetID - 1;        // 0: »ç¿ë¾ÊÇÔ, 1: MPU, 2: ESIO1, 3: ESIO2, 4: ESI3, 5: ESIO4, 6: SIO (RTU)
+            /* ê³„ì „ê¸° ì •ë³´ ì¶”ê°€ */
+            esioid = scan->targetID - 1;        // 0: ì‚¬ìš©ì•Ší•¨, 1: MPU, 2: ESIO1, 3: ESIO2, 4: ESI3, 5: ESIO4, 6: SIO (RTU)
             esio = (ESIO_CONFIG *) esioCFG[esioid];
             
-            /* ESIO °èÀü±â ¸®½ºÆ®¿¡ Ãß°¡ */
+            /* ESIO ê³„ì „ê¸° ë¦¬ìŠ¤íŠ¸ì— ì¶”ê°€ */
             esio->scanDevice[esio->scanIndex] = ioid + 1;
             esio->scanIndex = (esio->scanIndex + 1) & 0x3f;
             esio->scanMaxNum = esio->scanIndex;       
@@ -1170,12 +1172,12 @@ void deviceParaConfig()
         }        
         
         /* -------------------------------------------- */
-		/* 	ÀåÄ¡º° ÃÖ´ë Æ÷ÀÎÆ® Á¦ÇÑ 					*/
+		/* 	ì¥ì¹˜ë³„ ìµœëŒ€ í¬ì¸íŠ¸ ì œí•œ 					*/
 		/* -------------------------------------------- */
-		if(dev->devDiPoint >= MAX_DEV_DI_POINT)		dev->devDiPoint = MAX_DEV_DI_POINT;		// ÀåÄ¡´ç ÃÖ´ë DI Æ÷ÀÎÆ® 
-		if(dev->devDoPoint >= MAX_DEV_DO_POINT)		dev->devDoPoint = MAX_DEV_DO_POINT;		// ÀåÄ¡´ç ÃÖ´ë DO Æ÷ÀÎÆ® 
-		if(dev->devAiPoint >= MAX_DEV_AI_POINT)		dev->devAiPoint = MAX_DEV_AI_POINT;		// ÀåÄ¡´ç ÃÖ´ë AI Æ÷ÀÎÆ® 
-		if(dev->devCntPoint >= MAX_DEV_COUNT_POINT)	dev->devCntPoint = MAX_DEV_COUNT_POINT;	// ÀåÄ¡´ç ÃÖ´ë Binary Counter Æ÷ÀÎÆ® 
+		if(dev->devDiPoint >= MAX_DEV_DI_POINT)		dev->devDiPoint = MAX_DEV_DI_POINT;		// ì¥ì¹˜ë‹¹ ìµœëŒ€ DI í¬ì¸íŠ¸ 
+		if(dev->devDoPoint >= MAX_DEV_DO_POINT)		dev->devDoPoint = MAX_DEV_DO_POINT;		// ì¥ì¹˜ë‹¹ ìµœëŒ€ DO í¬ì¸íŠ¸ 
+		if(dev->devAiPoint >= MAX_DEV_AI_POINT)		dev->devAiPoint = MAX_DEV_AI_POINT;		// ì¥ì¹˜ë‹¹ ìµœëŒ€ AI í¬ì¸íŠ¸ 
+		if(dev->devCntPoint >= MAX_DEV_COUNT_POINT)	dev->devCntPoint = MAX_DEV_COUNT_POINT;	// ì¥ì¹˜ë‹¹ ìµœëŒ€ Binary Counter í¬ì¸íŠ¸ 
     }
     
     Debug(console,"wdt> => DEVICE Parameter init...!\n");
@@ -1197,7 +1199,7 @@ void rtuCmdInitial()
     RTU    	 *rtu;
     
     /* ---------------------------------------- */
-    /* HOST - HARRIS ÇÁ·ÎÅäÄİ command_size      */
+    /* HOST - HARRIS í”„ë¡œí† ì½œ command_size      */
     /* ---------------------------------------- */   
    	for(rtuid = 0; rtuid < MAX_HARRIS_RTU; rtuid++)
     {
@@ -1226,9 +1228,9 @@ void rtuCmdInitial()
 
 /*----------------------------------------------------------------------------
 * Function Name : harrisPortConfig()
-* ¼öÇà³»¿ë: µ¥ÀÌÅÍº£ÀÌ½ºÁß Æ÷Æ® ±¸¼º¿¡ ´ëÇÑ ÃÊ±âÈ­ ÇÔ¼ö
+* ìˆ˜í–‰ë‚´ìš©: ë°ì´í„°ë² ì´ìŠ¤ì¤‘ í¬íŠ¸ êµ¬ì„±ì— ëŒ€í•œ ì´ˆê¸°í™” í•¨ìˆ˜
 * ArgList :
-*   1. buf  - ÃÊ±âÈ­ µÇ´Â µ¥ÀÌÅÍº£ÀÌ½º»óÀÇ Pointer Address
+*   1. buf  - ì´ˆê¸°í™” ë˜ëŠ” ë°ì´í„°ë² ì´ìŠ¤ìƒì˜ Pointer Address
 * Return  :  
 ---------------------------------------------------------------------------- */    
 void harrisPortConfig( int hostid, byte *buf)
@@ -1242,7 +1244,7 @@ void harrisPortConfig( int hostid, byte *buf)
 	HOST_DCB *host;
 
   
-	host = (HOST_DCB *) hostDCB[hostid];		/* HARRIS ÁÖÀåÄ¡ ¼Ó¼ºÁ¤ÀÇ */
+	host = (HOST_DCB *) hostDCB[hostid];		/* HARRIS ì£¼ì¥ì¹˜ ì†ì„±ì •ì˜ */
 	
     /* -------------------------------- */
     /*  clear rtu buffer                */
@@ -1257,7 +1259,7 @@ void harrisPortConfig( int hostid, byte *buf)
     }
 
     /* -------------------------------- */
-	/* HOST º° RTU ±¸Á¶Ã¼ Á¤ÀÇ          */
+	/* HOST ë³„ RTU êµ¬ì¡°ì²´ ì •ì˜          */
 	/* -------------------------------- */
     rtu = (RTU *) rtubuf[0];
     rtu->id = buf[0];
@@ -1317,7 +1319,7 @@ void  system_simple(const char *cmd)
     int ret = system(cmd);
     if (ret == -1) {
         printf("running system(%s) failed\r\n",cmd);
-        //return SYSRUN_ERR_SYSTEM;   // system() ÀÚÃ¼ ½ÇÆĞ
+        //return SYSRUN_ERR_SYSTEM;   // system() ìì²´ ì‹¤íŒ¨
         return  ; 
     }
 
@@ -1333,17 +1335,17 @@ void  system_simple(const char *cmd)
         return  ; 
     }
         printf("running system(%s) failed with unkown reason\r\n",cmd);
-    return SYSRUN_ERR_UNKNOWN;      // µå¹® ÄÉÀÌ½º (Á¤Áö/Àç°³ µî)
+    return SYSRUN_ERR_UNKNOWN;      // ë“œë¬¸ ì¼€ì´ìŠ¤ (ì •ì§€/ì¬ê°œ ë“±)
 }
 int check_interface_exists(const char *ifname) {
     char path[256];
     snprintf(path, sizeof(path), "/sys/class/net/%s", ifname);
     
-    // ÇØ´ç µğ·ºÅä¸®°¡ Á¸ÀçÇÏ¸é ÀÎÅÍÆäÀÌ½º°¡ ÀÖ´Â °Í
+    // í•´ë‹¹ ë””ë ‰í† ë¦¬ê°€ ì¡´ì¬í•˜ë©´ ì¸í„°í˜ì´ìŠ¤ê°€ ìˆëŠ” ê²ƒ
     if (access(path, F_OK) == 0) {
-        return 0;  // Á¸ÀçÇÔ
+        return 0;  // ì¡´ì¬í•¨
     }
-    return -1;  // Á¸ÀçÇÏÁö ¾ÊÀ½
+    return -1;  // ì¡´ì¬í•˜ì§€ ì•ŠìŒ
 }
 
 
@@ -1375,7 +1377,7 @@ static void mpuNetwork_Initial()
     
     gw_flag=0;
     /* -------------------------------------------- */
-    /*  MPU ½ÇÀå¸ğµå¿¡ µû¶ó¼­ °¢ Network IP ¼³Á¤    */
+    /*  MPU ì‹¤ì¥ëª¨ë“œì— ë”°ë¼ì„œ ê° Network IP ì„¤ì •    */
     /* -------------------------------------------- */
     if(opr->cpuMode == MPU_A)
     {
@@ -1403,7 +1405,7 @@ static void mpuNetwork_Initial()
 //    printf("[DB] Network#3 : IP=%s, Mask=%s \n", mpuNet3->ipAddr, mpuNet3->subMask);    
 //    printf("[DB] Network#4 : IP=%s, Mask=%s \n", mpuNet4->ipAddr, mpuNet4->subMask);
 
-    // 2026-07-15 ¿ÀÈÄ 5:18:13 error°¡ ³ªµµ ¹«½ÃÇÏ¸é µÇÁö.
+    // 2026-07-15 ì˜¤í›„ 5:18:13 errorê°€ ë‚˜ë„ ë¬´ì‹œí•˜ë©´ ë˜ì§€.
              /* remove existing default gw */
              sprintf(buffer, "route del  default 2>  /dev/null");
    	         system_simple(buffer);
@@ -1426,7 +1428,7 @@ static void mpuNetwork_Initial()
        	    system_simple(buffer);
        	    pause(100);  
         	
-        	/* 2026-07-15 ¿ÀÈÄ 4:47:49  Default GW */
+        	/* 2026-07-15 ì˜¤í›„ 4:47:49  Default GW */
         	if ( mpuNet1->gwAddr[0] && ! gw_flag )
         	{
                  sprintf(buffer, "route add default gw %s dev eth0", mpuNet1->gwAddr);
@@ -1469,7 +1471,7 @@ static void mpuNetwork_Initial()
    	        system_simple(buffer);
    	        pause(100);  
    	        
-        	/* 2026-07-15 ¿ÀÈÄ 4:47:49  Default GW */
+        	/* 2026-07-15 ì˜¤í›„ 4:47:49  Default GW */
         	if ( mpuNet2->gwAddr[0] && ! gw_flag )
         	{
                  sprintf(buffer, "route add default gw %s dev eth1", mpuNet2->gwAddr);
@@ -1510,7 +1512,7 @@ static void mpuNetwork_Initial()
    	    system_simple(buffer);
    	    pause(100);  
    	    
-    	/* 2026-07-15 ¿ÀÈÄ 4:47:49  Default GW */
+    	/* 2026-07-15 ì˜¤í›„ 4:47:49  Default GW */
     	if ( mpuNet3->gwAddr[0] && ! gw_flag )
     	{
              sprintf(buffer, "route add default gw %s dev eth2", mpuNet3->gwAddr);
@@ -1552,7 +1554,7 @@ static void mpuNetwork_Initial()
    	    system_simple(buffer); 
    	    pause(100);  
    	    
-        	/* 2026-07-15 ¿ÀÈÄ 4:47:49  Default GW */
+        	/* 2026-07-15 ì˜¤í›„ 4:47:49  Default GW */
         	if ( mpuNet4->gwAddr[0] && ! gw_flag )
         	{
                  sprintf(buffer, "route add default gw %s dev eth3", mpuNet4->gwAddr);
@@ -1603,7 +1605,7 @@ static void mpuNetwork_Initial()
 
 
 /*
-*   MPU ±¸¼ºÁ¤º¸ Config 
+*   MPU êµ¬ì„±ì •ë³´ Config 
 */
 void mpuParaConfig()
 {
@@ -1613,13 +1615,13 @@ void mpuParaConfig()
     
     MPU_NET_ENTRY       *mpuNet;
 
-    /* µ¥ÀÌÅÍº£ÀÌ½º DB Æ÷ÀÎÅÍ ÃÊ±âÈ­ */
+    /* ë°ì´í„°ë² ì´ìŠ¤ DB í¬ì¸í„° ì´ˆê¸°í™” */
     dbMPU = (DB_MPU_CONFIG *) &rtudb->mpuConfig;
 
-    memcpy( (byte *) &mpuCFG->sdpNameStr[0], (byte *) &dbMPU->sdpNameStr[0], 20);   // MPU Parameter : ÇöÀå ÀÌ¸§
+    memcpy( (byte *) &mpuCFG->sdpNameStr[0], (byte *) &dbMPU->sdpNameStr[0], 20);   // MPU Parameter : í˜„ì¥ ì´ë¦„
     
     /* ------------------------------------ */
-    /* ÁÖ MPU : Network ±¸¼ºÁ¤º¸ ÃÊ±âÈ­     */
+    /* ì£¼ MPU : Network êµ¬ì„±ì •ë³´ ì´ˆê¸°í™”     */
     /* ------------------------------------ */
     //for(i=0; i < 3; i++)
     for(i=0; i <4 ; i++)
@@ -1631,13 +1633,13 @@ void mpuParaConfig()
         memcpy( (byte *) &mpuNet->ipAddr[0], (byte *) &dbMnet->ipAddr[0], 16); 
         memcpy( (byte *) &mpuNet->gwAddr[0], (byte *) &dbMnet->gwAddr[0], 16); 
         memcpy( (byte *) &mpuNet->subMask[0], (byte *) &dbMnet->subMask[0], 16); 
-     // hkkim ESIO º¸³¾¶§ ±úÀú¼­ debug ÇÏ´À¶ó..   
+     // hkkim ESIO ë³´ë‚¼ë•Œ ê¹¨ì €ì„œ debug í•˜ëŠë¼..   
      //   printf("MASTER[%d] IP : %s, GW : %s, Sub : %s \r\n",i, mpuNet->ipAddr,mpuNet->gwAddr,mpuNet->subMask);
 
     }
     
     /* ------------------------------------ */
-    /* ºÎ MPU : Network ±¸¼ºÁ¤º¸ ÃÊ±âÈ­     */
+    /* ë¶€ MPU : Network êµ¬ì„±ì •ë³´ ì´ˆê¸°í™”     */
     /* ------------------------------------ */
     for(i=0; i < 4; i++)
 //    for(i=0; i < 3; i++)
@@ -1652,50 +1654,50 @@ void mpuParaConfig()
        // printf("SLAVE[%d] IP : %s, GW : %s, Sub : %s \r\n",i, mpuNet->ipAddr,mpuNet->gwAddr,mpuNet->subMask);        
     }
     
-    mpuCFG->dualMpu     = dbMPU->dualMpu;           // MPU Parameter : CPU ÀÌÁßÈ­ ¿î¿µ¸ğµå
-    mpuCFG->dualModule  = dbMPU->dualModule;        // MPU Parameter : Module ÀÌÁßÈ­ ¿î¿µ¸ğµå 
+    mpuCFG->dualMpu     = dbMPU->dualMpu;           // MPU Parameter : CPU ì´ì¤‘í™” ìš´ì˜ëª¨ë“œ
+    mpuCFG->dualModule  = dbMPU->dualModule;        // MPU Parameter : Module ì´ì¤‘í™” ìš´ì˜ëª¨ë“œ 
     
-    mpuCFG->scuUseFlag  = dbMPU->scuUseFlag;        // MPU Parameter : SCU ¸ğµâ »ç¿ëÀ¯¹«
-    mpuCFG->mmiUseFlag  = dbMPU->mmiUseFlag;        // MPU Parameter : MMI ¸ğµâ »ç¿ëÀ¯¹«
+    mpuCFG->scuUseFlag  = dbMPU->scuUseFlag;        // MPU Parameter : SCU ëª¨ë“ˆ ì‚¬ìš©ìœ ë¬´
+    mpuCFG->mmiUseFlag  = dbMPU->mmiUseFlag;        // MPU Parameter : MMI ëª¨ë“ˆ ì‚¬ìš©ìœ ë¬´
     
-    mpuCFG->statusDump  = dbMPU->statusDump;        // MPU Parameter : STATUS Dump ÁÖ±â
-    mpuCFG->analogDump  = dbMPU->analogDump;        // MPU Parameter : ANALOG Dump ÁÖ±â
-    mpuCFG->debounce    = dbMPU->debounce;          // MPU Parameter : Function ÄÚµå#1
-    mpuCFG->dbCheck     = dbMPU->dbCheck;           // MPU Parameter : Function ÄÚµå#2
-    mpuCFG->hostWDT     = dbMPU->hostWDT;           // MPU Parameter : Function ÄÚµå#3
+    mpuCFG->statusDump  = dbMPU->statusDump;        // MPU Parameter : STATUS Dump ì£¼ê¸°
+    mpuCFG->analogDump  = dbMPU->analogDump;        // MPU Parameter : ANALOG Dump ì£¼ê¸°
+    mpuCFG->debounce    = dbMPU->debounce;          // MPU Parameter : Function ì½”ë“œ#1
+    mpuCFG->dbCheck     = dbMPU->dbCheck;           // MPU Parameter : Function ì½”ë“œ#2
+    mpuCFG->hostWDT     = dbMPU->hostWDT;           // MPU Parameter : Function ì½”ë“œ#3
     
-    /* ICCP-HOST Åë½Å¿¬°è Çã¿ë/±İÁö */
-    mpuCFG->iccpEnbFlag = dbMPU->iccpFlag;          // (1) ICCP Çã¿ë, (0) ICCP ±İÁö
+    /* ICCP-HOST í†µì‹ ì—°ê³„ í—ˆìš©/ê¸ˆì§€ */
+    mpuCFG->iccpEnbFlag = dbMPU->iccpFlag;          // (1) ICCP í—ˆìš©, (0) ICCP ê¸ˆì§€
     if(mpuCFG->iccpEnbFlag > 0)	mpuCFG->iccpEnbFlag = SET;
     else						mpuCFG->iccpEnbFlag = RESET;	
     
     opr->iccpEnbFlag = mpuCFG->iccpEnbFlag;
     
-    mpuCFG->func1 = dbMPU->func1;                   // MPU Parameter : ICCP ÀıÃ¼½Ã°£ [Function ÄÚµå#1
-    mpuCFG->func2 = dbMPU->func2;                   // MPU Parameter : Function ÄÚµå#2
-    mpuCFG->func3 = dbMPU->func3;                   // MPU Parameter : Function ÄÚµå#3
-    mpuCFG->func4 = dbMPU->func4;                   // MPU Parameter : Function ÄÚµå#4
-    mpuCFG->func5 = dbMPU->func5;                   // MPU Parameter : Function ÄÚµå#5
-    mpuCFG->func6 = dbMPU->func6;                   // MPU Parameter : Function ÄÚµå#6
+    mpuCFG->func1 = dbMPU->func1;                   // MPU Parameter : ICCP ì ˆì²´ì‹œê°„ [Function ì½”ë“œ#1
+    mpuCFG->func2 = dbMPU->func2;                   // MPU Parameter : Function ì½”ë“œ#2
+    mpuCFG->func3 = dbMPU->func3;                   // MPU Parameter : Function ì½”ë“œ#3
+    mpuCFG->func4 = dbMPU->func4;                   // MPU Parameter : Function ì½”ë“œ#4
+    mpuCFG->func5 = dbMPU->func5;                   // MPU Parameter : Function ì½”ë“œ#5
+    mpuCFG->func6 = dbMPU->func6;                   // MPU Parameter : Function ì½”ë“œ#6
     
     /* -------------------------------------------- */
-    /*	2022.07.08 ICCP Åë½ÅÀÌ»ó¿¡ µû¸¥ ÀıÃ¼½Ã°£ ÁöÁ¤ 			*/
+    /*	2022.07.08 ICCP í†µì‹ ì´ìƒì— ë”°ë¥¸ ì ˆì²´ì‹œê°„ ì§€ì • 			*/
     /* -------------------------------------------- */
     if(mpuCFG->func1 == 0)	opr->iccpChkTime = 300;
     else					opr->iccpChkTime = mpuCFG->func1;
     if(opr->iccpChkTime < 30)	opr->iccpChkTime = 30;
 
     
-    /* ÇÏÀ§ °èÀü±â : »óÅÂ/¾Æ³¯·Î±× ¼öÁıÁÖ±â */
-    opr->cpuChgMode = mpuCFG->dualMpu;				// MPU Parameter : CPU ÀÌÁßÈ­ ÀÚµ¿ÀıÃ¼ 
-    opr->stsDumpPeriod = mpuCFG->statusDump;        // MPU Parameter : STATUS Dump ÁÖ±â
-    opr->anaDumpPeriod = mpuCFG->analogDump;        // MPU Parameter : ANALOG Dump ÁÖ±â
-    opr->calCalcFlag   = mpuCFG->dbCheck;			// MPU Parameter : ¿¬»êÆ÷ÀÎÆ® °è»ê Çã¿ëÁÖ±â
-    opr->iccpResetENB  = mpuCFG->mmiUseFlag;		// MPU Parameter : ICCP °üÁ¦¿¡¼­ SDP Àç±âµ¿ Çô¿ë/±İÁö
+    /* í•˜ìœ„ ê³„ì „ê¸° : ìƒíƒœ/ì•„ë‚ ë¡œê·¸ ìˆ˜ì§‘ì£¼ê¸° */
+    opr->cpuChgMode = mpuCFG->dualMpu;				// MPU Parameter : CPU ì´ì¤‘í™” ìë™ì ˆì²´ 
+    opr->stsDumpPeriod = mpuCFG->statusDump;        // MPU Parameter : STATUS Dump ì£¼ê¸°
+    opr->anaDumpPeriod = mpuCFG->analogDump;        // MPU Parameter : ANALOG Dump ì£¼ê¸°
+    opr->calCalcFlag   = mpuCFG->dbCheck;			// MPU Parameter : ì—°ì‚°í¬ì¸íŠ¸ ê³„ì‚° í—ˆìš©ì£¼ê¸°
+    opr->iccpResetENB  = mpuCFG->mmiUseFlag;		// MPU Parameter : ICCP ê´€ì œì—ì„œ SDP ì¬ê¸°ë™ í˜€ìš©/ê¸ˆì§€
     
      
-    if((opr->stsDumpPeriod <=0) || (opr->stsDumpPeriod > 300))  opr->stsDumpPeriod = 10;    // Default 10ÃÊ
-    if((opr->anaDumpPeriod <=0) || (opr->anaDumpPeriod > 300))  opr->anaDumpPeriod = 10;    // Default 10ÃÊ    
+    if((opr->stsDumpPeriod <=0) || (opr->stsDumpPeriod > 300))  opr->stsDumpPeriod = 10;    // Default 10ì´ˆ
+    if((opr->anaDumpPeriod <=0) || (opr->anaDumpPeriod > 300))  opr->anaDumpPeriod = 10;    // Default 10ì´ˆ    
           
           
     Debug(console, "wdt> => MPU Parameter init...!\n");
@@ -1707,7 +1709,7 @@ void mpuParaConfig()
 
 
 /*
-*   ESIO ±¸¼ºÁ¤º¸ Config 
+*   ESIO êµ¬ì„±ì •ë³´ Config 
 */
 void esioParaConfig()
 {
@@ -1733,25 +1735,25 @@ void esioParaConfig()
 
 
     /* -------------------------------------------------------- */
-    /*  ESIO# ±¸¼ºÁ¤º¸ ÃÊ±âÈ­ ...                               		*/
+    /*  ESIO# êµ¬ì„±ì •ë³´ ì´ˆê¸°í™” ...                               		*/
     /* -------------------------------------------------------- */
     for(i=0; i < MAX_ESIO; i++)
     {
-        /* µ¥ÀÌÅÍº£ÀÌ½º DB Æ÷ÀÎÅÍ ÃÊ±âÈ­ */
+        /* ë°ì´í„°ë² ì´ìŠ¤ DB í¬ì¸í„° ì´ˆê¸°í™” */
         dbESIO = (DB_ESIO_CONFIG *) &rtudb->esioConfig[i];
         esioMod= (ESIO_CONFIG *) esioCFG[i];
         
-        esioMod->useFlag    = dbESIO->useFlag;                // ESIO Parameter : ESIO »ç¿ëÀ¯¹«
-        esioMod->targetID   = dbESIO->targetID;               // ESIO Parameter : ESIO Target Module-ID, 0:»ç¿ë¾ÊÇÔ, 1: ESIO1, 2:ESIO2, 3:ESIO3, 4:ESIO4, 5:SIO
-        esioMod->autoChgFlag= dbESIO->autoChgFlag;            // ESIO Parameter : ÀÚµ¿ÀıÃ¼ Flag
-        esioMod->comDelay   = dbESIO->comDelay;               // ESIO Parameter : MPU Åë½Å Áö¿¬ (10ms)
+        esioMod->useFlag    = dbESIO->useFlag;                // ESIO Parameter : ESIO ì‚¬ìš©ìœ ë¬´
+        esioMod->targetID   = dbESIO->targetID;               // ESIO Parameter : ESIO Target Module-ID, 0:ì‚¬ìš©ì•Ší•¨, 1: ESIO1, 2:ESIO2, 3:ESIO3, 4:ESIO4, 5:SIO
+        esioMod->autoChgFlag= dbESIO->autoChgFlag;            // ESIO Parameter : ìë™ì ˆì²´ Flag
+        esioMod->comDelay   = dbESIO->comDelay;               // ESIO Parameter : MPU í†µì‹  ì§€ì—° (10ms)
         
-        memcpy( (byte *) &esioMod->esioNameStr[0], (byte *) &dbESIO->esioNameStr[0], 20);   // ESIO ÀåÄ¡ÀÌ¸§
+        memcpy( (byte *) &esioMod->esioNameStr[0], (byte *) &dbESIO->esioNameStr[0], 20);   // ESIO ì¥ì¹˜ì´ë¦„
         
         /* ------------------------------------ */
-        /* ÁÖ ESIO : Network ±¸¼ºÁ¤º¸ ÃÊ±âÈ­    */
+        /* ì£¼ ESIO : Network êµ¬ì„±ì •ë³´ ì´ˆê¸°í™”    */
         /* ------------------------------------ */
-        // 2026-05-26 ¿ÀÈÄ 7:34:39 hkkim
+        // 2026-05-26 ì˜¤í›„ 7:34:39 hkkim
         for(j=0; j < netCount; j++)
         {
             // ROM-DB space
@@ -1766,7 +1768,7 @@ void esioParaConfig()
         }
     
         /* ------------------------------------ */
-        /* ¿¹ºñ ESIO : Network ±¸¼ºÁ¤º¸ ÃÊ±âÈ­  */
+        /* ì˜ˆë¹„ ESIO : Network êµ¬ì„±ì •ë³´ ì´ˆê¸°í™”  */
         /* ------------------------------------ */
         for(j=0; j < netCount; j++)
         {
@@ -1780,27 +1782,27 @@ void esioParaConfig()
         }
         
         /* ------------------------------------ */
-        /* ESIO : PORT ±¸¼ºÁ¤º¸ ÃÊ±âÈ­          */
+        /* ESIO : PORT êµ¬ì„±ì •ë³´ ì´ˆê¸°í™”          */
         /* ------------------------------------ */
         for(j=0; j < 8; j++)
         {
             dbEport = (DB_PORT_ENTRY *) &dbESIO->portConfig[j];
             esioPort= (ESIO_PORT_ENTRY *)&esioMod->portConfig[j];
         
-            esioPort->useFlag   = dbEport->useFlag;             // PORT# »ç¿ëÀ¯¹«                                       
+            esioPort->useFlag   = dbEport->useFlag;             // PORT# ì‚¬ìš©ìœ ë¬´                                       
             esioPort->function  = dbEport->function;            // PORT# Function                                       
-            esioPort->comMode   = dbEport->comMode;             // PORT# Åë½Å¸ğµå, 0:RS232, 1:MODEM, 2:RS485, 3:TCPIP   
-            esioPort->comSpeed  = dbEport->comSpeed;            // PORT# Åë½Å¼Óµµ, [0] 1200 ~ [7] 115200                
+            esioPort->comMode   = dbEport->comMode;             // PORT# í†µì‹ ëª¨ë“œ, 0:RS232, 1:MODEM, 2:RS485, 3:TCPIP   
+            esioPort->comSpeed  = dbEport->comSpeed;            // PORT# í†µì‹ ì†ë„, [0] 1200 ~ [7] 115200                
             
-            memcpy( (byte *) &esioPort->portNameStr[0], (byte *) &dbEport->portNameStr[0], 20);     // PORT# Æ÷Æ®ÀÌ¸§
+            memcpy( (byte *) &esioPort->portNameStr[0], (byte *) &dbEport->portNameStr[0], 20);     // PORT# í¬íŠ¸ì´ë¦„
         }  
         
         /* ------------------------------------ */
-        /*  ESIO ÇÒ´ç °èÀü±â Á¤º¸ ÃÊ±âÈ­        */
+        /*  ESIO í• ë‹¹ ê³„ì „ê¸° ì •ë³´ ì´ˆê¸°í™”        */
         /* ------------------------------------ */
-        esioMod->scanIndex  = 0;            // ESIO °èÀü±â Index
-        esioMod->scanMaxNum = 0;            // ESIO µî·ÏµÈ °èÀü±â ¼ö
-        for(j=0; j < MAX_DEVICE; j++)  esioMod->scanDevice[j] = 0;      // ESIO °èÀü±â ¸®½ºÆ®
+        esioMod->scanIndex  = 0;            // ESIO ê³„ì „ê¸° Index
+        esioMod->scanMaxNum = 0;            // ESIO ë“±ë¡ëœ ê³„ì „ê¸° ìˆ˜
+        for(j=0; j < MAX_DEVICE; j++)  esioMod->scanDevice[j] = 0;      // ESIO ê³„ì „ê¸° ë¦¬ìŠ¤íŠ¸
         
         Debug(console,"wdt> => ESIO[%d] Parameter init...!\n", i+1); 
     }
@@ -1821,7 +1823,7 @@ word acc_gensum(word initVal, byte *buf, int bfcnt)
 
 
 /*
-*   ESIO °³º°º¸µåÀÇ µ¥ÀÌÅÍº£ÀÌ½º Chksum ÂüÁ¶
+*   ESIO ê°œë³„ë³´ë“œì˜ ë°ì´í„°ë² ì´ìŠ¤ Chksum ì°¸ì¡°
 */
 word calc_ESIODB_Chksum(int esioid)
 {
@@ -1829,37 +1831,37 @@ word calc_ESIODB_Chksum(int esioid)
     byte    *bfptr;
     int     size;
     
-    /* MPU Config Á¤º¸ */
+    /* MPU Config ì •ë³´ */
     bfptr = (byte *) &rtudb->mpuConfig;
     size = sizeof(DB_MPU_CONFIG);
     chksum = acc_gensum(chksum, bfptr, size);
     
-    /* ÇØ´ç ESIO# Config Á¤º¸ */
+    /* í•´ë‹¹ ESIO# Config ì •ë³´ */
     bfptr = (byte *) &rtudb->esioConfig[esioid];
     size = sizeof(DB_ESIO_CONFIG);
     chksum = acc_gensum(chksum, bfptr, size);
     
     //printf("==> ESIO Config    Size = %d, chksum = %4x \n", size, chksum);
     
-    /* MODBUS Profile Á¤º¸ */
+    /* MODBUS Profile ì •ë³´ */
     bfptr = (byte *) &rtudb->modbusProfile[0];
     size = sizeof(DB_MODBUS_PROFILE) * MAX_MODBUS_PROFILE;
     chksum = acc_gensum(chksum, bfptr, size);
     //printf("==> MODBUS Profile Size = %d, chksum = %4x \n", size, chksum);
     
-    /* SCAN Config Á¤º¸ */
+    /* SCAN Config ì •ë³´ */
     bfptr = (byte *) &rtudb->scanConfig[0];
     size = sizeof(DB_SCAN_CONFIG) * MAX_SCAN_PORT;
     chksum = acc_gensum(chksum, bfptr, size);
     //printf("==> SCAN Config    Size = %d, chksum = %4x \n", size, chksum);
     
-    /* °èÀü±â Config Á¤º¸ */
+    /* ê³„ì „ê¸° Config ì •ë³´ */
     bfptr = (byte *) &rtudb->deviceConfig[0];
     size = sizeof(DB_SDP_DEVICE) * MAX_DEVICE;
     chksum = acc_gensum(chksum, bfptr, size);
     //printf("==> DEVICE Config  Size = %d, chksum = %4x \n", size, chksum);
     
-    /* Æ÷ÀÎÆ® Config Á¤º¸ */
+    /* í¬ì¸íŠ¸ Config ì •ë³´ */
     bfptr = (byte *) &rtudb->pointBuf[0];
     size = sizeof(DB_POINT_BUF) * MAX_DBASE_POINT;
     chksum = acc_gensum(chksum, bfptr, size);
@@ -1882,7 +1884,7 @@ word calc_ESIODB_Chksum(int esioid)
 
 /*----------------------------------------------------------------------------
 * Function Name : readRTUdb()
-* ¼öÇà³»¿ë: µ¥ÀÌÅÍº£ÀÌ½º³»¿ëÀÇ Check ¹× ÃÊ±âÈ­ ¼öÇà ÇÔ¼ö
+* ìˆ˜í–‰ë‚´ìš©: ë°ì´í„°ë² ì´ìŠ¤ë‚´ìš©ì˜ Check ë° ì´ˆê¸°í™” ìˆ˜í–‰ í•¨ìˆ˜
 * ArgList :
 * Return  :  
 ---------------------------------------------------------------------------- */    
@@ -1926,18 +1928,18 @@ int readRTUdb()
     rtuCmdInitial();
     pause(20);
     
-    /* HOST#1 : HARRIS Àû¿ë */
+    /* HOST#1 : HARRIS ì ìš© */
     harrisPortConfig(0, &rtudb->portdb[0]);         /* HOST #1 (HARRIS) Port Config */
     pause(20);
 
     /* ---------------------------- */
-    /*   MPU ±¸¼ºÁ¤º¸ Config        */
+    /*   MPU êµ¬ì„±ì •ë³´ Config        */
     /* ---------------------------- */
     mpuParaConfig();
     pause(20);
     
     /* ---------------------------- */
-    /*   ESIO ±¸¼ºÁ¤º¸ Config        */
+    /*   ESIO êµ¬ì„±ì •ë³´ Config        */
     /* ---------------------------- */
     esioParaConfig();
     pause(20);
@@ -1971,7 +1973,7 @@ int readRTUdb()
     /* ---------------------------- */
     /*   Read point_config          */
     /* ---------------------------- */
-    calPointConfig();                       // ¿¬»êÆ÷ÀÎÆ® Config...
+    calPointConfig();                       // ì—°ì‚°í¬ì¸íŠ¸ Config...
     pause(20);
                     
     /* ---------------------------- */
@@ -1981,7 +1983,7 @@ int readRTUdb()
     pause(20);
 
     /* ---------------------------------------------------- */
-    /*  ICCP-POINT Config... (ICCP- DBº¯°æ½Ã... Àç±âµ¿ È®ÀÎ */
+    /*  ICCP-POINT Config... (ICCP- DBë³€ê²½ì‹œ... ì¬ê¸°ë™ í™•ì¸ */
     /* ---------------------------------------------------- */
     iccpShmDcbInit (shmPtr);    
 
@@ -1993,13 +1995,13 @@ int readRTUdb()
 
 
 /*
-*	SDP DB º¯°æ³»¿ª ÂüÁ¶
+*	SDP DB ë³€ê²½ë‚´ì—­ ì°¸ì¡°
 */
 int sdp_DBChange_Check()
 {
 	
     /* ------------------------------------------------ */
-	/*  µ¥ÀÌÅÍº£ÀÌ½º º¯°æ½Ã... Àç±¸¼º ·Îµå              */
+	/*  ë°ì´í„°ë² ì´ìŠ¤ ë³€ê²½ì‹œ... ì¬êµ¬ì„± ë¡œë“œ              */
 	/* ------------------------------------------------ */
 	if(opr->mpuCfgDown_OK == SET)
     {
@@ -2015,7 +2017,7 @@ int sdp_DBChange_Check()
         scanParaConfig();
         deviceParaConfig(); 
         
-        /* ESIO-SCAN Process Àç±âµ¿ ... */
+        /* ESIO-SCAN Process ì¬ê¸°ë™ ... */
         opr->esioRestart = SET;
         pause(100);
     }		  
@@ -2027,7 +2029,7 @@ int sdp_DBChange_Check()
 
         printf("hostParaConfig re-initial OK... ! \n");
         
-        /* ESIO-SCAN Process Àç±âµ¿ ... */
+        /* ESIO-SCAN Process ì¬ê¸°ë™ ... */
         //for(i=0; i < MAX_HOST; i++)     opr->hostRestart[i] = SET;
         //pause(100);
     }		    
@@ -2039,7 +2041,7 @@ int sdp_DBChange_Check()
         scanParaConfig();
         deviceParaConfig();
         
-        /* ESIO-SCAN Process Àç±âµ¿ ... */
+        /* ESIO-SCAN Process ì¬ê¸°ë™ ... */
         opr->esioRestart = SET;
         pause(100);
     }		
@@ -2056,7 +2058,7 @@ int sdp_DBChange_Check()
         scanParaConfig();
         deviceParaConfig();
         
-        /* ESIO-SCAN Process Àç±âµ¿ ... */
+        /* ESIO-SCAN Process ì¬ê¸°ë™ ... */
         opr->esioRestart = SET;
         pause(100);
     }		
@@ -2069,7 +2071,7 @@ int sdp_DBChange_Check()
         pause(100);
         
         /* ---------------------------------------------------- */
-    	/*  ICCP-POINT Config... (ICCP- DBº¯°æ½Ã... Àç±âµ¿ È®ÀÎ */
+    	/*  ICCP-POINT Config... (ICCP- DBë³€ê²½ì‹œ... ì¬ê¸°ë™ í™•ì¸ */
     	/* ---------------------------------------------------- */
     	iccpShmDcbInit (shmPtr);    
     }		
@@ -2077,7 +2079,7 @@ int sdp_DBChange_Check()
     if(opr->calPt_CfgDown_OK == SET)
     {
         opr->calPt_CfgDown_OK = RESET;
-        calPointConfig();                       // ¿¬»êÆ÷ÀÎÆ® Config...
+        calPointConfig();                       // ì—°ì‚°í¬ì¸íŠ¸ Config...
         pointParaConfig();
         pause(100);
     }

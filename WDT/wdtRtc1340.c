@@ -12,16 +12,16 @@ extern  RTC             *rtc;
 extern  OPR_MSG         *opr;
 extern  CONSOLE_INFO	*console;
 
-extern  SDP_DEVICE      *deviceCFG[MAX_DEVICE];         // °èÀü±â/ÀåÄ¡- ÀüÀÚ½Ä¹èÀü¹Ý (GiPAM, HiMAP...)
-extern  ESIO_CONFIG     *esioCFG[MAX_ESIO];             // ESIO ÀåÄ¡ Config
-extern  LINK_MSG        *linkCfg;                       // CPU ÀÌÁßÈ­ ±¸Á¶Ã¼;
+extern  SDP_DEVICE      *deviceCFG[MAX_DEVICE];         // ê³„ì „ê¸°/ìž¥ì¹˜- ì „ìžì‹ë°°ì „ë°˜ (GiPAM, HiMAP...)
+extern  ESIO_CONFIG     *esioCFG[MAX_ESIO];             // ESIO ìž¥ì¹˜ Config
+extern  LINK_MSG        *linkCfg;                       // CPU ì´ì¤‘í™” êµ¬ì¡°ì²´;
 
 //int rtc_get_time(struct tm *tmval);
 //int rtc_set_time(struct tm *tmval, int century);
 
 
 /*
-*   RTC-DS-1340 ¿¡¼­ ½Ã°¢Á¤º¸ Read
+*   RTC-DS-1340 ì—ì„œ ì‹œê°ì •ë³´ Read
 */
 void read_RTC1340()
 {
@@ -70,7 +70,8 @@ int	readClock()
 
 
 /*
-*   RTC-DS-1340 ¿¡¼­ ½Ã°¢Á¤º¸ Write
+writeClock ì•„.  í˜„ìž¬ìœ¼ë¡œ update....
+*   RTC-DS-1340 ì—ì„œ ì‹œê°ì •ë³´ Write
 *   - year : 
 */
 int	rtc_TimeUpdate()
@@ -101,7 +102,7 @@ int	rtc_TimeUpdate()
 
 
 /*
-*   RTC-DS-1340 ¿¡¼­ ½Ã°¢Á¤º¸ Write
+*   RTC-DS-1340 ì—ì„œ ì‹œê°ì •ë³´ Write
 *   - year : 
 */
 int	writeClock( int year, int month, int day, int hour, int min, int sec, int week)
@@ -143,7 +144,7 @@ int	writeClock( int year, int month, int day, int hour, int min, int sec, int we
 	
 	if (retVal == -1) 
 	{
-    	Debug(console,"wdt> *ioctl RTC_SET_TIME  %s\n",strerror(errno)) ;
+    	Debug(console,"WDT-ERR> *ioctl RTC_SET_TIME  %s\n",strerror(errno)) ;
     }
 #endif
     
@@ -153,7 +154,8 @@ int	writeClock( int year, int month, int day, int hour, int min, int sec, int we
     systime = mktime(&tmval);
     
 	//if(opr->wdtDebug)
-    //Debug(console,"wdt> rtc time %s\n",ctime( &systime)) ;
+    // FYT 2026-08-27 ì˜¤í›„ 4:50:03
+    Debug(console,"wdt> rtc time %s\n",ctime( &systime)) ;
     
 	tv.tv_sec = systime;
 	tv.tv_usec = 0;
@@ -161,10 +163,15 @@ int	writeClock( int year, int month, int day, int hour, int min, int sec, int we
 	tz.tz_minuteswest = 0;
 	tz.tz_dsttime = 0;
 
+#if 0 // 2026-08-27 ì˜¤í›„ 4:55:56
 	if (settimeofday (&tv, &tz) != 0) 
+#else 
+	if (settimeofday (&tv,NULL) != 0) 
+#endif 
 	{
-	    if(opr->wdtDebug)
-		printf ("wdt> *unable to set time -- probably you are not root\n");
+	    //if(opr->wdtDebug)
+		//printf ("wdt> *unable to set time -- probably you are not root\n");
+    	Debug(console,"WDT-ERR> settimeofday  %s\n",strerror(errno)) ;		
 		return (0);
 	}
 
@@ -172,7 +179,7 @@ int	writeClock( int year, int month, int day, int hour, int min, int sec, int we
     readClock();
 
     /* ------------------------------------ */
-	/* [3]. Time º¯°æÈÄ  ¸ðµâ ÃÊ±âÈ­  ....  */
+	/* [3]. Time ë³€ê²½í›„  ëª¨ë“ˆ ì´ˆê¸°í™”  ....  */
 	/* ------------------------------------ */
     for(i = 0; i < MAX_DEVICE; i++)
     {
@@ -190,7 +197,7 @@ int	writeClock( int year, int month, int day, int hour, int min, int sec, int we
     }
 
     /* ------------------------------------ */
-    /*  CPU ÀÌÁßÈ­ °í·Á...                  */
+    /*  CPU ì´ì¤‘í™” ê³ ë ¤...                  */
     /* ------------------------------------ */
     if(opr->dualCpuSts == SET)
     {

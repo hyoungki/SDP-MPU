@@ -1,30 +1,30 @@
 /*
- * gpio_lan_ctrl.c - IMX6SX GPIO1_14(LAN2) / GPIO1_15(LAN3) Á¦¾î ÇÁ·Î±×·¥
+ * gpio_lan_ctrl.c - IMX6SX GPIO1_14(LAN2) / GPIO1_15(LAN3) ì œì–´ í”„ë¡œê·¸ë¨
  *
  * Linux 5.15.52 / IMX6SX
  *
- * GPIO ¹øÈ£ °è»ê (GPIO ¹øÈ£ = (Controller-1)*32 + Pin):
+ * GPIO ë²ˆí˜¸ ê³„ì‚° (GPIO ë²ˆí˜¸ = (Controller-1)*32 + Pin):
  *   GPIO1_IO14 (LAN2) = (1-1)*32 + 14 = 14
  *   GPIO1_IO15 (LAN3) = (1-1)*32 + 15 = 15
  *
- * »ç¿ë¹ı:
+ * ì‚¬ìš©ë²•:
  *   ./gpio_lan_ctrl <target> <command> [options]
  *
  *   target  : lan2 | lan3 | all
  *   command : on | off | toggle | blink [count] [delay_ms]
  *
- * ¿¹½Ã:
+ * ì˜ˆì‹œ:
  *   ./gpio_lan_ctrl lan2 on            - LAN2 ON
  *   ./gpio_lan_ctrl lan3 off           - LAN3 OFF
- *   ./gpio_lan_ctrl lan2 toggle        - LAN2 »óÅÂ ¹İÀü
- *   ./gpio_lan_ctrl all on             - LAN2 + LAN3 µ¿½Ã ON
- *   ./gpio_lan_ctrl all blink 5 300    - LAN2 + LAN3 µ¿½Ã 5È¸ ±ô¹ÚÀÓ
+ *   ./gpio_lan_ctrl lan2 toggle        - LAN2 ìƒíƒœ ë°˜ì „
+ *   ./gpio_lan_ctrl all on             - LAN2 + LAN3 ë™ì‹œ ON
+ *   ./gpio_lan_ctrl all blink 5 300    - LAN2 + LAN3 ë™ì‹œ 5íšŒ ê¹œë°•ì„
  *
- * ÄÄÆÄÀÏ:
+ * ì»´íŒŒì¼:
  *   arm-linux-gnueabihf-gcc -o gpio_lan_ctrl gpio_lan_ctrl.c
- *   ¶Ç´Â º¸µå¿¡¼­: gcc -o gpio_lan_ctrl gpio_lan_ctrl.c
+ *   ë˜ëŠ” ë³´ë“œì—ì„œ: gcc -o gpio_lan_ctrl gpio_lan_ctrl.c
  
- * 2026-05-11 ¿ÀÈÄ 5:54:26  by Claude
+ * 2026-05-11 ì˜¤í›„ 5:54:26  by Claude
  */
 
 #include <stdio.h>
@@ -35,8 +35,8 @@
 #include <errno.h>
 
 /* -------------------------------------------------------
- * GPIO ÇÉ Á¤ÀÇ
- * GPIO ¹øÈ£ = (Controller - 1) * 32 + Pin
+ * GPIO í•€ ì •ì˜
+ * GPIO ë²ˆí˜¸ = (Controller - 1) * 32 + Pin
  * GPIO1_IO14 (LAN2) = (1-1)*32 + 14 = 14
  * GPIO1_IO15 (LAN3) = (1-1)*32 + 15 = 15
  * ------------------------------------------------------- */
@@ -53,24 +53,24 @@
 #define GPIO_UNEXPORT_PATH  SYSFS_GPIO_PATH "/unexport"
 
 /* -------------------------------------------------------
- * GPIO ÄÁÅØ½ºÆ® ±¸Á¶Ã¼
- *  - 2°³ÀÇ GPIO¸¦ µ¶¸³ÀûÀ¸·Î °ü¸®ÇÏ±â À§ÇØ
- *    °æ·Î ¹öÆÛ¸¦ ±¸Á¶Ã¼·Î ºĞ¸®
+ * GPIO ì»¨í…ìŠ¤íŠ¸ êµ¬ì¡°ì²´
+ *  - 2ê°œì˜ GPIOë¥¼ ë…ë¦½ì ìœ¼ë¡œ ê´€ë¦¬í•˜ê¸° ìœ„í•´
+ *    ê²½ë¡œ ë²„í¼ë¥¼ êµ¬ì¡°ì²´ë¡œ ë¶„ë¦¬
  * ------------------------------------------------------- */
 typedef struct {
-    int  gpio_num;                  /* sysfs GPIO ¹øÈ£         */
-    char name[16];                  /* Ç¥½Ã¿ë ÀÌ¸§ (LAN2/LAN3) */
+    int  gpio_num;                  /* sysfs GPIO ë²ˆí˜¸         */
+    char name[16];                  /* í‘œì‹œìš© ì´ë¦„ (LAN2/LAN3) */
     char dir_path[64];              /* /sys/class/gpio/gpioN   */
     char value_path[72];            /* .../gpioN/value         */
     char direction_path[76];        /* .../gpioN/direction     */
 } gpio_ctx_t;
 
-/* Àü¿ª GPIO ÄÁÅØ½ºÆ® (LAN2, LAN3) */
+/* ì „ì—­ GPIO ì»¨í…ìŠ¤íŠ¸ (LAN2, LAN3) */
 static gpio_ctx_t g_lan2;
 static gpio_ctx_t g_lan3;
 
 /* -------------------------------------------------------
- * À¯Æ¿¸®Æ¼: sysfs ÆÄÀÏ¿¡ ¹®ÀÚ¿­ ¾²±â
+ * ìœ í‹¸ë¦¬í‹°: sysfs íŒŒì¼ì— ë¬¸ìì—´ ì“°ê¸°
  * ------------------------------------------------------- */
 static int sysfs_write(const char *path, const char *value)
 {
@@ -98,7 +98,7 @@ static int sysfs_write(const char *path, const char *value)
 
 /* -------------------------------------------------------
  * GPIO Export
- *  - ÀÌ¹Ì export µÇ¾îÀÖÀ¸¸é skip
+ *  - ì´ë¯¸ export ë˜ì–´ìˆìœ¼ë©´ skip
  * ------------------------------------------------------- */
 static int gpio_export(gpio_ctx_t *ctx)
 {
@@ -115,7 +115,7 @@ static int gpio_export(gpio_ctx_t *ctx)
     if (sysfs_write(GPIO_EXPORT_PATH, num_str) < 0)
         return -1;
 
-    usleep(100 * 1000); /* export ÈÄ sysfs ³ëµå »ı¼º ´ë±â: 100ms */
+    usleep(100 * 1000); /* export í›„ sysfs ë…¸ë“œ ìƒì„± ëŒ€ê¸°: 100ms */
     printf("[INFO] GPIO%d (%s) exported.\n", ctx->gpio_num, ctx->name);
     return 0;
 }
@@ -137,8 +137,8 @@ static int gpio_unexport(gpio_ctx_t *ctx)
 }
 
 /* -------------------------------------------------------
- * GPIO Direction ÀĞ±â
- *  ¹İÈ¯°ª: 1=output, 0=input, -1=error
+ * GPIO Direction ì½ê¸°
+ *  ë°˜í™˜ê°’: 1=output, 0=input, -1=error
  * ------------------------------------------------------- */
 static int gpio_get_direction(gpio_ctx_t *ctx)
 {
@@ -164,7 +164,7 @@ static int gpio_get_direction(gpio_ctx_t *ctx)
 }
 
 /* -------------------------------------------------------
- * GPIO Direction ¼³Á¤
+ * GPIO Direction ì„¤ì •
  * ------------------------------------------------------- */
 static int gpio_set_direction(gpio_ctx_t *ctx, const char *direction)
 {
@@ -172,8 +172,8 @@ static int gpio_set_direction(gpio_ctx_t *ctx, const char *direction)
 }
 
 /* -------------------------------------------------------
- * GPIO Value ÀĞ±â
- *  ¹İÈ¯°ª: 0 ¶Ç´Â 1, ½ÇÆĞ ½Ã -1
+ * GPIO Value ì½ê¸°
+ *  ë°˜í™˜ê°’: 0 ë˜ëŠ” 1, ì‹¤íŒ¨ ì‹œ -1
  * ------------------------------------------------------- */
 static int gpio_get_value(gpio_ctx_t *ctx)
 {
@@ -199,7 +199,7 @@ static int gpio_get_value(gpio_ctx_t *ctx)
 }
 
 /* -------------------------------------------------------
- * GPIO Value ¼³Á¤
+ * GPIO Value ì„¤ì •
  * ------------------------------------------------------- */
 static int gpio_set_value(gpio_ctx_t *ctx, int value)
 {
@@ -208,10 +208,10 @@ static int gpio_set_value(gpio_ctx_t *ctx, int value)
 }
 
 /* -------------------------------------------------------
- * GPIO ÃÊ±âÈ­
- *  - °æ·Î ¹®ÀÚ¿­ ¼³Á¤
+ * GPIO ì´ˆê¸°í™”
+ *  - ê²½ë¡œ ë¬¸ìì—´ ì„¤ì •
  *  - Export
- *  - Direction = out  (ÀÌ¹Ì outÀÌ¸é Skip ¡æ value º¸Á¸)
+ *  - Direction = out  (ì´ë¯¸ outì´ë©´ Skip â†’ value ë³´ì¡´)
  * ------------------------------------------------------- */
 static int gpio_init(gpio_ctx_t *ctx)
 {
@@ -224,17 +224,17 @@ static int gpio_init(gpio_ctx_t *ctx)
     snprintf(ctx->direction_path, sizeof(ctx->direction_path),
              SYSFS_GPIO_PATH "/gpio%d/direction", ctx->gpio_num);
 
-    /* export Àü¿¡ ÀÌ¹Ì Á¸Àç ¿©ºÎ È®ÀÎ */
+    /* export ì „ì— ì´ë¯¸ ì¡´ì¬ ì—¬ë¶€ í™•ì¸ */
     already_exported = (access(ctx->dir_path, F_OK) == 0);
 
     if (gpio_export(ctx) < 0)
         return -1;
 
     /*
-     * ¡Ú direction Àç¼³Á¤ Skip ·ÎÁ÷ ¡Ú
-     * ÀÌ¹Ì "out"À¸·Î ¼³Á¤µÈ °æ¿ì Àç¼³Á¤ÇÏÁö ¾Ê´Â´Ù.
-     * direction¿¡ "out"À» ¾²¸é Ä¿³ÎÀÌ value¸¦ 0À¸·Î °­Á¦
-     * ÃÊ±âÈ­ÇÏ´Â ºÎÀÛ¿ëÀÌ ÀÖ¾î toggle µ¿ÀÛÀÌ ±úÁö±â ¶§¹®.
+     * â˜… direction ì¬ì„¤ì • Skip ë¡œì§ â˜…
+     * ì´ë¯¸ "out"ìœ¼ë¡œ ì„¤ì •ëœ ê²½ìš° ì¬ì„¤ì •í•˜ì§€ ì•ŠëŠ”ë‹¤.
+     * directionì— "out"ì„ ì“°ë©´ ì»¤ë„ì´ valueë¥¼ 0ìœ¼ë¡œ ê°•ì œ
+     * ì´ˆê¸°í™”í•˜ëŠ” ë¶€ì‘ìš©ì´ ìˆì–´ toggle ë™ì‘ì´ ê¹¨ì§€ê¸° ë•Œë¬¸.
      */
     if (already_exported && gpio_get_direction(ctx) == 1) {
         printf("[INFO] GPIO%d (%s) already output. Skip direction set.\n",
@@ -253,8 +253,8 @@ static int gpio_init(gpio_ctx_t *ctx)
 }
 
 /* -------------------------------------------------------
- * lan_on() - ÁöÁ¤ GPIO LAN Æ÷Æ® È°¼ºÈ­
- *   gpio_number : LAN2_GPIO(14) ¶Ç´Â LAN3_GPIO(15)
+ * lan_on() - ì§€ì • GPIO LAN í¬íŠ¸ í™œì„±í™”
+ *   gpio_number : LAN2_GPIO(14) ë˜ëŠ” LAN3_GPIO(15)
  * ------------------------------------------------------- */
 static int lan_on(int gpio_number)
 {
@@ -279,8 +279,8 @@ static int lan_on(int gpio_number)
 }
 
 /* -------------------------------------------------------
- * lan_off() - ÁöÁ¤ GPIO LAN Æ÷Æ® ºñÈ°¼ºÈ­
- *   gpio_number : LAN2_GPIO(14) ¶Ç´Â LAN3_GPIO(15)
+ * lan_off() - ì§€ì • GPIO LAN í¬íŠ¸ ë¹„í™œì„±í™”
+ *   gpio_number : LAN2_GPIO(14) ë˜ëŠ” LAN3_GPIO(15)
  * ------------------------------------------------------- */
 static int lan_off(int gpio_number)
 {
@@ -305,9 +305,9 @@ static int lan_off(int gpio_number)
 }
 #if 0
 /* -------------------------------------------------------
- * lan_toggle() - ÇöÀç »óÅÂ¸¦ ÀĞ¾î ¹İÀü
- *   ON  ¡æ OFF
- *   OFF ¡æ ON
+ * lan_toggle() - í˜„ì¬ ìƒíƒœë¥¼ ì½ì–´ ë°˜ì „
+ *   ON  â†’ OFF
+ *   OFF â†’ ON
  * ------------------------------------------------------- */
 static int lan_toggle(gpio_ctx_t *ctx)
 {
@@ -333,7 +333,7 @@ static int lan_toggle(gpio_ctx_t *ctx)
 
 
 /* -------------------------------------------------------
- * lan_blink() - ÁöÁ¤ È½¼ö/°£°İÀ¸·Î ±ô¹ÚÀÓ
+ * lan_blink() - ì§€ì • íšŸìˆ˜/ê°„ê²©ìœ¼ë¡œ ê¹œë°•ì„
  * ------------------------------------------------------- */
 static int lan_blink(gpio_ctx_t *ctx, int count, int delay_ms)
 {
@@ -355,7 +355,7 @@ static int lan_blink(gpio_ctx_t *ctx, int count, int delay_ms)
 }
 
 /* -------------------------------------------------------
- * »ç¿ë¹ı Ãâ·Â
+ * ì‚¬ìš©ë²• ì¶œë ¥
  * ------------------------------------------------------- */
 static void print_usage(const char *prog)
 {
@@ -363,21 +363,21 @@ static void print_usage(const char *prog)
     printf("Usage: %s <target> <command> [count] [delay_ms]\n", prog);
     printf("\n");
     printf("  target:\n");
-    printf("    lan2          - LAN2 (GPIO1_IO14 = gpio%d) Á¦¾î\n", LAN2_GPIO);
-    printf("    lan3          - LAN3 (GPIO1_IO15 = gpio%d) Á¦¾î\n", LAN3_GPIO);
-    printf("    all           - LAN2 + LAN3 µ¿½Ã Á¦¾î\n");
+    printf("    lan2          - LAN2 (GPIO1_IO14 = gpio%d) ì œì–´\n", LAN2_GPIO);
+    printf("    lan3          - LAN3 (GPIO1_IO15 = gpio%d) ì œì–´\n", LAN3_GPIO);
+    printf("    all           - LAN2 + LAN3 ë™ì‹œ ì œì–´\n");
     printf("\n");
     printf("  command:\n");
-    printf("    on            - LAN Æ÷Æ® È°¼ºÈ­ (HIGH)\n");
-    printf("    off           - LAN Æ÷Æ® ºñÈ°¼ºÈ­ (LOW)\n");
-    printf("    toggle        - ÇöÀç »óÅÂ ¹İÀü (ON->OFF / OFF->ON)\n");
-    printf("    blink [N] [T] - NÈ¸ T ms °£°İÀ¸·Î ±ô¹ÚÀÓ (±âº»: 5È¸, 500ms)\n");
+    printf("    on            - LAN í¬íŠ¸ í™œì„±í™” (HIGH)\n");
+    printf("    off           - LAN í¬íŠ¸ ë¹„í™œì„±í™” (LOW)\n");
+    printf("    toggle        - í˜„ì¬ ìƒíƒœ ë°˜ì „ (ON->OFF / OFF->ON)\n");
+    printf("    blink [N] [T] - NíšŒ T ms ê°„ê²©ìœ¼ë¡œ ê¹œë°•ì„ (ê¸°ë³¸: 5íšŒ, 500ms)\n");
     printf("\n");
-    printf("  GPIO Á¤º¸:\n");
+    printf("  GPIO ì •ë³´:\n");
     printf("    LAN2 : GPIO1_IO14  sysfs -> /sys/class/gpio/gpio%d/\n", LAN2_GPIO);
     printf("    LAN3 : GPIO1_IO15  sysfs -> /sys/class/gpio/gpio%d/\n", LAN3_GPIO);
     printf("\n");
-    printf("  ¿¹½Ã:\n");
+    printf("  ì˜ˆì‹œ:\n");
     printf("    %s lan2 on\n", prog);
     printf("    %s lan3 off\n", prog);
     printf("    %s lan2 toggle\n", prog);
@@ -388,7 +388,7 @@ static void print_usage(const char *prog)
 #endif 
 #if 0
 /* -------------------------------------------------------
- * ´ÜÀÏ GPIO ÄÁÅØ½ºÆ®¿¡ ´ëÇÑ ¸í·É Ã³¸®
+ * ë‹¨ì¼ GPIO ì»¨í…ìŠ¤íŠ¸ì— ëŒ€í•œ ëª…ë ¹ ì²˜ë¦¬
  * ------------------------------------------------------- */
 static int do_command(gpio_ctx_t *ctx, int argc, char *argv[], int cmd_idx)
 {
@@ -409,25 +409,25 @@ static int do_command(gpio_ctx_t *ctx, int argc, char *argv[], int cmd_idx)
 
         if (count <= 0 || delay_ms <= 0) {
             fprintf(stderr,
-                    "[ERROR] count¿Í delay_ms´Â ¾ç¼ö¿©¾ß ÇÕ´Ï´Ù.\n");
+                    "[ERROR] countì™€ delay_msëŠ” ì–‘ìˆ˜ì—¬ì•¼ í•©ë‹ˆë‹¤.\n");
             return -1;
         }
         int ret = lan_blink(ctx, count, delay_ms);
-        lan_off(ctx->gpio_num); /* Á¾·á ½Ã OFF */
+        lan_off(ctx->gpio_num); /* ì¢…ë£Œ ì‹œ OFF */
         return ret;
 
     } else {
-        fprintf(stderr, "[ERROR] ¾Ë ¼ö ¾ø´Â ¸í·É: %s\n", cmd);
+        fprintf(stderr, "[ERROR] ì•Œ ìˆ˜ ì—†ëŠ” ëª…ë ¹: %s\n", cmd);
         return -1;
     }
 }
 #endif 
 /* -------------------------------------------------------
- * ´ÜÀÏ GPIO ÄÁÅØ½ºÆ®¿¡ ´ëÇÑ ¸í·É Ã³¸®
- *   ctx     : Á¦¾îÇÒ GPIO ÄÁÅØ½ºÆ®
+ * ë‹¨ì¼ GPIO ì»¨í…ìŠ¤íŠ¸ì— ëŒ€í•œ ëª…ë ¹ ì²˜ë¦¬
+ *   ctx     : ì œì–´í•  GPIO ì»¨í…ìŠ¤íŠ¸
  *   cmd     : "on" | "off" | "toggle" | "blink"
- *   count   : blink È½¼ö    (blink ÀÌ¿Ü ¸í·É¿¡¼­´Â ¹«½ÃµÊ)
- *   delay_ms: blink °£°İ ms (blink ÀÌ¿Ü ¸í·É¿¡¼­´Â ¹«½ÃµÊ)
+ *   count   : blink íšŸìˆ˜    (blink ì´ì™¸ ëª…ë ¹ì—ì„œëŠ” ë¬´ì‹œë¨)
+ *   delay_ms: blink ê°„ê²© ms (blink ì´ì™¸ ëª…ë ¹ì—ì„œëŠ” ë¬´ì‹œë¨)
  * ------------------------------------------------------- */
 static int do_command(gpio_ctx_t *ctx, const char *cmd)
 {
@@ -439,14 +439,14 @@ static int do_command(gpio_ctx_t *ctx, const char *cmd)
  
     } 
     else {
-        fprintf(stderr, "[ERROR] ¾Ë ¼ö ¾ø´Â ¸í·É: %s\n", cmd);
+        fprintf(stderr, "[ERROR] ì•Œ ìˆ˜ ì—†ëŠ” ëª…ë ¹: %s\n", cmd);
         return -1;
     }
 }
 
 void lan_gpio_init(void)
 {
-    /* ¦¡¦¡ GPIO ÄÁÅØ½ºÆ® ÃÊ±âÈ­ ¦¡¦¡ */
+    /* â”€â”€ GPIO ì»¨í…ìŠ¤íŠ¸ ì´ˆê¸°í™” â”€â”€ */
     g_lan2.gpio_num = LAN2_GPIO;
     snprintf(g_lan2.name, sizeof(g_lan2.name), "LAN2");
 
@@ -500,19 +500,19 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    /* ¦¡¦¡ GPIO ÄÁÅØ½ºÆ® ÃÊ±âÈ­ ¦¡¦¡ */
+    /* â”€â”€ GPIO ì»¨í…ìŠ¤íŠ¸ ì´ˆê¸°í™” â”€â”€ */
     g_lan2.gpio_num = LAN2_GPIO;
     snprintf(g_lan2.name, sizeof(g_lan2.name), "LAN2");
 
     g_lan3.gpio_num = LAN3_GPIO;
     snprintf(g_lan3.name, sizeof(g_lan3.name), "LAN3");
 
-    /* ¦¡¦¡ target ÆÄ½Ì ¦¡¦¡ */
+    /* â”€â”€ target íŒŒì‹± â”€â”€ */
     const char *target = argv[1];
     const char *cmd    = argv[2];
 
     if (strcmp(target, "lan2") == 0) {
-        /* LAN2 ´Üµ¶ Á¦¾î */
+        /* LAN2 ë‹¨ë… ì œì–´ */
         if (gpio_init(&g_lan2) < 0) {
             fprintf(stderr, "[ERROR] LAN2 GPIO init failed.\n");
             return EXIT_FAILURE;
@@ -520,7 +520,7 @@ int main(int argc, char *argv[])
         ret = do_command(&g_lan2, argc, argv, 2);
 
     } else if (strcmp(target, "lan3") == 0) {
-        /* LAN3 ´Üµ¶ Á¦¾î */
+        /* LAN3 ë‹¨ë… ì œì–´ */
         if (gpio_init(&g_lan3) < 0) {
             fprintf(stderr, "[ERROR] LAN3 GPIO init failed.\n");
             return EXIT_FAILURE;
@@ -528,7 +528,7 @@ int main(int argc, char *argv[])
         ret = do_command(&g_lan3, argc, argv, 2);
 
     } else if (strcmp(target, "all") == 0) {
-        /* LAN2 + LAN3 µ¿½Ã Á¦¾î */
+        /* LAN2 + LAN3 ë™ì‹œ ì œì–´ */
         if (gpio_init(&g_lan2) < 0) {
             fprintf(stderr, "[ERROR] LAN2 GPIO init failed.\n");
             return EXIT_FAILURE;
@@ -545,12 +545,12 @@ int main(int argc, char *argv[])
         ret |= do_command(&g_lan3, argc, argv, 2);
 
     } else {
-        fprintf(stderr, "[ERROR] ¾Ë ¼ö ¾ø´Â target: %s\n\n", target);
+        fprintf(stderr, "[ERROR] ì•Œ ìˆ˜ ì—†ëŠ” target: %s\n\n", target);
         print_usage(argv[0]);
         return EXIT_FAILURE;
     }
 
-    /* ¹Ì»ç¿ë °æ°í ¾ïÁ¦ (gpio_unexport´Â ÇÊ¿ä½Ã È£Ãâ) */
+    /* ë¯¸ì‚¬ìš© ê²½ê³  ì–µì œ (gpio_unexportëŠ” í•„ìš”ì‹œ í˜¸ì¶œ) */
     (void)gpio_unexport;
 
     return (ret == 0) ? EXIT_SUCCESS : EXIT_FAILURE;

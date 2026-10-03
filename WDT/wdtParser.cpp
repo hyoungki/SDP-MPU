@@ -17,7 +17,7 @@
 
 extern  "C"   { void Debug_CPP(CONSOLE_INFO *debug, ...);};
 
-extern  SDP_DEVICE      *deviceCFG[MAX_DEVICE];         // °èÀü±â/ÀåÄ¡- ÀüÀÚ½Ä¹èÀü¹Ý (GiPAM, HiMAP...)
+extern  SDP_DEVICE      *deviceCFG[MAX_DEVICE];         // ê³„ì „ê¸°/ìž¥ì¹˜- ì „ìžì‹ë°°ì „ë°˜ (GiPAM, HiMAP...)
 extern  OPR_MSG         *opr;
 extern  CONSOLE_INFO	*console;
 
@@ -215,11 +215,11 @@ bool parserGetValue(double *pValue, int calPoint)
 		return(false);
 
 	//
-	// /DEVICE / Point Á¤º¸ È®ÀÎ
+	// /DEVICE / Point ì •ë³´ í™•ì¸
 	//
 	dev = (SDP_DEVICE *) deviceCFG[module-1];
 	
-	if(ptType == 1)     // »óÅÂ Æ÷ÀÎÆ® 
+	if(ptType == 1)     // ìƒíƒœ í¬ì¸íŠ¸ 
     {
         ptBuf = (POINT_BUF *) &dev->diPtBuf[point - 1];
         *pValue = ptBuf->status;
@@ -293,7 +293,7 @@ bool parserConvert(void)
 	m_listPostfix.clear();
 	for (int idx = 0; idx < m_cntToken; idx++)
 	{
-		// ¿¬»êÀÚ°¡ ¾Æ´Ñ °æ¿ì ÆÐ½º
+		// ì—°ì‚°ìžê°€ ì•„ë‹Œ ê²½ìš° íŒ¨ìŠ¤
 		token = m_listToken[idx];
 		if (token.find("[") == 0 || (opIndex = parserIsOperator(token)) < 0)
 		{
@@ -301,7 +301,7 @@ bool parserConvert(void)
 //			printf("push_back m_listPostfix [%s]\n", token.c_str());
 			continue;
 		}
-		// ¿¬»êÀÚ Ã³¸®
+		// ì—°ì‚°ìž ì²˜ë¦¬
 		switch (opIndex)
 		{
 		case 0:			// '('
@@ -464,7 +464,7 @@ bool parserOrderInfix(int point)
 //------------------------------------------------------------------------------
 bool parserInitData(const char *pInfix)
 {
-	// Infix È®ÀÎ
+	// Infix í™•ì¸
 	if (strlen(pInfix) <= 0)
 		return(false);
 

@@ -1,0 +1,11 @@
+
+
+
+1. I2C Addr 변경
+2. VMEbus 주소 변경
+3. sighandler    출력   //if(opr->wdtDebug) 
+
+
+
+TODO
+wdt open 실패시...처리.빠짐

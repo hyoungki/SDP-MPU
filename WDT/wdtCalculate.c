@@ -3,10 +3,10 @@
  * ==============================================================
  * System TARGET : ACE Control SDP-2000 Ver 1.0   
  * Target CPU    : MPC8248, VME6U
- * Main Factors  : ½º¸¶Æ®±ŞÀü¿ë SDP ÀÚÀåÄ¡ 
- *     - MPU ÀÌÁßÈ­ ±¸¼º
- *     - ESOP/SIO ¿¬°è : Àü·Â°¨½Ã, ¿ø°İÁø´Ü, Àü·ÂÇ°Áú, °íÀåÁ¡ µî
- *     - ÅëÇÕ ½Ã¹Ä·¹ÀÌÅÍ : 2013/07/08 V8.2 Àû¿ë 
+ * Main Factors  : ìŠ¤ë§ˆíŠ¸ê¸‰ì „ìš© SDP ìì¥ì¹˜ 
+ *     - MPU ì´ì¤‘í™” êµ¬ì„±
+ *     - ESOP/SIO ì—°ê³„ : ì „ë ¥ê°ì‹œ, ì›ê²©ì§„ë‹¨, ì „ë ¥í’ˆì§ˆ, ê³ ì¥ì  ë“±
+ *     - í†µí•© ì‹œë®¬ë ˆì´í„° : 2013/07/08 V8.2 ì ìš© 
  * --------------------------------------------------------------
  * System DESIGN : SANE-SYSTEM   .... by  Lee Ho-Sang
  * Initial-DATA  : 2016,03,25
@@ -19,13 +19,13 @@
 #include    "external.h"
 #
 
-typedef unsigned char   bool;           // wdtParser.cpp ÂüÁ¶ 
+typedef unsigned char   bool;           // wdtParser.cpp ì°¸ì¡° 
 
 extern bool 	parserCalculate(const char *, double *, bool *, int);
 
 
 /*
-*   SDP ¿¬»êÆ÷ÀÎÆ® Ã³¸®...
+*   SDP ì—°ì‚°í¬ì¸íŠ¸ ì²˜ë¦¬...
 */
 void    sdp_Calculate_Point()
 {
@@ -45,21 +45,21 @@ void    sdp_Calculate_Point()
 	byte    *lowdata;
 
     /* -------------------------------------------------------- */
-    /*  ÀüÃ¼ ¿¬»ê Æ÷ÀÎÆ® ´ë»ó                                   */
+    /*  ì „ì²´ ì—°ì‚° í¬ì¸íŠ¸ ëŒ€ìƒ                                   */
     /* -------------------------------------------------------- */
     for(point=0; point < MAX_CAL_POINT; point++)
     {
-        calPt = (CAL_POINT_BUF *) calPtBuf[point];// calPtBuf ÀÌ ³ğÀÌ °øÀ¯ ¸Ş¸ğ¸®¸¦ °¡¸®Å²´Ù...
+        calPt = (CAL_POINT_BUF *) calPtBuf[point];// calPtBuf ì´ ë†ˆì´ ê³µìœ  ë©”ëª¨ë¦¬ë¥¼ ê°€ë¦¬í‚¨ë‹¤...
         
-        /* Æ÷ÀÎÆ® DB ¿¡¼­ »ç¿ë¿µ¿ªÀ» ¼³Á¤... */
-        if(calPt->useFlag == RESET) continue;           // CAL Æ÷ÀÎÆ® Á¤ÀÇ¿©ºÎ
-        if(calPt->config == RESET)  continue;           // Matching Æ÷ÀÎÆ® Á¤ÀÇ¿©ºÎ
+        /* í¬ì¸íŠ¸ DB ì—ì„œ ì‚¬ìš©ì˜ì—­ì„ ì„¤ì •... */
+        if(calPt->useFlag == RESET) continue;           // CAL í¬ì¸íŠ¸ ì •ì˜ì—¬ë¶€
+        if(calPt->config == RESET)  continue;           // Matching í¬ì¸íŠ¸ ì •ì˜ì—¬ë¶€
             
         if(opr->calDebug == point)  
         Debug(console, "\n----------------------------------------------------\n"); 
     
         /* ------------------------------------------------ */
-        /*  ¿¬»êÆ÷ÀÎÆ® : ¿¬»ê½Ä °è»ê...                     */
+        /*  ì—°ì‚°í¬ì¸íŠ¸ : ì—°ì‚°ì‹ ê³„ì‚°...                     */
         /* ------------------------------------------------ */
         if (!parserCalculate(calPt->calString, &value, &online, point))
         {   
@@ -70,7 +70,7 @@ void    sdp_Calculate_Point()
 	    }
 	    
 	    /* ------------------------------------------------ */
-        /*  ¿¬»êÆ÷ÀÎÆ® : °èÀü±â Á¤º¸ Uppdate...             */
+        /*  ì—°ì‚°í¬ì¸íŠ¸ : ê³„ì „ê¸° ì •ë³´ Uppdate...             */
         /* ------------------------------------------------ */
 	    if(calPt->pointType == CAL_STATUS)           // STATUS
 	    {
@@ -85,17 +85,17 @@ void    sdp_Calculate_Point()
 	        if((devPt < 0) || (devPt >= MAX_DEV_DI_POINT))  continue;    
 	             
 	        /* ------------------------------------ */
-	        /* ¿¬»êÆ÷ÀÎÆ® °èÀü±â Á¤º¸ Update...     */
+	        /* ì—°ì‚°í¬ì¸íŠ¸ ê³„ì „ê¸° ì •ë³´ Update...     */
 	        /* ------------------------------------ */
 	        dev   = (SDP_DEVICE *) deviceCFG[calPt->devNo-1];
 	        ptBuf = (POINT_BUF *) &dev->diPtBuf[calPt->devPt-1];
 	        ptBuf->status = status;
 	        
-	        gettimeofday(&ptBuf->updateTime, NULL);       //»óÅÂÁ¤º¸ °»½Å½Ã°£ ÃßÃâ...timeval  Form          
+	        gettimeofday(&ptBuf->updateTime, NULL);       //ìƒíƒœì •ë³´ ê°±ì‹ ì‹œê°„ ì¶”ì¶œ...timeval  Form          
 	        
 	        /* ------------------------------------ */ 
             /* DNP HOST Data Assign...              */
-            /*  => DNP-HOST º° »óÅÂÆ÷ÀÎÆ® Á¤º¸ ÀúÀå */
+            /*  => DNP-HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ ì •ë³´ ì €ì¥ */
             /* ------------------------------------ */ 
             if(opr->dnpHostEnb == SET)
             {
@@ -113,9 +113,9 @@ void    sdp_Calculate_Point()
                         dnpIndex = dnpIndex - 1;
                     
                         /* ---------------------------------------- */
-                        /* HOST º° »óÅÂÆ÷ÀÎÆ® Á¤º¸                  */
-                        /*  MULTI Point Ã³¸® :                      */
-                        /*    - »óÅÂ¿¡ µû¶ó¼­ º¹ÇÕÃ³¸®              */
+                        /* HOST ë³„ ìƒíƒœí¬ì¸íŠ¸ ì •ë³´                  */
+                        /*  MULTI Point ì²˜ë¦¬ :                      */
+                        /*    - ìƒíƒœì— ë”°ë¼ì„œ ë³µí•©ì²˜ë¦¬              */
                         /* ---------------------------------------- */
                         if (ptBuf->status)    
                         {
@@ -126,8 +126,8 @@ void    sdp_Calculate_Point()
                             host->sts_pointData[dnpIndex] = PT_FLAG_STS_OFF| PT_FLAG_ONLINE;
                         }
                     
-                        /* Device Offline : »óÅÂÁ¤º¸ Ç¥±â */
-                        if(dev->online != 1)   host->sts_pointData[dnpIndex] &= (~PT_FLAG_ONLINE);      // Æ÷ÀÎÆ® »óÅÂ¸¦ OfflineÀ¸·Î...
+                        /* Device Offline : ìƒíƒœì •ë³´ í‘œê¸° */
+                        if(dev->online != 1)   host->sts_pointData[dnpIndex] &= (~PT_FLAG_ONLINE);      // í¬ì¸íŠ¸ ìƒíƒœë¥¼ Offlineìœ¼ë¡œ...
                     }
                 }                           
             }
@@ -139,17 +139,17 @@ void    sdp_Calculate_Point()
                 Debug(console, ">> CAL-ANALOG(%02d) : online=%d, value=%4.2f\n", point+1, online, value); 
 	        
 	        /* ------------------------------------ */
-	        /* ¿¬»êÆ÷ÀÎÆ® °èÀü±â Á¤º¸ Update...     */
+	        /* ì—°ì‚°í¬ì¸íŠ¸ ê³„ì „ê¸° ì •ë³´ Update...     */
 	        /* ------------------------------------ */
 	        dev   = (SDP_DEVICE *) deviceCFG[calPt->devNo-1];
 	        ptBuf = (POINT_BUF *) &dev->aiPtBuf[calPt->devPt-1];
 	        ptBuf->floatData = value;
 	        
-	        gettimeofday(&ptBuf->updateTime, NULL);       //»óÅÂÁ¤º¸ °»½Å½Ã°£ ÃßÃâ...timeval  Form      
+	        gettimeofday(&ptBuf->updateTime, NULL);       //ìƒíƒœì •ë³´ ê°±ì‹ ì‹œê°„ ì¶”ì¶œ...timeval  Form      
 	        
 	        /* ------------------------------------ */ 
             /* DNP HOST Data Assign...              */
-            /*  => DNP-HOST º° °èÃøÆ÷ÀÎÆ® Á¤º¸ ÀúÀå */
+            /*  => DNP-HOST ë³„ ê³„ì¸¡í¬ì¸íŠ¸ ì •ë³´ ì €ì¥ */
             /* ------------------------------------ */
 	        if(opr->dnpHostEnb == SET)
             {	            
@@ -172,15 +172,15 @@ void    sdp_Calculate_Point()
 
                         anaPoint->flag = PT_FLAG_ONLINE;
 
-                        /* Device Offline : ¾Æ³¯·Î±× Á¤º¸ Ç¥±â */
+                        /* Device Offline : ì•„ë‚ ë¡œê·¸ ì •ë³´ í‘œê¸° */
                         if(dev->online != 1)    anaPoint->flag = 0;
                         else                    anaPoint->flag = PT_FLAG_ONLINE;        
 
-//hkkim 2026-02-07 ¿ÀÈÄ 4:28:30
-                        if ( opr->endian == ROAD_BIG_ENDIAN)       // »çÀå´Ô                 
+//hkkim 2026-02-07 ì˜¤í›„ 4:28:30
+                        if ( opr->endian == ROAD_BIG_ENDIAN)       // ì‚¬ì¥ë‹˜                 
                         {
                             anaPoint->pointData = (int) ptBuf->floatData;                         
-                            // ¾Æ·¡´Â ptBuf¸¦ host·Î ¿Å±â´Âµ¥ . . host¿¡¼­ lowdata[0Àº] LSB
+                            // ì•„ë˜ëŠ” ptBufë¥¼ hostë¡œ ì˜®ê¸°ëŠ”ë° . . hostì—ì„œ lowdata[0ì€] LSB
                             lowdata = (byte *) &ptBuf->floatData;                                                                        
                             anaPoint->lowdata[0] = lowdata[3];
                             anaPoint->lowdata[1] = lowdata[2];
@@ -191,7 +191,7 @@ void    sdp_Calculate_Point()
                         {
                              anaPoint->pointData = (int) ptBuf->floatData;                         
 
-                            // ¾Æ·¡´Â ptBuf¸¦ host·Î ¿Å±â´Âµ¥ . . host¿¡¼­ lowdata[0Àº] LSB
+                            // ì•„ë˜ëŠ” ptBufë¥¼ hostë¡œ ì˜®ê¸°ëŠ”ë° . . hostì—ì„œ lowdata[0ì€] LSB
                             lowdata = (byte *) &ptBuf->floatData; 
 #if 0                                                                       
                             anaPoint->lowdata[0] = lowdata[0];
