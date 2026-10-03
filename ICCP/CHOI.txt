@@ -1,0 +1,191 @@
+#if 1	// 2016.09 ChoiBC Modify : SUNOS porting
+#else
+#endif
+
+
+
+#if 1	// 2016.01.22 ChoiBC Modify : Association Active
+#endif
+
+#if 1	// 2016.04.26 ChoiBC Modify
+#endif
+
+#if 1	// 2016.04.15 ChoiBC Modify : For ICCP Server Only:
+#else
+#endif
+
+#if 1	// 2016.04.12 ChoiBC Bug Fixed
+#else
+#endif
+
+#if 1	// 2016.09 ChoiBC Modify : StateQTimetagExtended
+#else
+#endif
+
+#if 0	// 2016.09 ChoiBC Test
+#endif
+
+#ifndef	_PLATFORM_LINUX	// 2016.05.03 ChoiBC Test
+#endif
+
+#if 0	// CHOIBC DELETE
+#endif	// CHOIBC DELETE
+#if 0	// CHOIBC DELETE
+#endif
+
+#if 1	// 2016.11 ChoiBC MPU 절체 명령 추가
+#endif
+
+#if 1	// 2017.11 ChoiBC MMS LOG 추가
+#endif
+
+#if 1	// 2017.11 ChoiBC : Debugging
+#endif
+
+#if 1	// 2017.11 ChoiBC Modify : 일정 시간동안 링크로 Identify가 오지 않으면, 접속을 끊는다.
+#endif
+	RemoteCC_Association_IdentifyTimeout
+제어 명령인 경우, 반영하여야 한다.
+ACK received for DSTS 도 반영해야 하나?
+
+sample  : DEBUG;MLOG_ENABLE;DEBUG_SISCO;MUI_REDUNDANCY_SUPPORT;ICCP_LITE;ICFG;MMS_LITE;ETHERNET;WIN32;_CONSOLE;MOSI;LEAN_T;SISCO_STACK_CFG;%(PreprocessorDefinitions)
+
+2020.09.14 비츠로시스 FEP 연동
+  - ICCP 데이터 교환 포맷 아래 참조
+	1. 스마트급전제어시스템 FEP - 개발 설명서 - 20171116.hwp
+#ifdef _VITZROSYS_FEP	// 2019.09 ChoiBC Modify : 비츠로시스 FEP 연동
+#endif
+  - 제어 : u_mis_device_operate ()
+  - MPU 절체 명령 : MPU_SWITCH_DEV_NAME
+	--> iccp.conf에 RemoteCC_ServerObjects_MpuSwitchDevName 추가
+  - COA : miuCheckAnalogChanges () 추가
+	--> iccp.conf에 RemoteCC_ServerObjects_ChangeOfAnalogPeriod 추가
+
+  ~~~ mis_usr.c : u_mis_dsts_activity () MIS_DSTS_STOP_TRANSFER시 ICCP 통신링크 이중화를 제거 꼭 확인할것
+#if 1	// 2020.09 ChoiBC Modify : NO_ICCP_DUAL_LINK (ICCP 통신링크 이중화 제거)
+#else
+#endif	// 2020.09 ChoiBC Modify : NO_ICCP_DUAL_LINK (ICCP 통신링크 이중화 제거)
+
+2020.08.05 : ICCP 통신링크 이중화를 제거한다.
+#if 1	// 2020.08 ChoiBC Modify : NO_ICCP_DUAL_LINK (ICCP 통신링크 이중화 제거)
+#else
+#endif	// 2020.08 ChoiBC Modify : NO_ICCP_DUAL_LINK (ICCP 통신링크 이중화 제거)
+  - 검토사항
+	일정 시간동안 링크로 Identify가 오지 않으면, 접속을 끊는다.
+	==> iccp.conf : RemoteCC_Association_IdentifyTimeout = 0
+  - mis_usr.c : u_mis_dsts_activity () 
+	MIS_DSTS_STOP_TRANSFER시 iccpShmSetCommMode (0, 0); 필요없을것 같다.
+
+
+2017.01.31
+  - miuCheckEventQueue () 에서 ICCP 연결이 되어 있을때만 SOE를 보낸는지 검토할 것
+2016.11.15
+  - 실시간 통신데이터를 감시해야한다.
+  data read 는 _SetPointData2Miudv () 내에서 printf 를 넣자.
+  통신 연결 및 끊어지는거는 찾아야한다.
+
+<< Changing DV 'SDI034' offline(1) value(1) time(2017-11-02 18:45:49.566)
+    DV:SDI034   value: 1          2017-11-02 18:45:49.566  offline--> SOE
+link> ICCP: delete SOE-Q count ... 1
+<< Begin Report for DSTS 'DSTS0000'
+<< End Report for DSTS 'DSTS0000'
+
+
+2016.11.09
+  - FepSimulator 사용법 : e --> s --> Z
+
+
+=============================================================================
+End List
+2017.11.03
+  - lan port를 뺐을때 ICCP Link가 금방 끊어지지 않는다. ===> TCP KEEP ALIVE 검토할 것
+		1. 설정 파일에 아래 내용 추가
+		/etc/sysctl.conf			: LINUX 시스템 설정 파일
+		# add by ChoiBC
+		net.ipv4.tcp_keepalive_intvl = 3
+		net.ipv4.tcp_keepalive_probes = 3
+		net.ipv4.tcp_keepalive_time = 5
+
+		2. LINUX 시스템 설정 보기 명령
+		/sbin/sysctl -a | grep keep
+		net.ipv4.tcp_keepalive_intvl = 3
+		net.ipv4.tcp_keepalive_probes = 3
+		net.ipv4.tcp_keepalive_time = 5
+
+		3. 설명
+		5 + 3 X 3 초후에 TCP 연결 해제.
+
+2016.11.15
+  - iccpShmAddSoeEntry Queue full --> 이전 거를 버리자
+2016.11.09
+  - miuCheckEventQueue : StartDsts 첫번째 일때 commMaster가 설정된다.
+	StartDsts의 끝을 모르므로 일정시간 지난 후, SOE 를 검사해야한다.
+	==> SOE는 무조건 첫번째에 등록한다.
+  - 이벤트 보낸 시점을 정확히는 모른다. ==> 알았다.
+	u_mis_dsts_activity ()
+		===> 그냥 보내고 나서 FULL이 아닌경우, 
+  - DsTs로 등록되지 않은 포인트는 SOE를 올리지 않는다.
+  - MI_TYPEID_STATE_SUPP_Q_TIMETAG_EXTENDED Value 에 MI_DATA_STATE_SUPP_SOE를 만든다.
+	==> SOE가 두번 올라간다. ?????
+  - MPU는 Start/Stop transfer for DSTS로 Master/Slave통신을 구분한다.
+		#if 1	// 2016.11 ChoiBC Modify : Start Transfer ==> commMaster
+		#if 1	// 2016.11 ChoiBC Modify : Stop Transfer ==> commSlave
+		===> u_mis_dsts_activity
+
+=============================================================================
+2016.09.22
+  - Control Log File 만들어야한다.
+2016.08.30
+  - ICCP 는 MMS TCP port(102) bind를 위해 root user로 실행 되어야한다.
+  - Window Test 환경
+	C:\ProgramData\SISCO\Network\Config\siscostackcfg.xml
+	D:\My Virtual Machines\shared\ACE-SDP-2000\ICCP\WIN32\FEP_A>..\micstcpsr0_ld_org.exe FEP_A_TO_SDP_A
+2016.05.24
+  - COS/SOE Event 응답 받은 후, Queue 삭제.
+  - 처음에 COS/SOE Event 전송후, 연결된 경우, Event가 없어진다. ==> DSTS Start 후에, Event를 보내야한다.
+2016.04.29
+  - miusrobj.PPC.c/h 만들어야 한다.
+2016.04.18
+  - mi_main.c slog_ipc_std_cmd_service() 호출하는 부분 검토할것
+2016.04.06
+  - u_mi_reject_ind()
+	We recommend making the application aware of the problem, disabling,
+	 and terminating the association.
+	 For further information on disabling and terminating an Association
+	  please refer to functions mi_disable_assoc and _mi_abort_assoc.
+=============================================================================
+TLE - Time Limit for Execution
+RBE	- Report By Exception
+
+MIC		- MI Client
+MIS		- MI Server
+MICS	- sample ICCP application
+
+VCC : 0, VCC_SPEC (VMD_SPEC)
+ICC : 1, ICC_SPEC (DOM_SPEC)
+
+=============================================================================
+
+2016.05.24
+    mis_device->select_timeout = (ST_DOUBLE) localDev->selTime * 1000.0;
+2016.04.18
+  - MPU가 Master/Slave일때 처리하는 루틴이 필요하다.
+  - assoc enable/disable로 처리해보자.
+	(mi.c 2439) mi_assoc->ctrl_flags & MI_ASSOC_CTRL_ENABLE
+2016.04.14
+  - mi_ir.c, miu_ir.c, rpl.c 프로젝트에서 삭제하자.
+2016.04.11
+  - SDB 포인트 타입에 Analog Output이 없다.
+  - mics_usr.xml 설정항목을 iccp_config 파일로 만들자.
+  - checkBackId 를 사용하는지 검토할것. ==> 안하는거 같음.
+2016.04.06
+  - mmsop_en.h server only로 정리해야한다. (RefMan-14참조)
+2016.03.31
+  - siscostackcfg.xml을 읽은 후에, Comm Address를 바꾸자.
+	dib_match_remote_ar_ll () 함수 참조
+	인코딩은 _ssc_AR_Name_AP_Title_EFun () 참조.
+  - mics_usr.xml을 읽은 후에, 서버 변수를 추가하자.
+  - LocalObjects 가 뭘까?
+2016.03.25 Project 속성에서 디버깅 - 명령인수 에 SDP_A_TO_FEP_A 추가
+2016.03.24 Project 속성에서 MUI_REDUNDANCY_SUPPORT 삭제
+

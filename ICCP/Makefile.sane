@@ -1,0 +1,51 @@
+#
+# Makefile for ICCP
+#
+include ../common.make
+
+CFLAGS   += $(INCLUDEDIRS) $(FLAGS_APP)
+
+#
+# --- Makefile rules
+#
+DEFINES =
+LDOPTS = $(DEFINES) -L$(USER_LIB)
+CC = $(CROSS_COMPILE)gcc $(CCOPTS) -I$(USER_INC)
+LINK = $(CROSS_COMPILE)gcc $(LDOPTS)
+
+.c.o:	; $(CC) $<
+
+%.o: %.c
+#	$(CC) -c -o   $@ $<
+	$(CC) -c $(CFLAGS) -o $@ $<
+#
+# Object files for this demo
+#
+OBJS =	iccpMain.o
+
+BAKS = *.bak
+
+LIBS = -lLocal
+
+#
+# Library files used for dependency tests
+#
+LIB_DEPS =
+
+#
+# Target Process
+#
+TARGET = ICCP
+
+#
+# Make the executable program
+#
+default:	$(TARGET)
+
+$(TARGET):	$(OBJS)
+#	$(CC) ${CFLAGS} -o $@ $(OBJS)
+	$(LINK) $(OBJS) -o $@ $(LIBS)
+	@cp -f  $@ $(NFS_HOME)
+	
+clean:
+	@/bin/rm -fr core $(TARGET) $(OBJS) $(BAKS)

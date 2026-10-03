@@ -1,0 +1,287 @@
+# Notes on Type Flags:
+#   ":TT"  Types are 'Transient', building block types to be discarded
+#   ":TKU" Types are 'Keep', 'Unique' types are are kept for use at runtime
+
+
+":TKU", "Integer16", 		"Short",	""
+":TT", "MMSIdentifier", 	"Vstring64",	""
+":TT", "Boolean",	 		"Bool",		""
+":TT", "Unsigned8", 		"Ubyte",	""
+":TT", "Unsigned16", 		"Ushort",	""
+":TT", "Integer32", 		"Long",		""
+":TT", "TimeInterval16", 	"<Integer16>",	""
+
+#
+# IEC 870-6-503
+
+# 8.1.1 
+
+":TKU", "Visible_String_32", 	"Vstring32",	""
+
+# 8.1.2 
+
+":TKU", "MMSObjectName", 
+  "{
+   (Scope)      <Unsigned8>,
+   (DomainName) <MMSIdentifier>,
+   (Name)       <MMSIdentifier>
+   }",	""
+
+# 8.1.3 
+
+":TKU", "GMTBasedS", "<Integer32>",	""
+":TT",  "GMTBasedM", "<Integer32>",	""
+":TT",  "GMTBasedH", "<Integer32>",	""
+":TT",  "GMTBasedD", "<Integer32>",	""
+
+# 8.1.3 
+
+":TT", "TimeStampExtended", 
+  "{
+   (GMTBasedS)    <GMTBasedS>,
+   (Milliseconds) <TimeInterval16>
+   }",	""
+
+# 8.1.4 
+
+":TT", "TimeIntervalD",		"<Integer16>",	""
+":TT", "TimeIntervalH",  	"<Integer16>",	""
+":TT", "TimeIntervalM",  	"<Integer16>",	""
+":TT", "TimeIntervalS",  	"<Integer16>",	""
+":TT", "TimeIntervalL16", 	"<Integer16>",	""
+":TT", "TimeIntervalL32", 	"<Integer32>",	""
+
+# 8.1.7 
+":TKU", "DSConditions",		"Bstring5",	""
+":TKU", "TAConditions",     "Bstring8", ""
+
+# 8.1.6 
+
+":TKU", "DSTransferSet1996", 
+  "{
+   (DataSetName)           <MMSObjectName>,
+   (StartTime)             <GMTBasedS>,
+   (Interval)              <TimeIntervalS>,
+   (TLE)                   <TimeIntervalS>,
+   (BufferTime)            <TimeIntervalS>,
+   (IntegrityCheck)        <TimeIntervalS>,
+   (DSConditionsRequested) <DSConditions>,
+   (BlockData) 		       <Boolean>,
+   (Critical)		       <Boolean>,
+   (RBE)		           <Boolean>,
+   (Status)		           <Boolean>,
+   (EventCodeRequested)	   <Integer16>
+   }" ,	""
+
+":TKU", "DSTransferSet2000", 
+  "{
+   (DataSetName)           <MMSObjectName>,
+   (StartTime)             <GMTBasedS>,
+   (Interval)              <TimeIntervalS>,
+   (TLE)                   <TimeIntervalS>,
+   (BufferTime)            <TimeIntervalS>,
+   (IntegrityCheck)        <TimeIntervalS>,
+   (DSConditionsRequested) <DSConditions>,
+   (BlockData) 			   <Boolean>,
+   (Critical)		       <Boolean>,
+   (RBE)		           <Boolean>,
+   (AllChangesReported)	   <Boolean>,
+   (Status)		           <Boolean>,
+   (EventCodeRequested)	   <Integer16>
+   }" ,	""
+
+":TKU", "IMTransferSet",	"<Boolean>",	""
+
+":TKU", "TATransferSet",
+  "{
+   (TAConditionsRequested)	<TAConditions>,
+   (BlockData)				<Boolean>,
+   (Status)					<Boolean>
+   }", ""
+   
+# 8.1.8
+":TKU", "SupportedFeatures", 	"Bstring12",	""
+
+# 8.1.9
+
+":TKU", "TASE2Version", 
+  "{
+   (MajorVersionNumber) <Integer16>,
+   (MinorVersionNumber) <Integer16>
+   }",	""
+
+#
+# IEC 870-6-802
+#
+
+# 6.1.1
+":TT", "Data_Flags", 		"Bstring8",	""
+":TT", "Data_TimeStamp", 	"<GMTBasedS>",	""
+":TT", "COV_Counter", 		"<Unsigned16>",	""
+
+":TKU", "Data_Real", 		"Float",	""
+":TKU", "Data_State", 		"Bstring8",	""
+":TKU", "Data_Discrete", 	"<Integer32>",	""
+ 
+":TKU", "Data_RealQ"
+   "{
+    (Value) <Data_Real>,
+    (Flags) <Data_Flags>
+    }",	""
+
+":TKU", "Data_StateQ", "<Data_State>",	""
+
+":TKU", "Data_DiscreteQ",
+  "{
+   (Value) <Data_Discrete>,
+   (Flags) <Data_Flags>
+   }",	""
+
+":TKU", "Data_RealQTimeTag",
+   "{
+    (Value) 	<Data_Real>,
+    (TimeStamp) <Data_TimeStamp>,
+    (Flags) 	<Data_Flags>
+    }",	""
+
+":TKU", "Data_StateQTimeTag", 
+  "{
+   (TimeStamp) 	<Data_TimeStamp>,
+   (Flags) 	    <Data_Flags>
+   }",	""
+
+
+":TKU", "Data_DiscreteQTimeTag", 
+  "{
+   (Value) 	<Data_Discrete>,
+   (TimeStamp) 	<Data_TimeStamp>,
+   (Flags) 	<Data_Flags>
+   }",	""
+
+":TKU", "Data_RealExtended", 
+  "{
+   (Value) 	    <Data_Real>,
+   (TimeStamp) 	<Data_TimeStamp>,
+   (Flags) 	    <Data_Flags>,
+   (COV) 	    <COV_Counter>
+   }",	""
+
+":TKU", "Data_StateExtended", 
+  "{
+   (TimeStamp) 	<Data_TimeStamp>,
+   (Flags) 	    <Data_State>,
+   (COV) 	    <COV_Counter>
+   }",	""
+
+":TKU", "Data_DiscreteExtended", 
+  "{
+   (Value) 	    <Data_Discrete>,
+   (TimeStamp) 	<Data_TimeStamp>,
+   (Flags) 	    <Data_Flags>,
+   (COV) 	    <COV_Counter>
+   }",	""
+
+":TKU", "Data_RealQTimeTagExtended",
+   "{
+    (Value) 	<Data_Real>,
+    (TimeStamp) <TimeStampExtended>,
+    (Flags) 	<Data_Flags>
+    }",	""
+
+":TKU", "Data_StateQTimeTagExtended", 
+  "{
+   (TimeStamp)  <TimeStampExtended>,
+   (Flags)   	<Data_Flags>
+   }",	""
+
+":TKU", "Data_DiscreteQTimeTagExtended", 
+  "{
+   (Value) 	    <Data_Discrete>,
+   (TimeStamp)  <TimeStampExtended>,
+   (Flags) 	    <Data_Flags>
+   }",	""
+
+# B.3.2
+
+":TKU", "Data_StateSupplemental", 		"Bstring8",	""
+
+":TKU", "Data_StateSupplementalQ",
+  "{
+   (Value) <Data_StateSupplemental>,
+   (Flags) <Data_Flags>
+   }",	""
+
+":TKU", "Data_StateSupplementalQTimeTag", 
+  "{
+   (Value) 	<Data_StateSupplemental>,
+   (TimeStamp) 	<Data_TimeStamp>,
+   (Flags) 	<Data_Flags>
+   }",	""
+
+":TKU", "Data_StateSupplementalExtended", 
+  "{
+   (Value) 	    <Data_StateSupplemental>,
+   (TimeStamp) 	<Data_TimeStamp>,
+   (Flags) 	    <Data_Flags>,
+   (COV) 	    <COV_Counter>
+   }",	""
+
+":TKU", "Data_StateSupplementalQTimeTagExtended", 
+  "{
+   (Value) 	    <Data_StateSupplemental>,
+   (TimeStamp)  <TimeStampExtended>,
+   (Flags) 	    <Data_Flags>
+   }",	""
+
+# 6.1.2
+
+":TKU", "Control_Command", 		"Short", 	""
+":TKU", "Control_Setpoint_Real", 	"Float", 	""
+":TKU", "Control_Setpoint_Discrete", 	"Short", 	""
+
+":TKU", "SBO_CheckBackName",		"Short",	""
+
+":TT", "TextString", 	"Vstring255",	""
+":TT", "TagFlags", 	"Bstring3"  ,	""
+
+":TKU", "TagValue", 
+  "{
+   (Flags) 	<TagFlags>,
+   (Reason)	<TextString>
+   }",	""
+
+# ???
+":TT", "Scope", "<Integer16>",	""
+
+":TT", "User_Data", 
+  "{
+   <Integer16>,
+   Long
+   }",	""
+
+
+#6.4 Information Buffer Type Descriptions
+
+":TT", "ReferenceNum",	"Long",	""
+":TT", "Number",	"Long", ""
+
+":TKU", "InfoMessHeader",	
+  "{
+   (InfoReference)	<ReferenceNum>,
+   (LocalReference)	<ReferenceNum>,
+   (MessageId)		<ReferenceNum>,
+   (Size)			<Number>
+   }",	""
+
+":TKU", "InfoBuffXXX", 	"Ostring128", ""
+
+# not in spec
+
+":TKU", "TAAccountRequest", 
+  "{
+   (TransferAccountReference)	<ReferenceNum>,
+   (StartTime)					<GMTBasedS>,
+   (Duration)					<TimeIntervalL32>, 
+   (RequestId)					<ReferenceNum>, 
+   (TaConditionsRequested)		<TAConditions>
+   }", ""

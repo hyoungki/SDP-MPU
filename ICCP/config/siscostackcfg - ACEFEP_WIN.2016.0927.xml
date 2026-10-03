@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- 2018.08.31 ChoiBC : Test for FEP A -->
+<!-- Uncomment to use DTD / Schema 
+<!DOCTYPE STACK_CFG SYSTEM "C:\Program Files\SISCO\Network\StackCfg.dtd">
+
+<STACK_CFG xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:noNamespaceSchemaLocation="C:\Program Files\SISCO\Network\StackCfg.xsd">
+-->
+
+<STACK_CFG>
+	<!--==================================================-->
+	<!--LeanT Stack Profiles-->
+	<!--==================================================-->
+	<LeanT_Profile_List>
+		<LeanT_Profile>
+			<!--For SNAP-Lite-->
+			<Name>SNAP</Name>
+			<Session_Disconnect_Timeout>60</Session_Disconnect_Timeout>
+			<Tcp_Enable>Yes</Tcp_Enable>
+			<Tcp_Max_Tpdu_Len>65531</Tcp_Max_Tpdu_Len>
+			<Tcp_Max_Spdu_Outstanding>50</Tcp_Max_Spdu_Outstanding>
+			<Tcp_Listen_Port>102</Tcp_Listen_Port>
+			<Tcp_Max_Idle_Time>0</Tcp_Max_Idle_Time>
+			<Gensock_Wakeup_Port_Base>55050</Gensock_Wakeup_Port_Base>
+			<Gensock_Wakeup_Port_Range>90</Gensock_Wakeup_Port_Range>
+			<Tp4_Enable>No</Tp4_Enable>
+		</LeanT_Profile>
+
+		<LeanT_Profile>
+			<!--For Applications-->
+			<Name>Application</Name>
+			<Session_Disconnect_Timeout>60</Session_Disconnect_Timeout>
+			<Tcp_Enable>Yes</Tcp_Enable>
+			<Tcp_Max_Tpdu_Len>65531</Tcp_Max_Tpdu_Len>
+			<Tcp_Max_Spdu_Outstanding>50</Tcp_Max_Spdu_Outstanding>
+			<Tcp_Max_Idle_Time>0</Tcp_Max_Idle_Time>
+			<Tcp_Event_Wakeup_Port_Base>56000</Tcp_Event_Wakeup_Port_Base>
+			<Tcp_Event_Wakeup_Port_Range>100</Tcp_Event_Wakeup_Port_Range>
+			<Gensock_Wakeup_Port_Base>55050</Gensock_Wakeup_Port_Base>
+			<Gensock_Wakeup_Port_Range>90</Gensock_Wakeup_Port_Range>
+			<Tp4_Enable>No</Tp4_Enable>
+		</LeanT_Profile>
+	</LeanT_Profile_List>
+
+	<!--==================================================-->
+	<!--SNAP-Lite Parameters-->
+	<!--==================================================-->
+	<App_SNAP>
+		<Max_Users>64</Max_Users>
+		<Max_Binds_Per_User>64</Max_Binds_Per_User>
+		<IPC_Port>10044</IPC_Port>
+		<!--IPC_Domain_Socket_Path for UNIX/Linex IPC-->
+		<IPC_Domain_Socket_Path>/tmp</IPC_Domain_Socket_Path>
+		<IPC_Timeout>25000</IPC_Timeout>
+		<CPU_Affinity>0x00000003</CPU_Affinity>
+	</App_SNAP>
+
+	<!--==================================================-->
+	<!--List of AR Names (Local and Remote)-->
+	<!--==================================================-->
+	<AR_Name_List>
+		<AR_Name>
+			<Name>iccpclient</Name>
+			<Description>for compatability with older DIBS</Description>
+			<AP_Title>1 3 9999 1</AP_Title>
+			<AE_Qualifier>1</AE_Qualifier>
+			<PSEL>00 00 00 06</PSEL>
+			<SSEL>00 01</SSEL>
+			<TSEL>00 01</TSEL>
+			<IP_Address>192.168.1.10</IP_Address>
+			<Authentication_Mode>AE Title</Authentication_Mode>
+		</AR_Name>
+
+		<AR_Name>
+			<Name>iccpserver</Name>
+			<Description>for compatability with older DIBS</Description>
+			<AP_Title>1 3 9999 2</AP_Title>
+			<AE_Qualifier>2</AE_Qualifier>
+			<PSEL>00 00 00 05</PSEL>
+			<SSEL>00 01</SSEL>
+			<TSEL>00 01</TSEL>
+			<IP_Address>192.168.1.8</IP_Address>
+			<Authentication_Mode>AE Title</Authentication_Mode>
+		</AR_Name>
+
+		<AR_Name>
+			<Name>SiteA</Name>
+			<Description>for compatability with older DIBS</Description>
+			<AP_Title>1 3 9999 2</AP_Title>
+			<AE_Qualifier>2</AE_Qualifier>
+			<PSEL>00 00 00 05</PSEL>
+			<SSEL>00 01</SSEL>
+			<TSEL>00 01</TSEL>
+			<IP_Address>192.168.1.193</IP_Address>
+			<Authentication_Mode>AE Title</Authentication_Mode>
+		</AR_Name>
+
+		<AR_Name>
+			<Name>SiteB</Name>
+			<Description>for compatability with older DIBS</Description>
+			<AP_Title>1 3 9999 1</AP_Title>
+			<AE_Qualifier>1</AE_Qualifier>
+			<PSEL>00 00 00 06</PSEL>
+			<SSEL>00 02</SSEL>
+			<TSEL>00 02</TSEL>
+			<IP_Address>192.168.1.199</IP_Address>
+			<Authentication_Mode>AE Title</Authentication_Mode>
+		</AR_Name>
+
+		<AR_Name>
+			<Name>FEP_A</Name>
+			<Description>for SDP test</Description>
+			<AP_Title>1 3 5555 1</AP_Title>
+			<AE_Qualifier>1</AE_Qualifier>
+			<PSEL>00 00 00 01</PSEL>
+			<SSEL>00 01</SSEL>
+			<TSEL>00 01</TSEL>
+			<IP_Address>127.0.0.1</IP_Address>
+		<Authentication_Mode>AE Title</Authentication_Mode>
+		</AR_Name>
+
+		<AR_Name>
+			<Name>FEP_B</Name>
+			<Description>for SDP test</Description>
+			<AP_Title>1 3 5555 2</AP_Title>
+			<AE_Qualifier>2</AE_Qualifier>
+			<PSEL>00 00 00 02</PSEL>
+			<SSEL>00 02</SSEL>
+			<TSEL>00 02</TSEL>
+			<IP_Address>127.0.0.1</IP_Address>
+			<Authentication_Mode>AE Title</Authentication_Mode>
+		</AR_Name>
+
+		<AR_Name>
+			<Name>SDP_A</Name>
+			<Description>for SDP test</Description>
+			<AP_Title>1 3 5555 3</AP_Title>
+			<AE_Qualifier>3</AE_Qualifier>
+			<PSEL>00 00 00 03</PSEL>
+			<SSEL>00 03</SSEL>
+			<TSEL>00 03</TSEL>
+			<IP_Address>127.0.0.1</IP_Address>
+			<Authentication_Mode>AE Title</Authentication_Mode>
+		</AR_Name>
+
+		<AR_Name>
+			<Name>SDP_B</Name>
+			<Description>for SDP test</Description>
+			<AP_Title>1 3 5555 4</AP_Title>
+			<AE_Qualifier>4</AE_Qualifier>
+			<PSEL>00 00 00 04</PSEL>
+			<SSEL>00 04</SSEL>
+			<TSEL>00 04</TSEL>
+			<IP_Address>127.0.0.1</IP_Address>
+			<Authentication_Mode>AE Title</Authentication_Mode>
+		</AR_Name>
+
+	</AR_Name_List>
+
+	<!--==================================================-->
+	<!--List of AR Name Matching Profiles-->
+	<!--==================================================-->
+	<AR_Matching_Profile_List>
+		<AR_Matching_Profile>
+			<Name>ARMatching</Name>
+			<Allow_Missing_AE>No</Allow_Missing_AE>
+			<Allow_Extra_AE>Yes</Allow_Extra_AE>
+			<Match_AP_Title>Yes</Match_AP_Title>
+			<Match_AE_Qualifier>Yes</Match_AE_Qualifier>
+			<Match_AP_Invoke>No</Match_AP_Invoke>
+			<Match_AE_Invoke>No</Match_AE_Invoke>
+			<Match_PSEL>Yes</Match_PSEL>
+			<Match_TSEL>Yes</Match_TSEL>
+			<Match_SSEL>Yes</Match_SSEL>
+			<Match_IP_Address>Yes</Match_IP_Address>
+			<Host_Name_Support>No</Host_Name_Support>
+		</AR_Matching_Profile>
+	</AR_Matching_Profile_List>
+
+	<!--==================================================-->
+	<!--Application Security Profiles-->
+	<!--==================================================-->
+	<Security_Profile_List>
+		<Security_Profile>
+			<Name>No Security</Name>
+			<Secure>No</Secure>
+		</Security_Profile>
+		<Security_Profile>
+			<Name>SNAP</Name>
+			<Secure>No</Secure>
+			<Encrypt_Req_Called>No</Encrypt_Req_Called>
+		</Security_Profile>
+	</Security_Profile_List>
+
+	<!--==================================================-->
+	<!--Application's Network and Security Configuration-->
+	<!--==================================================-->
+	<App_Network_List>
+		<App_Network>
+			<App_Name>SNAP-Lite</App_Name>
+			<LeanT_Profile>SNAP</LeanT_Profile>
+			<Security_Profile>SNAP</Security_Profile>
+		</App_Network>
+
+		<App_Network>
+			<App_Name>UtilitySiteA</App_Name>
+			<LeanT_Profile>Application</LeanT_Profile>
+			<Security_Profile>No Security</Security_Profile>
+			<AR_Matching_Profile>ARMatching</AR_Matching_Profile>
+			<App_AR_Name Role="Local">SiteA</App_AR_Name>
+			<App_AR_Name Role="Remote">SiteB</App_AR_Name>
+			<Max_Mms_Pdu_Length>32000</Max_Mms_Pdu_Length>
+			<Max_Calling_Connections>0</Max_Calling_Connections>
+			<Max_Called_Connections>2</Max_Called_Connections>
+		</App_Network>
+
+		<App_Network>
+			<App_Name>UtilitySiteB</App_Name>
+			<LeanT_Profile>Application</LeanT_Profile>
+			<Security_Profile>No Security</Security_Profile>
+			<AR_Matching_Profile>ARMatching</AR_Matching_Profile>
+			<App_AR_Name Role="Local">SiteB</App_AR_Name>
+			<App_AR_Name Role="Remote">SiteA</App_AR_Name>
+			<Max_Mms_Pdu_Length>32000</Max_Mms_Pdu_Length>
+			<Max_Calling_Connections>2</Max_Calling_Connections>
+			<Max_Called_Connections>0</Max_Called_Connections>
+		</App_Network>
+
+		<App_Network>
+			<App_Name>APP_FEP_A_TO_SDP_A</App_Name>
+			<LeanT_Profile>Application</LeanT_Profile>
+			<Security_Profile>No Security</Security_Profile>
+			<AR_Matching_Profile>ARMatching</AR_Matching_Profile>
+			<App_AR_Name Role="Local">FEP_A</App_AR_Name>
+			<App_AR_Name Role="Remote">SDP_A</App_AR_Name>
+			<Max_Mms_Pdu_Length>32000</Max_Mms_Pdu_Length>
+			<Max_Calling_Connections>2</Max_Calling_Connections>
+			<Max_Called_Connections>0</Max_Called_Connections>
+		</App_Network>
+
+		<App_Network>
+			<App_Name>APP_FEP_A_TO_SDP_B</App_Name>
+			<LeanT_Profile>Application</LeanT_Profile>
+			<Security_Profile>No Security</Security_Profile>
+			<AR_Matching_Profile>ARMatching</AR_Matching_Profile>
+			<App_AR_Name Role="Local">FEP_A</App_AR_Name>
+			<App_AR_Name Role="Remote">SDP_B</App_AR_Name>
+			<Max_Mms_Pdu_Length>32000</Max_Mms_Pdu_Length>
+			<Max_Calling_Connections>2</Max_Calling_Connections>
+			<Max_Called_Connections>0</Max_Called_Connections>
+		</App_Network>
+
+		<App_Network>
+			<App_Name>APP_FEP_B_TO_SDP_A</App_Name>
+			<LeanT_Profile>Application</LeanT_Profile>
+			<Security_Profile>No Security</Security_Profile>
+			<AR_Matching_Profile>ARMatching</AR_Matching_Profile>
+			<App_AR_Name Role="Local">FEP_B</App_AR_Name>
+			<App_AR_Name Role="Remote">SDP_A</App_AR_Name>
+			<Max_Mms_Pdu_Length>32000</Max_Mms_Pdu_Length>
+			<Max_Calling_Connections>2</Max_Calling_Connections>
+			<Max_Called_Connections>0</Max_Called_Connections>
+		</App_Network>
+
+		<App_Network>
+			<App_Name>APP_FEP_B_TO_SDP_B</App_Name>
+			<LeanT_Profile>Application</LeanT_Profile>
+			<Security_Profile>No Security</Security_Profile>
+			<AR_Matching_Profile>ARMatching</AR_Matching_Profile>
+			<App_AR_Name Role="Local">FEP_B</App_AR_Name>
+			<App_AR_Name Role="Remote">SDP_B</App_AR_Name>
+			<Max_Mms_Pdu_Length>32000</Max_Mms_Pdu_Length>
+			<Max_Calling_Connections>2</Max_Calling_Connections>
+			<Max_Called_Connections>0</Max_Called_Connections>
+		</App_Network>
+
+		<App_Network>
+			<App_Name>APP_SDP_A</App_Name>
+			<LeanT_Profile>Application</LeanT_Profile>
+			<Security_Profile>No Security</Security_Profile>
+			<AR_Matching_Profile>ARMatching</AR_Matching_Profile>
+			<App_AR_Name Role="Local">SDP_A</App_AR_Name>
+			<App_AR_Name Role="Remote">FEP_A</App_AR_Name>
+			<App_AR_Name Role="Remote">FEP_B</App_AR_Name>
+			<Max_Mms_Pdu_Length>32000</Max_Mms_Pdu_Length>
+			<Max_Calling_Connections>0</Max_Calling_Connections>
+			<Max_Called_Connections>2</Max_Called_Connections>
+		</App_Network>
+
+		<App_Network>
+			<App_Name>APP_SDP_B</App_Name>
+			<LeanT_Profile>Application</LeanT_Profile>
+			<Security_Profile>No Security</Security_Profile>
+			<AR_Matching_Profile>ARMatching</AR_Matching_Profile>
+			<App_AR_Name Role="Local">SDP_B</App_AR_Name>
+			<App_AR_Name Role="Remote">FEP_A</App_AR_Name>
+			<App_AR_Name Role="Remote">FEP_B</App_AR_Name>
+			<Max_Mms_Pdu_Length>32000</Max_Mms_Pdu_Length>
+			<Max_Calling_Connections>0</Max_Calling_Connections>
+			<Max_Called_Connections>2</Max_Called_Connections>
+		</App_Network>
+
+	</App_Network_List>
+
+</STACK_CFG>
