@@ -1,0 +1,34 @@
+# init 20260824 
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.bak
+*~
+.depend
+
+
+# ����� ���� ��������
+/NFS
+/WDT/WDT
+/CLI-S2/CLI-S2
+/CLI/CLI
+/LINK/LINK
+/HOST/HOST
+/SCAN/SCAN
+/SCU/SCU
+/SIM/SIM
+/ICCP/ICCP
+SCAN
+WDT
+ICCP
+
+FEP_A
+FEP_B
+WIN32
+
+
+bak/
+
+ad
