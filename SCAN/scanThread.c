@@ -676,6 +676,11 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
     MPU_SOEQ_ENTRY  event;
     MPU_SOEQ_ENTRY_PACKED *event_packed;
 
+ 
+ 
+ 	// 2026-10-07 오후 4:15:03 
+	struct timeval  tv ;
+	char  buf[100];
     
     esio = (ESIO_CONFIG *) esioCFG[esioid];
     
@@ -826,10 +831,14 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
       
  // 자 출력한번 해주자...
          if(opr->soeDebug)
+         {   
+	        gettimeofday(&tv, NULL);
+            // 2026-10-07 오후 4:16:11 
+		    Debug(console,"\r\n%s : ", sprt_timeval (buf, sizeof(buf), &tv));            
             Debug(console,"eventCode[%d], devNo[%d], pointNo[%d], State[%d]\r\n", 
              event.eventCode, event.devNo , event.pointNo , event.state  ); 
             print_timeval( event.updateTime);
-                        
+          }              
 
            
             

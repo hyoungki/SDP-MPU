@@ -1658,7 +1658,7 @@ void mpuParaConfig()
     mpuCFG->dualModule  = dbMPU->dualModule;        // MPU Parameter : Module 이중화 운영모드 
     
     mpuCFG->scuUseFlag  = dbMPU->scuUseFlag;        // MPU Parameter : SCU 모듈 사용유무
-    mpuCFG->mmiUseFlag  = dbMPU->mmiUseFlag;        // MPU Parameter : MMI 모듈 사용유무
+    mpuCFG->mmiUseFlag  = dbMPU->mmiUseFlag;        // MPU Parameter : MMI 모듈 사용유, 표현은 ICCP 재기동 
     
     mpuCFG->statusDump  = dbMPU->statusDump;        // MPU Parameter : STATUS Dump 주기
     mpuCFG->analogDump  = dbMPU->analogDump;        // MPU Parameter : ANALOG Dump 주기
@@ -1696,7 +1696,7 @@ void mpuParaConfig()
     opr->iccpResetENB  = mpuCFG->mmiUseFlag;		// MPU Parameter : ICCP 관제에서 SDP 재기동 혀용/금지
     
      
-    if((opr->stsDumpPeriod <=0) || (opr->stsDumpPeriod > 300))  opr->stsDumpPeriod = 10;    // Default 10초
+    if((opr->stsDumpPeriod <=0) || (opr->stsDumpPeriod > 300))  opr->stsDumpPeriod = 10;    // Default 10초  1초 아닌가 ???
     if((opr->anaDumpPeriod <=0) || (opr->anaDumpPeriod > 300))  opr->anaDumpPeriod = 10;    // Default 10초    
           
           

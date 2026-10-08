@@ -2647,6 +2647,9 @@ int	main(int argc, char **argv)
     		printf("    rcv>> SDP-RESET Control... REBOOT..!       \n");
     		printf("=============================================\n");
     
+            // 2026-10-07 오후 3:27:56
+            system("reboot");
+    
 		}
 	
 		/* -------------------------------- */

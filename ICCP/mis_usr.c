@@ -964,6 +964,25 @@ static ST_VOID _misSendInitialIntegrity (MIS_DSTS *misDsts)
 	}
 
 /************************************************************************/
+/*		2026-10-07 오후 2:25:26 added by hkkim				*/
+/************************************************************************/
+
+static ST_VOID _misPrintReportCondition (MIS_DSTS *mis_dsts)
+{
+    ST_UINT8 cond = mis_dsts->ds_conditions;
+
+    QPRINTF ("\n[REPORT] DataSet: %s", mis_dsts->mis_ds->ds_name);
+    QPRINTF ("\n  Condition : 0x%02x [%s%s%s]",
+        (unsigned) cond,
+        (cond & MI_DSC_INTEGRITY) ? "Integrity " : "",
+        (cond & MI_DSC_INTERVAL)  ? "Interval "  : "",
+        (cond & MI_DSC_CHANGE)    ? "Change "    : "");
+    QPRINTF ("\n  TS Timestamp : %ld\n", (long) mis_dsts->ts_timestamp);
+}
+
+
+
+/************************************************************************/
 /*			u_mis_dsts_activity 				*/
 /************************************************************************/
 
@@ -1008,6 +1027,7 @@ ST_RET u_mis_dsts_activity (MIS_VCC *vcc, MIS_DSTS *misDsts,
 
 	case MIS_DSTS_BEGIN_REPORT :
 		QPRINTF ("<< Begin Report for DSTS '%s'\n", tsName);
+        _misPrintReportCondition(misDsts);		
 		break;
 
 	case MIS_DSTS_END_REPORT :
@@ -1231,7 +1251,7 @@ ST_RET u_mis_device_operate (MIS_DEVICE_IND_CTRL *dev_ind_ctrl)
 #endif
 
 #if 1	// 2016.05.25 ChoiBC Modify : Device Operate notification
-	iccpShmGetControlData (&control);
+	iccpShmGetControlData (&control); // sharedMemory 를 바로 사용하는대신  그 내용을 복사로 가져온다...
 	if (control.cntrFlag)
 	{
 		printf ("Operate Error : Control In Progress, device(%s)\n", devName);
@@ -1280,7 +1300,12 @@ ST_RET u_mis_device_operate (MIS_DEVICE_IND_CTRL *dev_ind_ctrl)
 	control.cntrPoint = info.devPt;
 	control.cntrTime  = 0;
 	pCommand = (MI_CONTROL_COMMAND *) dev_ind_ctrl->data_buf;
-	QPRINTF ("     OperateValue = %d\n", *pCommand);
+
+
+    QPRINTF("u_mis_device_operate\r\n");	
+	QPRINTF("     Dev[[%d],Point[%d]\r\n", control.cntrDev,control.cntrPoint  );
+	QPRINTF("     OperateValue = %d [%s]\n", *pCommand, ((*pCommand == 0) ? "TRIP" :"CLOSE") );
+
 	control.cntrState = (*pCommand == 0) ? 1 : 2;	// 1 : TRIP, 2: CLOSE
 
 	iccpShmSetControlData (&control);
