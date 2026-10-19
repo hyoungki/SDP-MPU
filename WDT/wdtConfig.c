@@ -493,7 +493,11 @@ int sdp_devPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
     	index = dPtBuf->iccpIndex;
     	if(index >= MAX_DEV_POINT)	 index = MAX_DEV_POINT - 1;
 #else    		
-        return (0);
+    
+     //    return (0);
+     // 2026-10-16 오후 2:55:32
+     // 그냥 DEV 추가 ...광명에서 선택 DSTS 가 안 됨.
+        index=devPt; 
 #endif        
     }
      
@@ -608,8 +612,8 @@ int sdp_virPoint_initial(int devNo, int devPt, POINT_BUF *dPtBuf)
     else if(dPtBuf->devType == CPU_RUN_POINT)   index = INDEX_SDP_RUN_MODE;    // 가상 포인트 : CPU 동작정보 ,[0] 1계, [1] 2계 동작정보  
     else if(dPtBuf->devType == CPU_STS_POINT)  
     {
-        if(dPtBuf->ptType == MCPUPT)            index = INDEX_SDP_RUN_A;        // 가상 포인트 : CPU 1계 상태정보, [0] 정상,[1] 이상
-        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_SDP_RUN_B;        // 가상 포인트 : CPU 2계 상태정보, [0] 정상,[1] 이상  
+        if(dPtBuf->ptType == MCPUPT)            index = INDEX_SDP_RUN_A;        // 72. 가상 포인트 : CPU 1계 상태정보, [0] 정상,[1] 이상
+        else if(dPtBuf->ptType == SCPUPT)       index = INDEX_SDP_RUN_B;        // 73. 가상 포인트 : CPU 2계 상태정보, [0] 정상,[1] 이상  
         else 									index = INDEX_SDP_RUN_A;        // 가상 포인트 : CPU 1계 상태정보, [0] 정상,[1] 이상	  
     }
     else if(dPtBuf->devType == RTU_RUN_POINT)   index = INDEX_RTU_MODE;         // 가상 포인트 : RTU 동작정보 ,[0] 1계, [1] 2계 동작정보 
