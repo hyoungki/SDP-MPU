@@ -716,25 +716,34 @@ void CmdTEST_Device(void)
 
     printf("[*] Test DEVICE Point Update.... !\n");
     printf("1. SDP-Device Point # [1..%d] : ", MAX_DEV_POINT);
+
     devIndex = getDecWord();
-    printf("2. Input Status [0 / 1] : ");
-    state = getDecWord() & 0x01;    
-    
     if((devIndex < 1) || (devIndex > MAX_DEV_POINT))
     {
         printf("*** Invalid DEVICE-Point ...%2d \n", devIndex);
         return;
     }
     
-    opr->devTestFlag = SET;
-    
-    /* 장치 포인트 정보 참조 */
-    devPoint = (POINT_BUF *) devPtBuf[devIndex - 1];
+
+
+    devPoint = (POINT_BUF *) devPtBuf[devIndex - 1];    
+
     if(devPoint->config == 0)
     {
         printf("*** No Define... DEVICE-Point = %d\n", devIndex);
+        opr->devTestFlag = 0; // 2026-10-15 오후 7:54:17 
         return ;
     }
+
+        
+    printf("2. Input Status [0 / 1] <%d>: ", devPoint->status );
+    state = getDecWord() & 0x01;    
+    
+    opr->devTestFlag = SET;
+    
+    /* 장치 포인트 정보 참조 */
+    //devPoint = (POINT_BUF *) devPtBuf[devIndex - 1];
+
           
     devNo = devPoint->devNo;        // 해당 계전기 번호, [1,2...64]
     point = devPoint->devPt;        // 해당 포인트 번호, [1,2..1024];
@@ -747,7 +756,7 @@ void CmdTEST_Device(void)
         diPoint = (POINT_BUF *) &dev->diPtBuf[point - 1];
         diPoint->status = state;
     
-        printf(">> DEVICE-POINT (%3d) : %s .... status = %d \n",   devIndex, diPoint->ptNameStr, diPoint->status);
+        printf(">> DEVICE-POINT (%3d) status[%d] : %s .... status = %d \n",   devIndex,   devPoint->status,   diPoint->ptNameStr, diPoint->status);
     }
 }
 

@@ -55,7 +55,7 @@ void    deviceComUpdate()
     devPtIndex = INDEX_ALL_DEVICE;                      // 전체 계전기 통신상태 포인트
     devPoint = (POINT_BUF *) devPtBuf[devPtIndex];      // Device Point 정보
     
-    for(ioid = 0; ioid < MAX_DEVICE; ioid++)
+    for(ioid = 0; ioid < MAX_DEVICE; ioid++)  // 112에서 64로 줄어 들었군...
     {
         dev      = (SDP_DEVICE *) deviceCFG[ioid];
         devPoint = (POINT_BUF *) devPtBuf[ioid+1];      // Device Point 정보 : 개별 계전기, 1,2 ~ 64
@@ -66,7 +66,7 @@ void    deviceComUpdate()
         /* -------------------------------------------- */
         if(ioid >= 64)  continue;
 
-        if(dev->scan == 0)  
+        if(dev->scan == 0)  // scan 하지 않으면 기본 offline 
         {
             devPoint->status = 1;   // [1] : 통신이상, Offline
             continue;

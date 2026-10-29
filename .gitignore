@@ -20,9 +20,9 @@
 /SCU/SCU
 /SIM/SIM
 /ICCP/ICCP
-SCAN
-WDT
-ICCP
+/PCAP
+
+# WDT가 있으면 WDT로 시작하는 모든게 무시되는 구나.
 
 FEP_A
 FEP_B

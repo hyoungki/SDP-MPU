@@ -501,7 +501,9 @@ static void _SetPointData2Miudv (MISU_DV *miuDv, ICCP_POINT_DATA *pData, ST_BOOL
 	/*  2017-11-14, LHS...                                          */
 	/*  - ICCP Debug시... printf() 문제로 전체 출력은않됨... ㅠㅠ   */
 	/* ------------------------------------------------------------ */      
-	if (opr->iccpDebug)	// QPRINTF
+	
+	if ( opr->mmsDebug)
+//	if (opr->iccpDebug)	// QPRINTF
 	{
 		MIS_DV *dv = MIS_DV_REF_TO_DV (miuDv->dvRef);
 		char buf[100];
@@ -955,7 +957,8 @@ static ST_VOID _misSendInitialIntegrity (MIS_DSTS *misDsts)
 		if (misu_get_dv_data (miuDv, &dvData) == SD_SUCCESS)
 			{
 			mis_dv_change_ex (var->v.dv_ref, miuDv->mi_type, &dvData);
-			printf ("\n  -> [%d] marked: %s", i, dv->dv_name ? dv->dv_name : "?");
+		// 2026-10-08 오후 2:17:49   dsts의 보고 내용인데 이제의미없어서...
+		//	printf ("\n  -> [%d] marked: %s", i, dv->dv_name ? dv->dv_name : "?");
 			count++;
 			}
 		}
@@ -1259,10 +1262,10 @@ ST_RET u_mis_device_operate (MIS_DEVICE_IND_CTRL *dev_ind_ctrl)
 	}
 #if 1	// 2016.11 ChoiBC MPU 절체 명령 추가
     #ifdef _VITZROSYS_FEP	// 2019.09 ChoiBC Modify : 비츠로시스 FEP 연동
-	if (strcmp (devName, getMpuSwitchDevName ()) == 0)
-#else
-	if (strcmp (devName, MPU_SWITCH_DEV_NAME) == 0)
-#endif
+	    if (strcmp (devName, getMpuSwitchDevName ()) == 0)
+    #else
+	    if (strcmp (devName, MPU_SWITCH_DEV_NAME) == 0)
+    #endif
 	{
 		memset (&control, 0, sizeof(control));
 		control.cntrType = 1;

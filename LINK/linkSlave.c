@@ -15,6 +15,9 @@ extern  ICCP_SOE_DELETE_QUEUE   *iccpDelSOEQ;     // ICCP-HOST Delete SOEQ
 
 static  byte    slvRxbuf[4096];
 static  byte    slvTxbuf[4096];
+/* 2026-10-28 points received from LINK master in the current SIM_POINT_DOWN session */
+static  int     ptRcvCnt = 0;
+
 
 extern  int     get_responseLINK(int SocketFd, byte	*rxbuf);
 extern  int	    checkDualCPU(int mode);
@@ -1117,6 +1120,10 @@ int rcvHandler_SLAVE(byte *sndbuf, byte *rxbuf, int rxcnt)
     	linkCfg->dbChanged = SET;
         //dbFileWrite(rtudb);
         
+        /* 2026-10-28 accumulate points received from master (start==0: restart, drop old count) */
+        if(startPt == 0)  ptRcvCnt = 0;
+        ptRcvCnt += ptNum;
+        
         /* 포인트 전송종료 Check ... */
         if(rxbuf[9] & 0x80)
         {
@@ -1130,12 +1137,23 @@ int rcvHandler_SLAVE(byte *sndbuf, byte *rxbuf, int rxcnt)
                 esio = (ESIO_CONFIG *) esioCFG[i];
                 if(esio->online != SET) continue;
            
+                /* 2026-10-28 ptRcvCnt = points received from master in this session (16 or all) */
+                if(ptRcvCnt > 16)
+                {   /* all points: send 1..MAX_DB_POINT, SCAN sets the end flag on the last frame */
+                    esio->endPointFlag = 0;
+                    esio->dbDownPoint  = 1;
+                    esio->dbDownFlag   = SET;
+                }
+                else
+                {   /* 16 points: send only that block with the end flag */
                 esio->endPointFlag = 0x80;
                 esio->dbDownPoint  = startPt + 1;
+                }
                 //esio->dbDownIndex  = ptNum;
                 
                 esio->pointCfgDown  = SET;
             }
+            ptRcvCnt = 0;       /* 2026-10-28 reset point count for the next download */
                         
         }
         else
@@ -1313,6 +1331,7 @@ int linkSlave()
    	            Debug(console,"slave> accept O.K...%s... port = %d, socket = %d\n", address, port, linkCfg->SocketID);
             
                 linkCfg->connectStatus = SET;
+                ptRcvCnt = 0;       /* 2026-10-28 new LINK connection = new point download session */
             }
             else
             {

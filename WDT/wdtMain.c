@@ -2415,7 +2415,7 @@ int	main(int argc, char **argv)
     /* 내부변수 초기화 */
     init_variable();
 
-/* hhkim */
+/* NOBODY */
    opr->endian = check_endian() ;
     sleep(1);
     

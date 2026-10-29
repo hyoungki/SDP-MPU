@@ -225,6 +225,14 @@ static ST_RET _miuCheckCertExpiration (ST_VOID);
 static ST_INT _mmsDebugFlag = 0;
 #endif
 
+/* 2026-10-08 : _mmsDebugFlag now also records *which* path the last log	*/
+/* header took, so continuation lines (hex dumps, SLOGC_* etc.) are sent	*/
+/* out the same way as their header. See									*/
+/* design/20261006_iccp_log_control.md section 4.2/4.4.					*/
+#define MMS_DBG_OFF  0	/* previous header did not pass any filter			*/
+#define MMS_DBG_MMS  1	/* previous header passed via opr->mmsDebug -> Debug(console,...) */
+#define MMS_DBG_ERR  2	/* previous header was a *_ERR message -> printf()	*/
+
 #if 1	// 2017.11 ChoiBC Modify : 일정 시간동안 링크로 Identify가 오지 않으면, 접속을 끊는다.
 static INFO_ICCP_ST iccpInfo;
 
@@ -439,31 +447,14 @@ static void	_miUsrService (void) // mi 즉 iccp level의 UserService
 {
 	INFO_ICCP_ST *pI = getIccpInfo ();
 
-#if 1	// 2017.11 ChoiBC MMS LOG 추가
-	static ST_INT mmsDebugOld;
 
-    // 변경이 있을 때만 건들자..
-	if (opr->mmsDebug != mmsDebugOld) //opr->mmsDebug는 lib밖에서...mmsDebugOld는 
-	{
-		_mmsDebugFlag = 0; // 이건 뭐지...
-		if (opr->mmsDebug) //mi_app_dyn_log_fun를 사용하게 한다.
-		{
-		 
-		//    printf("Turn on Slog on console\r\n");   
-			_slog_dyn_log_fun = mi_app_dyn_log_fun;
-		// 이 걸봐서는 기본으로 mms 층만 보겠다는 것인댜...
-			mms_debug_sel |= MMS_LOG_REQ | MMS_LOG_CONF;		// MMS_LOG_CLIENT
-			mms_debug_sel |= MMS_LOG_IND | MMS_LOG_RESP;		// MMS_LOG_SERVER
-		}
-		else 
-		{ 
-		 //   printf("Turn off Slog on console\r\n"); 
-			_slog_dyn_log_fun = NULL;
-			mms_debug_sel = MMS_LOG_ERR;
-		}
-		mmsDebugOld = opr->mmsDebug; // 이 것 때문에 mmsDebug가 변할때 마다 위 routine에 들어온다.
-	}
-#endif
+	/* 2026-10-08 : the opr->mmsDebug-driven mms_debug_sel toggle and the		*/
+	/* conditional _slog_dyn_log_fun assignment that used to live here were	*/
+	/* removed. The callback is now assigned unconditionally below, and		*/
+	/* mms_debug_sel gets a one-time default in miuInitIccp() instead (see		*/
+	/* design/20261006_iccp_log_control.md sections 4.1 and 4.4). opr->mmsDebug	*/
+	/* is now purely a console-filter switch, checked inside				*/
+	/* mi_app_dyn_log_fun().													*/
 #if 1	/* 2026-10-02 ChoiBC Add : CLI/CLI-S2 layer FLOW/CFG bit control mailbox */
 	if (opr->logbitCtl.seq != opr->logbitCtl.ack)
 	{
@@ -521,14 +512,12 @@ static void	_miUsrService (void) // mi 즉 iccp level의 UserService
 		opr->logbitCtl.ack = opr->logbitCtl.seq;
 	}
 
-	/* Keep the console callback active while mmsDebug OR any CLI-controlled	*/
-	/* layer FLOW/CFG bit is on, so mi/mvl FLOW,CFG lines reach the console.	*/
-	if (opr->mmsDebug ||
-	    (mi_debug_sel  & (MILOG_FLOW | MILOG_CFG)) ||
-	    (mvl_debug_sel & (MVLULOG_FLOW)))
-		_slog_dyn_log_fun = mi_app_dyn_log_fun;
-	else
-		_slog_dyn_log_fun = NULL;
+
+	/* 2026-10-08 : console callback is now always attached (see				*/
+	/* design/20261006_iccp_log_control.md section 4.1). Whether a log call	*/
+	/* actually reaches here is still decided by each layer's xxx_debug_sel	*/
+	/* bits, so this does not by itself increase log volume.					*/
+	_slog_dyn_log_fun = mi_app_dyn_log_fun;
 #endif
 
 
@@ -1006,6 +995,12 @@ ST_RET miuInitIccp (ST_CHAR *appName, ST_INT deviceIndex, ICCP_DCB *dcb)
 
 	_miuInitMem ();  	/* Set up memory allocation tools 		*/
 
+	/* 2026-10-08 : one-time default for mms_debug_sel (REQ/CONF/IND/RESP/ERR).	*/
+	/* This must run BEFORE logcfgx_ex() below, so that logcfg.xml (currently	*/
+	/* MMS_LOG_CLIENT/MMS_LOG_SERVER = Off) remains the final authority over	*/
+	/* these bits, per design/20261006_iccp_log_control.md section 4.4.		*/
+	mms_debug_sel = MMS_LOG_REQ | MMS_LOG_CONF | MMS_LOG_IND | MMS_LOG_RESP | MMS_LOG_ERR;
+
 #if defined(DEBUG_SISCO)
 	logCfgAddMaskGroup (&miLogMaskMapCtrl);
 	logCfgAddMaskGroup (&mvlLogMaskMapCtrl);
@@ -1228,6 +1223,9 @@ ST_RET miuInitIccp (ST_CHAR *appName, ST_INT deviceIndex, ICCP_DCB *dcb)
 	/* Enable all associations */
 	mi_enable_remote_assoc (NULL);
 #endif
+
+//2026-10-08 오후 2:04:02 
+//	mms_debug_sel = MMS_LOG_REQ | MMS_LOG_CONF | MMS_LOG_IND | MMS_LOG_RESP | MMS_LOG_ERR;
 
 	SLOGALWAYS0 ("Initialization complete");
 	return (SD_SUCCESS);
@@ -1555,61 +1553,77 @@ ST_VOID mi_app_dyn_log_fun (LOG_CTRL *lc,
 	SD_CONST ST_CHAR *buf)
 {
 
-#if 1	// 2017.11 ChoiBC MMS LOG 추가
-	if (opr->mmsDebug == 0)  
-		return;
-		
-	if (logType == 0 && logTypeStr) // logTypeStr이  ACES_DEC  SOCK..등...호출한 놈.
-	{
-		if (strncmp (logTypeStr, "MMS_LOG", 7) == 0)
-		{
-			_mmsDebugFlag = 1; // mmsDebug가 1이고,logType == 0, logTypeStr=MMS_LOG 일때, 
-			                    //그 다음 mmsDebug=1이고, logTypeStr가 mms_log가아ㅣ이니도
-			
-			Debug(console, "\n%s  %s", timeStr, buf);
-		}
-		else if (strncmp (logTypeStr, "ACSE", 4) == 0)
-		{
-			_mmsDebugFlag = 1; // mmsDebug가 1이고,logType == 0, logTypeStr=MMS_LOG 일때, 
-			                    //그 다음 mmsDebug=1이고, logTypeStr가 mms_log가아ㅣ이니도
-			
-			Debug(console, "\n%s  %s", timeStr, buf);
-		}	
-		else if (strncmp (logTypeStr, "MILOG", 4) == 0)
-		{
-			_mmsDebugFlag = 1; // mmsDebug가 1이고,logType == 0, logTypeStr=MMS_LOG 일때, 
-			                    //그 다음 mmsDebug=1이고, logTypeStr가 mms_log가아ㅣ이니도
-			
-			Debug(console, "\n%s  %s", timeStr, buf);
-		}	
-		else if (strncmp (logTypeStr, "TP4", 3) == 0)
-		{
-			_mmsDebugFlag = 1; // mmsDebug가 1이고,logType == 0, logTypeStr=MMS_LOG 일때, 
-			                    //그 다음 mmsDebug=1이고, logTypeStr가 mms_log가아ㅣ이니도
-			
-			Debug(console, "\n%s  %s", timeStr, buf);
-		}	
-		else if (strncmp (logTypeStr, "MVLULOG", 7) == 0)
-		{
-			_mmsDebugFlag = 1; /* 2026-10-02 : mvl FLOW (MVLULOG_FLOW) passthrough for CLI layer-bit control */
+	ST_BOOLEAN isErrMsg = SD_FALSE;
 
-			Debug(console, "\n%s  %s", timeStr, buf);
-		}	
+	if (logTypeStr != NULL)
+	{
+		ST_INT len = strlen (logTypeStr);
+		if (len >= 4 && strcmp (logTypeStr + len - 4, "_ERR") == 0)
+			isErrMsg = SD_TRUE;
+	}
+
+	if (logType == 0 && logTypeStr)	/* new log header line */
+	{
+		if (isErrMsg)
+		{
+			/* 2026-10-08 : *_ERR always goes straight to ICCP's own stdout,	*/
+			/* regardless of opr->mmsDebug, so it is visible even before	*/
+			/* anyone checks via CLI. File logging is controlled			*/
+			/* independently by logcfg.xml (see							*/
+			/* design/20261006_iccp_log_control.md).						*/
+			_mmsDebugFlag = MMS_DBG_ERR;
+			printf ("\r\n[ERROR]  %s %s", timeStr, buf);
+			fflush (stdout);
+		}
+		else if (opr->mmsDebug)
+		{
+			if (strncmp (logTypeStr, "MMS_LOG", 7) == 0)
+			{
+				_mmsDebugFlag = MMS_DBG_MMS;
+				Debug(console, "\n%s  %s", timeStr, buf);
+			}
+			else if (strncmp (logTypeStr, "ACSE", 4) == 0)
+			{
+				_mmsDebugFlag = MMS_DBG_MMS;
+				Debug(console, "\n%s  %s", timeStr, buf);
+			}
+			else if (strncmp (logTypeStr, "MILOG", 4) == 0)
+			{
+				_mmsDebugFlag = MMS_DBG_MMS;
+				Debug(console, "\n%s  %s", timeStr, buf);
+			}
+			else if (strncmp (logTypeStr, "TP4", 3) == 0)
+			{
+				_mmsDebugFlag = MMS_DBG_MMS;
+				Debug(console, "\n%s  %s", timeStr, buf);
+			}
+			else if (strncmp (logTypeStr, "MVLULOG", 7) == 0)
+			{
+				_mmsDebugFlag = MMS_DBG_MMS;
+				Debug(console, "\n%s  %s", timeStr, buf);
+			}
+			else
+			{
+				_mmsDebugFlag = MMS_DBG_OFF;
+			}
+		}
 		else
-		{    
-			_mmsDebugFlag = 0; // 화면으로는 mms_log만 출력되는데...
-	    
-	    }
+		{
+			_mmsDebugFlag = MMS_DBG_OFF;
+		}
 	}
-	else
-	{  // 연속된 경우 time을 출력하지 않는다.
-		if (_mmsDebugFlag) // mi_app_dyn_log_fun (..0,"MMS_LOG)"로 다음부터는 Debug 가능..0,MMS_LOG이되..
-		   
+	else	/* continuation line (hex dump, SLOGC_* etc.) */
+	{
+		if (_mmsDebugFlag == MMS_DBG_ERR)
+		{
+			printf ("\r\n  %s", buf);
+			fflush (stdout);
+		}
+		else if (_mmsDebugFlag == MMS_DBG_MMS)
+		{
 			Debug(console, "\n  %s", buf);
+		}
 	}
-#else
-	//	QPRINTF ("\nRedirected message: %s",buf);
-#endif
 }
 #endif 
 

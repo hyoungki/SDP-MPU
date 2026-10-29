@@ -1021,7 +1021,7 @@ int	main(int argc, char **argv)
     
     printf(" %s SCAN PROCESS Activated ... !\n", TARGET_NAME);
     
-
+//   local to esio rtu db
 //    printf("%s Updating esio_rtudb\r\n", TARGET_NAME);
 
     copy_rtudb_for_esio( &esio_rtudb, rtudb) ;

@@ -28,7 +28,7 @@ extern  byte    bitcode[8];
 * DNP 형식의 시각정보를 TimeVal 형식으로 변경
 */
 void DnpTimeToTimeVal (PDPDTIME_DATE_TIME *pDnp, struct timeval *pTv)
-{
+{   
     struct tm ts;
     time_t tt;
 

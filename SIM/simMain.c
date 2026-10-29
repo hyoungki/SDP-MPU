@@ -447,6 +447,9 @@ int check_device_point(POINT_BUF *diPoint)
     return (iccpPoint);    
 }
 
+/* 2026-10-28 points received from PC in the current SIM_POINT_DOWN session */
+static int ptRcvCnt = 0;
+
 /**
 **  SIMULATOR - 응답메세지 구성
 **/
@@ -1656,7 +1659,7 @@ printf("floatData[1] align = %lu\n",        (unsigned long)&dev->aiPtBuf[1].floa
         break;
         
     case SIM_POINT_DOWN:        // 0x34 DB : POINT Config Down
-		startPt = (rxbuf[8] + rxbuf[7] * 256) - 1;
+		startPt = (rxbuf[8] + rxbuf[7] * 256) - 1; //  protocol은 1부터.
         ptNum   = rxbuf[9] & 0x7f;
         if(ptNum > 16)  ptNum = 16;
 
@@ -1680,7 +1683,8 @@ printf("floatData[1] align = %lu\n",        (unsigned long)&dev->aiPtBuf[1].floa
  
     
         
-        
+        // update local DB 
+        // local DB는 내려오자 마자....
         bfptr   = (byte *) &rtudb->pointBuf[startPt];
         memcpy( (byte *) bfptr, &rxbuf[10], dbSize);
 
@@ -1690,9 +1694,15 @@ printf("floatData[1] align = %lu\n",        (unsigned long)&dev->aiPtBuf[1].floa
     	chksum = gensum (&rxbuf[10], dbSize);
     	rcvsum = gensum ((byte *) bfptr, dbSize);
     	
-    	//if(opr->mpuDebug)   
+    	// 2026-10-28 오전 11:22:09
+    	if(opr->mpuDebug)   
         Debug(console,"sim> rcv Point Down : start=%4d, ptnum=%d, size = %d  check=%4x/%4x\n", startPt , ptNum, dbSize, chksum, rcvsum);
         }    
+        /* 2026-10-28 accumulate points received from PC (valid frames only) */
+        /* start==0 : PC restarted from the first point without disconnecting, drop old count */
+        if(startPt == 0)  ptRcvCnt = 0;
+        ptRcvCnt += ptNum;
+
 
 
 
@@ -1704,7 +1714,8 @@ printf("floatData[1] align = %lu\n",        (unsigned long)&dev->aiPtBuf[1].floa
         txbuf[count++]  = rxbuf[8]; 
         txbuf[count++]  = rxbuf[9];
          
-        //if(opr->simDebug)   
+
+       // if(opr->simDebug)   
         Debug(console, "sim> Point Down : start=%d, ptnum=%d\n", startPt + 1, ptNum);
         
         /* 포인트 전송종료 Check ... */
@@ -1724,12 +1735,22 @@ printf("floatData[1] align = %lu\n",        (unsigned long)&dev->aiPtBuf[1].floa
        		sprintf(buffer, "<-- SIM> Database Down [ SIM_POINT_DOWN ]");
         	LogFile_MPU (shmPtr, ENT_DB_UPDATE, buffer, strlen(buffer));  
         	
-        	linkCfg->endPointFlag = 0x80;
         	
         	/* -------------------------------------------- */
             /*  이중화 구성시... 포인트 DB 전송...          */
             /* -------------------------------------------- */
-            linkCfg->dbDownPoint  = startPt + 1;
+            /* 2026-10-28 ptRcvCnt = points received from PC in this session (16 or all) */
+            if(ptRcvCnt > 16)
+            {   /* all points: LINK master sends 1..MAX_DB_POINT, end flag is set on the last frame */
+                linkCfg->endPointFlag = 0;
+                linkCfg->dbDownPoint  = 1;
+                linkCfg->dbDownFlag   = SET;
+            }
+            else
+            {   /* 16 points: send only that block with the end flag */
+                linkCfg->endPointFlag = 0x80;
+                linkCfg->dbDownPoint  = startPt + 1;
+            }
             linkCfg->dbDownIndex  = ptNum;
             
             linkCfg->pointCfgDown = SET;
@@ -1742,12 +1763,23 @@ printf("floatData[1] align = %lu\n",        (unsigned long)&dev->aiPtBuf[1].floa
                 esio = (ESIO_CONFIG *) esioCFG[i];
                 if(esio->online != SET) continue;
            
-                esio->endPointFlag = 0x80;
-                esio->dbDownPoint  = startPt + 1;
+                /* 2026-10-28 ptRcvCnt = points received from PC in this session (16 or all) */
+                if(ptRcvCnt > 16)
+                {   /* all points: send 1..MAX_DB_POINT, SCAN sets the end flag on the last frame */
+                    esio->endPointFlag = 0;
+                    esio->dbDownPoint  = 1;
+                    esio->dbDownFlag   = SET;
+                }
+                else
+                {   /* 16 points: send only that block with the end flag */
+                    esio->endPointFlag = 0x80;
+                    esio->dbDownPoint  = startPt + 1;
+                }
                 //esio->dbDownIndex  = ptNum;
                 
                 esio->pointCfgDown  = SET;
             }
+            ptRcvCnt = 0;       /* 2026-10-28 reset point count for the next PC download */
             
             opr->pointCfgDown_OK  = SET;        // POINT 구성정보 변경표시...
         }
@@ -2422,6 +2454,7 @@ int	main(int argc, char **argv)
 		
 		            simTask_Active = SET;
 		            comFailTick  = 0;                
+            ptRcvCnt     = 0;       /* 2026-10-28 new PC connection = new point download session */
                 
  
                 

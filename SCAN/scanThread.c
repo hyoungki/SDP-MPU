@@ -689,6 +689,12 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
     esio->rcvStatus = rxbuf[6];         // 수신 ESIO Status 정보;
     esio->rcvSeqNo  = rxbuf[7];         // 수신 Seqno
 
+    // 2026-10-28 오후 2:31:51  전에는 이 것이 없어서 밀렸서  무한 loop를 돌았다.
+    if ( rxbuf[7] != esio->rcvSeqNo)
+    {    
+            Debug(console,"esio%d> rcvSeqNo mismatched Send[%02X] vs Rcv[%02X] \n", esioid, esio->rcvSeqNo, rxbuf[7]);        
+            return 0;
+    }
     /* ------------------------------------ */
     /* SLAVE-MPU 상태에 따른 OPCODE 처리    */
     /* ------------------------------------ */
@@ -1250,7 +1256,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
 		
 		if(opr->esioDebug == esioid) 
     	Debug(console,"esio%d> rcv POINT DB Down ... start=%d , end = %d\n", esioid, startPoint, startPoint + rcvPoint);
-    	
+        // ESIO가 받은 마지막 포인트     	
 		esio->dbDownPoint = startPoint + rcvPoint;
 		
 		if(opr->esioDebug == esioid) 
@@ -1447,7 +1453,7 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
     /* 데이터베이스 저장 ... */
         
          chksum = gensum((byte *)&esio_rtudb, sizeof(ESIO_RTU_DATABASE) - 2);
-        printf("SCAN> ESIO_RTU_DATABASE CHKSIM [%04X]\r\n",chksum );
+        // printf("SCAN> ESIO_RTU_DATABASE CHKSIM [%04X]\r\n",chksum );
 
      }
 
@@ -1649,18 +1655,21 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
         
     case SIM_POINT_DOWN:        // 0x34 DB : POINT Config Down
         pointNum    = 16;
-		startPoint  = esio->dbDownPoint;
+
+		startPoint  = esio->dbDownPoint; // 이전에 보내고 ESIO로 부터 받은 것으로 다음의 start 가 된다.
+        // 이번에 보낼 point 마지막 번호.
 		reportPoint = startPoint + pointNum;
 		
 		/* ------------------------------------ */
 		/* 실제 등록된 포인트 Check...          */
+		/* 마지막 포인트가 db의 끝... > 는 뭐지 ???    */
 		/* ------------------------------------ */
-		if(reportPoint >= MAX_DB_POINT)
-		{
-			pointNum = 	MAX_DB_POINT - esio->dbDownPoint + 1;
+		if(reportPoint >= MAX_DB_POINT) // 전에는 = 가 없어 문제가 되었자..
+		{                               // 여기는 point가 마지막을 보낸 경우인데.
+			pointNum = 	MAX_DB_POINT - esio->dbDownPoint + 1; // 3-1=2 인데 1,2,3 으로 3개..즉 +1 
 			
 			esio->endPointFlag  = 0x80;	// point update flag...
-            Debug(console,"esio%d> set  POINT-DB endPointFlag\n", esioid);
+            Debug(console,"esio%d> reach MAX_DB_POINT. set  POINT-DB endPointFlag\n", esioid);
 
 		}	
 
@@ -1668,7 +1677,7 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
         
 		sndbuf[count++] = (startPoint >> 8) & 0xff;
 		sndbuf[count++] = startPoint & 0xff;
-		sndbuf[count++] = pointNum | esio->endPointFlag;
+		sndbuf[count++] = pointNum | esio->endPointFlag; // 어 endPointFlag가 sim에서도 0x80 설정하는데
 		
         dbSize = sizeof(DB_POINT_BUF) * pointNum;
 		memcpy( &sndbuf[count], (byte *) &rtudb->pointBuf[startPoint - 1],  dbSize);
@@ -1910,7 +1919,12 @@ void    *scanThread_ESIO(int  *arg)
     						
     						sprintf(buffer, "esio%d> *** SLAVE-Network Cnnection Failed... RE-BOOT !", esioid);
     						LogFile_MPU (shmPtr, ENT_NOT_DEFINED, buffer, strlen(buffer));
+    			
+    			
     						pause(1000);
+    			
+    			            // 2026-10-19 오후 5:42:07
+                            system("reboot");
     			
     						opr->wdtEnable = RESET;
     					}
@@ -1986,8 +2000,8 @@ void    *scanThread_ESIO(int  *arg)
             if(esio->sndOpcode == SIM_CHKSUM_DUMP)  pause(200);
                 
         }
-	    
-	    pause(500);
+	    // 2026-10-28 오후 2:34:43 막자..
+	    //pause(500);
 	    
 	    //2026-05-22 오후 6:54:49
 	    // 밀린다.. 
@@ -2013,6 +2027,7 @@ void    *scanThread_ESIO(int  *arg)
                 else            DumpBuff(console,"ERX: ", rxbuf, rxcnt);
             }        
 
+            // 2026-10-28 오후 2:22:06 뭐지...위와 중복인데...
 			/* Reset Clear... */
             opcode = rxbuf[5] & 0x7f;           // 수신 OPCODE
             if(opcode == SIM_TIME_DOWN)		resetCount = 0;
