@@ -10,9 +10,9 @@ extern  PDPDTIME_DATE_TIME      dnpRTC;
 extern  PDPDTIME_MS_SINCE_70    dnpRTCInfo;
 
 /* ---------------------------------------- */
-/*  THREAD °ü·Ã º¯¼ö Á¤ÀÇ                   */
+/*  THREAD ê´€ë ¨ ë³€ìˆ˜ ì •ì˜                   */
 /* ---------------------------------------- */
-extern  THREAD_ENTRY    ESIO_THREAD[MAX_ESIO];              // ESIO Thread ±¸Á¶Ã¼ TASK
+extern  THREAD_ENTRY    ESIO_THREAD[MAX_ESIO];              // ESIO Thread êµ¬ì¡°ì²´ TASK
 extern  int     ThreadActive[MAX_ESIO];
 
 static  byte    esioSndBuf[MAX_ESIO][4096];
@@ -23,7 +23,7 @@ extern ESIO_RTU_DATABASE  esio_rtudb ;
 
 /*******************************************************************************
  *                                                                        
- * ¸ğµâ¸í:	_initNetpServer()
+ * ëª¨ë“ˆëª…:	_initNetpServer()
  *                                                                        
  ******************************************************************************/
 #if 0
@@ -35,10 +35,10 @@ int _initNetClient_SCAN( ESIO_CONFIG *esio, int esioid)
     ESIO_NET_ENTRY  *esioNet1;
     
     /* ------------------------------------------------ */
-    /* 2019.06.21 ... CLIENT °æ¿ì...¼ÒÄÏÁßÃ¸ ¹æÁö... 			*/
-    /*	- ESIO SCAN Çã¿ë/±İÁö½Ã... ¼ÒÄÏÀÌ ÁßÃ¸µÇ¾î Åë½ÅÀÌ»ó Ã³¸® ¹æÁö		*/
+    /* 2019.06.21 ... CLIENT ê²½ìš°...ì†Œì¼“ì¤‘ì²© ë°©ì§€... 			*/
+    /*	- ESIO SCAN í—ˆìš©/ê¸ˆì§€ì‹œ... ì†Œì¼“ì´ ì¤‘ì²©ë˜ì–´ í†µì‹ ì´ìƒ ì²˜ë¦¬ ë°©ì§€		*/
     /* ------------------------------------------------ */
-    // 2026-05-19 ¿ÀÈÄ 1:22:09 
+    // 2026-05-19 ì˜¤í›„ 1:22:09 
     if(esio->SocketFd) 
     {     
         esio->SocketFd = -1 ; 
@@ -51,7 +51,7 @@ int _initNetClient_SCAN( ESIO_CONFIG *esio, int esioid)
             
             
     /* -------------------------------------------------- */
-    /* ¼ÒÄÏÀÇ Open : IPv4 ±â¹İ, ¿¬°áÁöÇâÇü ¼ÒÄÏ, TCP±â¹İ  */
+    /* ì†Œì¼“ì˜ Open : IPv4 ê¸°ë°˜, ì—°ê²°ì§€í–¥í˜• ì†Œì¼“, TCPê¸°ë°˜  */
     /* -------------------------------------------------- */
 	if ((esio->SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == ERROR)
 	{
@@ -84,13 +84,13 @@ int _initNetClient_SCAN( ESIO_CONFIG *esio, int esioid)
 #endif
     
     /* ------------------------------------------------ */
-    /* NON-BLOCK ¼³Á¤ */
+    /* NON-BLOCK ì„¤ì • */
     /* ------------------------------------------------ */
 //    flag = fcntl( esio->SocketFd, F_GETFL,0);
  //   fcntl( esio->SocketFd, F_SETFL, (flag | O_NONBLOCK));
         
     /* ------------------------------------------------ */
-    /* ´ë»ó ESIO# ÁÖ¼ÒÁ¤º¸ ÃßÃâ...                      */
+    /* ëŒ€ìƒ ESIO# ì£¼ì†Œì •ë³´ ì¶”ì¶œ...                      */
     /* ------------------------------------------------ */
     if((esioid + 1) == SDP_RTU)
     {
@@ -104,17 +104,17 @@ int _initNetClient_SCAN( ESIO_CONFIG *esio, int esioid)
     }
     
     /* ---------------------------------------- */
-    /* ¼ÒÄÏ ±¸Á¶Ã¼ ÃÊ±âÈ­ ...                   */
+    /* ì†Œì¼“ êµ¬ì¡°ì²´ ì´ˆê¸°í™” ...                   */
     /*  - ESIO_SCAN_NET_PORT : 9700 + ESIO-ID   */
     /* ---------------------------------------- */
-	esio->serv_addr.sin_family = AF_INET;                                   /* IPv4 ±â¹İÀÇ ÀÎÅ×³İ ÇÁ·ÎÅäÄİ Family */
-	esio->serv_addr.sin_port   = htons(ESIO_SCAN_NET_PORT + esioid);        /* Port   Á¤º¸ÀÇ Network Byte Order ·Î º¯°æÇÔ. */
+	esio->serv_addr.sin_family = AF_INET;                                   /* IPv4 ê¸°ë°˜ì˜ ì¸í…Œë„· í”„ë¡œí† ì½œ Family */
+	esio->serv_addr.sin_port   = htons(ESIO_SCAN_NET_PORT + esioid);        /* Port   ì •ë³´ì˜ Network Byte Order ë¡œ ë³€ê²½í•¨. */
 	esio->serv_addr.sin_addr.s_addr = inet_addr(esioNet1->ipAddr);	        /* IP conversion & assign */;
 	
 	// if(opr->esioDebug == esioid)
 	Debug(console, "esio%d> INIT Client... TARGET : %s, Socket= %d, PORT = %d \n", esioid, esioNet1->ipAddr, esio->SocketFd, ESIO_SCAN_NET_PORT + esioid);
 	
-	// À§¿¡¼­ non-blockingÀ» Çß´Âµ¥
+	// ìœ„ì—ì„œ non-blockingì„ í–ˆëŠ”ë°
     /* Image - Server Connection... */
     if(connect(esio->SocketFd, (struct sockaddr *) &esio->serv_addr, sizeof(esio->serv_addr)) == -1)
     {
@@ -128,7 +128,7 @@ int _initNetClient_SCAN( ESIO_CONFIG *esio, int esioid)
       //   if(opr->esioDebug == esioid)    
         Debug(console,"esio%d> *** Connect Error , IP=%s, PORT=%d  !\n", esioid, esioNet1->ipAddr, ESIO_SCAN_NET_PORT + esioid);
         esio->connectStatus = 0;
-        // 2026-05-19 ¿ÀÈÄ 1:23:15
+        // 2026-05-19 ì˜¤í›„ 1:23:15
         return - 1; 
     }
     else
@@ -167,24 +167,24 @@ static int _initNetClient_SCAN( ESIO_CONFIG *esio, int esioid)
     ESIO_NET_ENTRY  *esioNet1;
     
     /* ------------------------------------------------ */
-    /* 2019.06.21 ... CLIENT °æ¿ì...¼ÒÄÏÁßÃ¸ ¹æÁö... 			*/
-    /*	- ESIO SCAN Çã¿ë/±İÁö½Ã... ¼ÒÄÏÀÌ ÁßÃ¸µÇ¾î Åë½ÅÀÌ»ó Ã³¸® ¹æÁö		*/
+    /* 2019.06.21 ... CLIENT ê²½ìš°...ì†Œì¼“ì¤‘ì²© ë°©ì§€... 			*/
+    /*	- ESIO SCAN í—ˆìš©/ê¸ˆì§€ì‹œ... ì†Œì¼“ì´ ì¤‘ì²©ë˜ì–´ í†µì‹ ì´ìƒ ì²˜ë¦¬ ë°©ì§€		*/
     /* ------------------------------------------------ */
     
     // STEP1
-    // 2026-05-19 ¿ÀÈÄ 1:22:09 
+    // 2026-05-19 ì˜¤í›„ 1:22:09 
     if(esio->SocketFd) 
     {     
-        esio->SocketFd = -1 ; 
+// 2026-10-30 ì˜¤í›„ 3:26:37 
         close( esio->SocketFd);    
-
+        esio->SocketFd = -1 ; 
     }
     
     
     // STEP2
     /* find target address */
     /* ------------------------------------------------ */
-    /* ´ë»ó ESIO# ÁÖ¼ÒÁ¤º¸ ÃßÃâ...                      */
+    /* ëŒ€ìƒ ESIO# ì£¼ì†Œì •ë³´ ì¶”ì¶œ...                      */
     /* ------------------------------------------------ */
     if((esioid + 1) == SDP_RTU)
     {
@@ -198,11 +198,11 @@ static int _initNetClient_SCAN( ESIO_CONFIG *esio, int esioid)
     }
     
     /* ---------------------------------------- */
-    /* ¼ÒÄÏ ±¸Á¶Ã¼ ÃÊ±âÈ­ ...                   */
+    /* ì†Œì¼“ êµ¬ì¡°ì²´ ì´ˆê¸°í™” ...                   */
     /*  - ESIO_SCAN_NET_PORT : 9700 + ESIO-ID   */
     /* ---------------------------------------- */
-	esio->serv_addr.sin_family = AF_INET;                                   /* IPv4 ±â¹İÀÇ ÀÎÅ×³İ ÇÁ·ÎÅäÄİ Family */
-	esio->serv_addr.sin_port   = htons(ESIO_SCAN_NET_PORT + esioid);        /* Port   Á¤º¸ÀÇ Network Byte Order ·Î º¯°æÇÔ. */
+	esio->serv_addr.sin_family = AF_INET;                                   /* IPv4 ê¸°ë°˜ì˜ ì¸í…Œë„· í”„ë¡œí† ì½œ Family */
+	esio->serv_addr.sin_port   = htons(ESIO_SCAN_NET_PORT + esioid);        /* Port   ì •ë³´ì˜ Network Byte Order ë¡œ ë³€ê²½í•¨. */
 	esio->serv_addr.sin_addr.s_addr = inet_addr(esioNet1->ipAddr);	        /* IP conversion & assign */;
 	
 	if(opr->esioDebug == esioid)
@@ -212,14 +212,14 @@ static int _initNetClient_SCAN( ESIO_CONFIG *esio, int esioid)
 	//pause(1000);    	
             
     // STEP3  tk_connect                
-    /* ¼ÒÄÏÀÇ Open : IPv4 ±â¹İ, ¿¬°áÁöÇâÇü ¼ÒÄÏ, TCP±â¹İ  */
-    /* ³»ºÎÀûÀ¸·Î Delay ¹× timeout ¼öÇà */
+    /* ì†Œì¼“ì˜ Open : IPv4 ê¸°ë°˜, ì—°ê²°ì§€í–¥í˜• ì†Œì¼“, TCPê¸°ë°˜  */
+    /* ë‚´ë¶€ì ìœ¼ë¡œ Delay ë° timeout ìˆ˜í–‰ */
 	if (( retVal = tk_connect (AF_INET, SOCK_STREAM, IPPROTO_TCP ,
 					(const struct sockaddr *) &esio->serv_addr, sizeof( esio->serv_addr),
 					2000, 2, 500, &esio->SocketFd )) < 0 )
 										
 	{
-	    // ½ÇÆĞ
+	    // ì‹¤íŒ¨
          if(opr->esioDebug == esioid)
          //  	Debug(console,"Err-Dev[%02d]> Socket Open Failed...\n", devid+1);	
           {
@@ -245,14 +245,14 @@ static int _initNetClient_SCAN( ESIO_CONFIG *esio, int esioid)
 		return(-1);
 	}  
 
-    // ¼º°ø 
+    // ì„±ê³µ 
   
   
   
 #if 0   
             
     /* -------------------------------------------------- */
-    /* ¼ÒÄÏÀÇ Open : IPv4 ±â¹İ, ¿¬°áÁöÇâÇü ¼ÒÄÏ, TCP±â¹İ  */
+    /* ì†Œì¼“ì˜ Open : IPv4 ê¸°ë°˜, ì—°ê²°ì§€í–¥í˜• ì†Œì¼“, TCPê¸°ë°˜  */
     /* -------------------------------------------------- */
 	if ((esio->SocketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) == ERROR)
 	{
@@ -289,7 +289,7 @@ static int _initNetClient_SCAN( ESIO_CONFIG *esio, int esioid)
 #endif
     
     /* ------------------------------------------------ */
-    /* NON-BLOCK ¼³Á¤ */
+    /* NON-BLOCK ì„¤ì • */
     /* ------------------------------------------------ */
     flag = fcntl( esio->SocketFd, F_GETFL,0);
     fcntl( esio->SocketFd, F_SETFL, (flag | O_NONBLOCK));
@@ -305,7 +305,7 @@ static int _initNetClient_SCAN( ESIO_CONFIG *esio, int esioid)
      
 	
 #if 0	
-	// À§¿¡¼­ non-blockingÀ» Çß´Âµ¥
+	// ìœ„ì—ì„œ non-blockingì„ í–ˆëŠ”ë°
     /* Image - Server Connection... */
     if(connect(esio->SocketFd, (struct sockaddr *) &esio->serv_addr, sizeof(esio->serv_addr)) == -1)
     {
@@ -319,7 +319,7 @@ static int _initNetClient_SCAN( ESIO_CONFIG *esio, int esioid)
       //   if(opr->esioDebug == esioid)    
         Debug(console,"esio%d> *** Connect Error , IP=%s, PORT=%d  !\n", esioid, esioNet1->ipAddr, ESIO_SCAN_NET_PORT + esioid);
         esio->connectStatus = 0;
-        // 2026-05-19 ¿ÀÈÄ 1:23:15
+        // 2026-05-19 ì˜¤í›„ 1:23:15
         return - 1; 
     }
     else
@@ -355,7 +355,7 @@ int _reConnectClient_SCAN(ESIO_CONFIG *esio, int esioid)
     ESIO_NET_ENTRY  *esioNet1;
     
     /* ------------------------------------------------ */
-    /* ´ë»ó ESIO# ÁÖ¼ÒÁ¤º¸ ÃßÃâ...                      */
+    /* ëŒ€ìƒ ESIO# ì£¼ì†Œì •ë³´ ì¶”ì¶œ...                      */
     /* ------------------------------------------------ */
     if((esioid + 1) == SDP_RTU)
     {
@@ -428,7 +428,7 @@ int  get_response_ESIO(int SocketFd, int esioid, byte	*rxbuf)
 
 
     /* ------------------------------------ */
-    /*  TCP/IP Socket Error ¹ß»ı½Ã ...      */
+    /*  TCP/IP Socket Error ë°œìƒì‹œ ...      */
     /* ------------------------------------ */
 	if(result == 0)	return 0;
 
@@ -470,20 +470,20 @@ int  tk_get_response_ESIO(int SocketFd, int esioid, byte	*rxbuf)
     bzero(rxbuf, 10) ;
     /* ---------------------------------------- */
     /*  READ MODBUS - Header    */
-    /*   ¿¨    ÀÏ´Ü 0x05 0x64                                           */
+    /*   ì—¥    ì¼ë‹¨ 0x05 0x64                                           */
     /* ---------------------------------------- */ 
     // STEP1  Check 0x05     
     reqSize=1 ; /* 05 */
     timeout = 2000 ; 
     do{
-           // 1 byteÀÏ¶§´Â ÀÇ¹Ì°¡ ¾ø´Ù.
+           // 1 byteì¼ë•ŒëŠ” ì˜ë¯¸ê°€ ì—†ë‹¤.
            // gettimeofday( &start, NULL) ;  
 
 
 		if((result = tk_net_readn(SocketFd, (char *) &rxbuf[0], reqSize, timeout)) <=0)
 		{
 	        // step 1  timeout
-	        if(result == TK_TIMEOUT ) /* timeout -1 */
+	        if(result == TK_TIMEOUT ) /* timeout -2 */
 	        {
                 if(opr->esioDebug == esioid)
                 Debug(console,"SCAN> esio%02d, MAGIC Number Read Timeout [%d]... \n", esioid, result);		
@@ -491,7 +491,7 @@ int  tk_get_response_ESIO(int SocketFd, int esioid, byte	*rxbuf)
 	        }
 
 	        // step2  EOF, 0
-	        if(result == TK_SOCKET_EOF ) 
+	        if(result == TK_SOCKET_EOF ) //0
 	        {
 
                 if(opr->esioDebug == esioid)
@@ -502,7 +502,7 @@ int  tk_get_response_ESIO(int SocketFd, int esioid, byte	*rxbuf)
             {
 
 		        Debug(console,"SCAN-ERR> esio%02d, Socket Err [%s] \n", esioid, strerror(errno));
-		        return TK_SYS_ERR ; 
+		        return TK_SYS_ERR ; // -3 
             } 		    
 		    
 
@@ -524,7 +524,7 @@ int  tk_get_response_ESIO(int SocketFd, int esioid, byte	*rxbuf)
                 if(opr->esioDebug == esioid)
                 Debug(console,"SCAN> esio%02d, MAGIC Number Err [%02X]\r\n", esioid, rxbuf[0] );	
   
-            	return TK_DNP_PROTOCOL_ERR ; 
+            	return TK_DNP_PROTOCOL_ERR ; // -5
     
     }    
 
@@ -578,7 +578,7 @@ int  tk_get_response_ESIO(int SocketFd, int esioid, byte	*rxbuf)
  
      // STEP3  read body    
     rxcnt = reqSize = (rxbuf[2]*256 + rxbuf[3]) - 4;             
-    /* SIZE ¿À·ù´Â È®ÀÎÇÏÁö ¾Ê³ª ??? */ 
+    /* SIZE ì˜¤ë¥˜ëŠ” í™•ì¸í•˜ì§€ ì•Šë‚˜ ??? */ 
     if ( reqSize > 4090)
     {
                 if(opr->esioDebug == esioid)
@@ -647,8 +647,8 @@ int  tk_get_response_ESIO(int SocketFd, int esioid, byte	*rxbuf)
 
 
 /* ==================================================================== */
-/*  ESIO µ¥ÀÌÅÍ ¼ö½ÅºÎ....                                              */
-/*  - Àü·Â°¨½Ã(ESIO1),¿ø°İÁø´Ü(ESIO2), Àü·ÂÇ°Áú(ESIO3)                  */
+/*  ESIO ë°ì´í„° ìˆ˜ì‹ ë¶€....                                              */
+/*  - ì „ë ¥ê°ì‹œ(ESIO1),ì›ê²©ì§„ë‹¨(ESIO2), ì „ë ¥í’ˆì§ˆ(ESIO3)                  */
 /* ==================================================================== */
 int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
 {
@@ -672,38 +672,38 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
     SDP_DEVICE      *dev;
     ESIO_CONFIG     *esio;
 
-// 2026-03-06 ¿ÀÈÄ 2:44:22
+// 2026-03-06 ì˜¤í›„ 2:44:22
     MPU_SOEQ_ENTRY  event;
     MPU_SOEQ_ENTRY_PACKED *event_packed;
 
  
  
- 	// 2026-10-07 ¿ÀÈÄ 4:15:03 
+ 	// 2026-10-07 ì˜¤í›„ 4:15:03 
 	struct timeval  tv ;
 	char  buf[100];
     
     esio = (ESIO_CONFIG *) esioCFG[esioid];
     
-    opcode = rxbuf[5] & 0x7f;           // ¼ö½Å OPCODE
+    opcode = rxbuf[5] & 0x7f;           // ìˆ˜ì‹  OPCODE
     
-    esio->rcvStatus = rxbuf[6];         // ¼ö½Å ESIO Status Á¤º¸;
-    esio->rcvSeqNo  = rxbuf[7];         // ¼ö½Å Seqno
+    esio->rcvStatus = rxbuf[6];         // ìˆ˜ì‹  ESIO Status ì •ë³´;
+    esio->rcvSeqNo  = rxbuf[7];         // ìˆ˜ì‹  Seqno
 
-    // 2026-10-28 ¿ÀÈÄ 2:31:51  Àü¿¡´Â ÀÌ °ÍÀÌ ¾ø¾î¼­ ¹Ğ·È¼­  ¹«ÇÑ loop¸¦ µ¹¾Ò´Ù.
+    // 2026-10-28 ì˜¤í›„ 2:31:51  ì „ì—ëŠ” ì´ ê²ƒì´ ì—†ì–´ì„œ ë°€ë ¸ì„œ  ë¬´í•œ loopë¥¼ ëŒì•˜ë‹¤.
     if ( rxbuf[7] != esio->rcvSeqNo)
     {    
             Debug(console,"esio%d> rcvSeqNo mismatched Send[%02X] vs Rcv[%02X] \n", esioid, esio->rcvSeqNo, rxbuf[7]);        
             return 0;
     }
     /* ------------------------------------ */
-    /* SLAVE-MPU »óÅÂ¿¡ µû¸¥ OPCODE Ã³¸®    */
+    /* SLAVE-MPU ìƒíƒœì— ë”°ë¥¸ OPCODE ì²˜ë¦¬    */
     /* ------------------------------------ */
     if(esio->rcvStatus & 0xc0)           esio->timeSyncReq = SET;
     else if(esio->rcvStatus & 0x20)      esio->chksumReq   = SET;        
                            
     count = 0;
     
-  // ¼ö½Å OPCODE   
+  // ìˆ˜ì‹  OPCODE   
     switch(opcode)
     {
     case SIM_SDP_GPOLL:             // 0x00 SDP G-POLL    
@@ -718,16 +718,16 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         }     
         
         /* ---------------------------------------- */
-        /*  °èÀü±âº° Online »óÅÂ Update...          */
+        /*  ê³„ì „ê¸°ë³„ Online ìƒíƒœ Update...          */
         /* ---------------------------------------- */
         dev = (SDP_DEVICE *) deviceCFG[devNo];
         
         if((opr->esioDebug == esioid) || (opr->dnpDebug == devNo))
-        // esioid´Â +1ÀÌ ¾ø³× À§¿¡¼­ ³»·Á¿À³ª ???
+        // esioidëŠ” +1ì´ ì—†ë„¤ ìœ„ì—ì„œ ë‚´ë ¤ì˜¤ë‚˜ ???
         Debug(console,"esio%d> rcv GPOLL ...Dev= %02d \n", esioid, devNo + 1);	
         
         /* ------------------------------------ */
-        /*  SLAVE ¸ğµå½Ã....continue            */
+        /*  SLAVE ëª¨ë“œì‹œ....continue            */
         /* ------------------------------------ */
         if(opr->runMode == LOCAL_SLAVE) 
         {
@@ -742,12 +742,12 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         if(devSts & 0x01)   
         {
             dev->online     = 1;
-            dev->runStatus  = 1;            // Simulator : °èÀü±â Åë½ÅÁ¤»ó
+            dev->runStatus  = 1;            // Simulator : ê³„ì „ê¸° í†µì‹ ì •ìƒ
         }
         else                
         {
             dev->online     = 0;
-            dev->runStatus  = 2;            // Simulator : °èÀü±â Åë½ÅÀÌ»ó
+            dev->runStatus  = 2;            // Simulator : ê³„ì „ê¸° í†µì‹ ì´ìƒ
         }
         
         dev->rcvIIN[0] = rxbuf[10];
@@ -762,15 +762,15 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         break;
 }
                 
-    case SIM_EVENT_DUMP:            // 0x02 SDP EVENT Dump,  ¿ä°Å ¹Ø¿¡¼­ ¿Ã·Á ÁÖ³ªº¸³ª..
+    case SIM_EVENT_DUMP:            // 0x02 SDP EVENT Dump,  ìš”ê±° ë°‘ì—ì„œ ì˜¬ë ¤ ì£¼ë‚˜ë³´ë‚˜..
     {
         eventNum = rxbuf[8];
-        dataLen  = rxcnt - 10;      // ¼ø¼ö SOE Á¤º¸¸¸...
+        dataLen  = rxcnt - 10;      // ìˆœìˆ˜ SOE ì •ë³´ë§Œ...
         
         /* -------------------------------------------- */
-        /*  ESIO ¼ö½Å SOE Size Check    ....            */
+        /*  ESIO ìˆ˜ì‹  SOE Size Check    ....            */
         /* -------------------------------------------- */
-        // 2026-03-06 ¿ÀÈÄ 2:44:54 
+        // 2026-03-06 ì˜¤í›„ 2:44:54 
         soe_size = sizeof(MPU_SOEQ_ENTRY_PACKED);
         reqDataLen = eventNum * soe_size;
 
@@ -779,22 +779,22 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
                 eventNum,soe_size,dataLen, reqDataLen);
 
         
-        // 2026-05-29 ¿ÀÈÄ 4:48:29 
+        // 2026-05-29 ì˜¤í›„ 4:48:29 
         if(dataLen != reqDataLen)
         {
             Debug(console, "esio%d> *rcv SOE-DUMP Count Fail : event num=%d (size=%d), rcv=%d, req=%d !\n", esioid, 
                 eventNum,soe_size,dataLen, reqDataLen);
             
-            sndbuf[0] = 0x05;                       // Àü¼Û ±¸ºĞÀÚ#1                
-            sndbuf[1] = 0x64;                       // Àü¼Û ±¸ºĞÀÚ#2  
+            sndbuf[0] = 0x05;                       // ì „ì†¡ êµ¬ë¶„ì#1                
+            sndbuf[1] = 0x64;                       // ì „ì†¡ êµ¬ë¶„ì#2  
             sndbuf[2] = 0;                          // size             
             sndbuf[3] = 0;                          // size        
-            sndbuf[4] = esioid;                     // ´ë»ó ESIO Address, [1..5]
+            sndbuf[4] = esioid;                     // ëŒ€ìƒ ESIO Address, [1..5]
             sndbuf[5] = SIM_EVENT_ACK;              // Opcode
-            sndbuf[6] = mpuCFG->mpuStatus;          // MPU »óÅÂÁ¤º¸ status, MASTER/SLAVE, SDP-A/SDP-B     
-            sndbuf[7] = esio->rcvSeqNo;             // ESIO ¼ö½Å SeqNo       
-            sndbuf[8] = eventNum;                   // EVENT °¹¼ö
-            sndbuf[9] = 1;                          // ¼ö½Å ½ÇÆĞ      
+            sndbuf[6] = mpuCFG->mpuStatus;          // MPU ìƒíƒœì •ë³´ status, MASTER/SLAVE, SDP-A/SDP-B     
+            sndbuf[7] = esio->rcvSeqNo;             // ESIO ìˆ˜ì‹  SeqNo       
+            sndbuf[8] = eventNum;                   // EVENT ê°¯ìˆ˜
+            sndbuf[9] = 1;                          // ìˆ˜ì‹  ì‹¤íŒ¨      
             count = 10;
         
             Debug(console,"esio%d> *send EVENT-ACK Fail ...Num=%d.. .!\n", esioid, eventNum);    
@@ -805,22 +805,22 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         Debug(console,"esio%d> rcv EVENT...Num=%d.. .!\n", esioid, eventNum);
             
         /* -------------------------------------------- */
-        /*  ESIO ¼ö½Å SOE Á¤º¸ => MPU SOE Á¤º¸ Update   */
+        /*  ESIO ìˆ˜ì‹  SOE ì •ë³´ => MPU SOE ì •ë³´ Update   */
         /* -------------------------------------------- */
         for(i = 0; i < eventNum; i++)
         {
           
-            /* 2026-03-05 ¿ÀÈÄ 7:46:44 esio ¿¡¼­ time_t È®ÀÎÇÏÀÚ. */
+            /* 2026-03-05 ì˜¤í›„ 7:46:44 esio ì—ì„œ time_t í™•ì¸í•˜ì. */
             event_packed = (MPU_SOEQ_ENTRY_PACKED *) &rxbuf[9 + i*soe_size];
             
-            // ¿©±â¼­ packed->unpacked·Î º¹»ç ÇÏ°í ..timeval endian Ã³¸® 
+            // ì—¬ê¸°ì„œ packed->unpackedë¡œ ë³µì‚¬ í•˜ê³  ..timeval endian ì²˜ë¦¬ 
 
             bzero( &event, sizeof( MPU_SOEQ_ENTRY )) ;
             event.eventCode    = event_packed->eventCode ;
             event.devNo        = event_packed->devNo ;
-// 2026-05-29 ¿ÀÈÄ 4:34:42  0-->1
+// 2026-05-29 ì˜¤í›„ 4:34:42  0-->1
 
-// 2026-06-08 ¿ÀÈÄ 2:24:45 ½Å±âÇÏ³× ARM-ARMµµ¿¡¼­µµ Àß ³ª¿À´Âµ¥ ntoh ¶§¹®ÀÎ°¡.
+// 2026-06-08 ì˜¤í›„ 2:24:45 ì‹ ê¸°í•˜ë„¤ ARM-ARMë„ì—ì„œë„ ì˜ ë‚˜ì˜¤ëŠ”ë° ntoh ë•Œë¬¸ì¸ê°€.
 
 #if  __PPC_ARCH__         
             event.pointNo      = htons ( event_packed->pointNo) ;
@@ -835,11 +835,11 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
 #endif 
             event.state        = event_packed->state ;                                                
       
- // ÀÚ Ãâ·ÂÇÑ¹ø ÇØÁÖÀÚ...
+ // ì ì¶œë ¥í•œë²ˆ í•´ì£¼ì...
          if(opr->soeDebug)
          {   
 	        gettimeofday(&tv, NULL);
-            // 2026-10-07 ¿ÀÈÄ 4:16:11 
+            // 2026-10-07 ì˜¤í›„ 4:16:11 
 		    Debug(console,"\r\n%s : ", sprt_timeval (buf, sizeof(buf), &tv));            
             Debug(console,"eventCode[%d], devNo[%d], pointNo[%d], State[%d]\r\n", 
              event.eventCode, event.devNo , event.pointNo , event.state  ); 
@@ -848,7 +848,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
 
            
             
-            event.esioNo = opr->cpuMode;           // ÀÌº¥Æ® ¹ß»ıÁÖÃ¼ : [0] CPU-A, [1] CPU-B
+            event.esioNo = opr->cpuMode;           // ì´ë²¤íŠ¸ ë°œìƒì£¼ì²´ : [0] CPU-A, [1] CPU-B
             
             if(event.eventCode == ENT_DEV_ONLINE)          set_Online_Device(shmPtr,&event);     
             else if(event.eventCode == ENT_DEV_OFFLINE)    set_Offline_Device(shmPtr,&event);            
@@ -861,16 +861,16 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         /* ------------------------------------ */
         if(eventNum)
         {            
-            sndbuf[0] = 0x05;                       // Àü¼Û ±¸ºĞÀÚ#1                
-            sndbuf[1] = 0x64;                       // Àü¼Û ±¸ºĞÀÚ#2  
+            sndbuf[0] = 0x05;                       // ì „ì†¡ êµ¬ë¶„ì#1                
+            sndbuf[1] = 0x64;                       // ì „ì†¡ êµ¬ë¶„ì#2  
             sndbuf[2] = 0;                          // size             
             sndbuf[3] = 0;                          // size        
-            sndbuf[4] = esioid;                     // ´ë»ó ESIO Address, [1..5]
+            sndbuf[4] = esioid;                     // ëŒ€ìƒ ESIO Address, [1..5]
             sndbuf[5] = SIM_EVENT_ACK;              // Opcode
-            sndbuf[6] = mpuCFG->mpuStatus;          // MPU »óÅÂÁ¤º¸ status, MASTER/SLAVE, SDP-A/SDP-B     
-            sndbuf[7] = esio->rcvSeqNo;             // ESIO ¼ö½Å SeqNo       
-            sndbuf[8] = eventNum;                   // EVENT °¹¼ö
-            sndbuf[9] = 0;                          // ¼ö½Å ¼º°ø      
+            sndbuf[6] = mpuCFG->mpuStatus;          // MPU ìƒíƒœì •ë³´ status, MASTER/SLAVE, SDP-A/SDP-B     
+            sndbuf[7] = esio->rcvSeqNo;             // ESIO ìˆ˜ì‹  SeqNo       
+            sndbuf[8] = eventNum;                   // EVENT ê°¯ìˆ˜
+            sndbuf[9] = 0;                          // ìˆ˜ì‹  ì„±ê³µ      
             count = 10;
             
             if(opr->soeDebug)
@@ -879,33 +879,33 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         }
         break;
     }
-    case SIM_POINT_SCAN:        // 0x04 °èÀü±â POINT Á¤º¸ Scan
+    case SIM_POINT_SCAN:        // 0x04 ê³„ì „ê¸° POINT ì •ë³´ Scan
         devNo     = rxbuf[8] - 1;
-        devSts    = rxbuf[9]; // ¾Æ. Æ÷ÀÎÆ® »óÅÂ°¡ ¾Æ´Ï°í °èÀü±â »óÅÂÀÌ´Ù.
+        devSts    = rxbuf[9]; // ì•„. í¬ì¸íŠ¸ ìƒíƒœê°€ ì•„ë‹ˆê³  ê³„ì „ê¸° ìƒíƒœì´ë‹¤.
         
         if((devNo < 0) || (devNo >= MAX_DEVICE))
         {
             if((opr->esioDebug == esioid) || (opr->dnpDebug == devNo))
             Debug(console,"esio%d> *rcv STATUS Dump ...*Invlaid Dev=%d \n", esioid, devNo + 1);
             dev->statusDump  = RESET;
-            dev->init_status = SET;     // ÃÊ±â »óÅÂ´ıÇÁ ÈÄ ... ÀÌº¥Æ® ¹ß»ı
+            dev->init_status = SET;     // ì´ˆê¸° ìƒíƒœë¤í”„ í›„ ... ì´ë²¤íŠ¸ ë°œìƒ
             dev->stsByteCnt  = 0;
             return (0);
         }     
         
         /* ---------------------------------------- */
-        /*  °èÀü±âº° Online »óÅÂ Update...          */
+        /*  ê³„ì „ê¸°ë³„ Online ìƒíƒœ Update...          */
         /* ---------------------------------------- */
         dev = (SDP_DEVICE *) deviceCFG[devNo];
         if(devSts & 0x01)   
         {
             dev->online     = 1;
-            dev->runStatus  = 1;            // Simulator : °èÀü±â Åë½ÅÁ¤»ó
+            dev->runStatus  = 1;            // Simulator : ê³„ì „ê¸° í†µì‹ ì •ìƒ
         }
         else                
         {
             dev->online     = 0;
-            dev->runStatus  = 2;            // Simulator : °èÀü±â Åë½ÅÀÌ»ó
+            dev->runStatus  = 2;            // Simulator : ê³„ì „ê¸° í†µì‹ ì´ìƒ
         }
         
         dev->rcvIIN[0] = rxbuf[10];
@@ -915,22 +915,22 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         dev->oldRcvCount = (rxbuf[16]*256) + rxbuf[17]; 
         
         /* ---------------------------------------- */
-        /*  °èÀü±âº° »óÅÂµ¥ÀÌÅÍ Update...           */
+        /*  ê³„ì „ê¸°ë³„ ìƒíƒœë°ì´í„° Update...           */
         /* ---------------------------------------- */
-        stsByteCnt= rxbuf[18];          // »óÅÂ ´ıÇÁ Byte ¼ö
-        dataLen   = rxcnt - 20;         // ¼ø¼ö »óÅÂ µ¥ÀÌÅÍ ¼ö...
+        stsByteCnt= rxbuf[18];          // ìƒíƒœ ë¤í”„ Byte ìˆ˜
+        dataLen   = rxcnt - 20;         // ìˆœìˆ˜ ìƒíƒœ ë°ì´í„° ìˆ˜...
         
         if(dataLen != stsByteCnt)
         {
         	if((opr->esioDebug == esioid) || (opr->dnpDebug == devNo))
             Debug(console, "esio%d> *rcv STATUS-DUMP Fail : mismatch count, rcv=%d, req=%d !\n", esioid, dataLen, stsByteCnt);
             dev->statusDump  = RESET;
-            dev->init_status = SET;     // ÃÊ±â »óÅÂ´ıÇÁ ÈÄ ... ÀÌº¥Æ® ¹ß»ı
+            dev->init_status = SET;     // ì´ˆê¸° ìƒíƒœë¤í”„ í›„ ... ì´ë²¤íŠ¸ ë°œìƒ
             dev->stsByteCnt  = 0;
             return (0);
         }
         
-        /* »óÅÂÁ¤º¸ Update... */
+        /* ìƒíƒœì •ë³´ Update... */
         if((stsByteCnt > 0) && (stsByteCnt <= MAX_DI_DATA_NUM))  
         {
         	if((opr->esioDebug == esioid) || (opr->dnpDebug == devNo))
@@ -942,7 +942,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
             curStore_BIT_MPU( shmPtr, devNo, &rxbuf[19], stsByteCnt);
             
             /* -------------------------------------------------------- */
-            /* ESIO ¼ö½Å ...ÀåÄ¡º° »óÅÂÁ¤º¸ Update...                   */
+            /* ESIO ìˆ˜ì‹  ...ì¥ì¹˜ë³„ ìƒíƒœì •ë³´ Update...                   */
             /* -------------------------------------------------------- */
             memcpy(dev->cursts, (char *) &rxbuf[19], stsByteCnt);
             dev->stsByteCnt = stsByteCnt;
@@ -956,14 +956,14 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         else
         {
             dev->statusDump  = RESET;
-            dev->init_status = SET;     // ÃÊ±â »óÅÂ´ıÇÁ ÈÄ ... ÀÌº¥Æ® ¹ß»ı
+            dev->init_status = SET;     // ì´ˆê¸° ìƒíƒœë¤í”„ í›„ ... ì´ë²¤íŠ¸ ë°œìƒ
             dev->stsByteCnt  = 0;
         }
              
         return (0);    
         break;
         
-    case SIM_ANALOG_SCAN:       // 0x14 °èÀü±â ¾Æ³¯·Î±× Á¤º¸ Scan
+    case SIM_ANALOG_SCAN:       // 0x14 ê³„ì „ê¸° ì•„ë‚ ë¡œê·¸ ì •ë³´ Scan
         {
         devNo     = rxbuf[8] - 1;
         devSts    = rxbuf[9];
@@ -976,18 +976,18 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         }     
         
         /* ---------------------------------------- */
-        /*  °èÀü±âº° Online »óÅÂ Update...          */
+        /*  ê³„ì „ê¸°ë³„ Online ìƒíƒœ Update...          */
         /* ---------------------------------------- */
         dev = (SDP_DEVICE *) deviceCFG[devNo];
         if(devSts & 0x01)   
         {
             dev->online     = 1;
-            dev->runStatus  = 1;            // Simulator : °èÀü±â Åë½ÅÁ¤»ó
+            dev->runStatus  = 1;            // Simulator : ê³„ì „ê¸° í†µì‹ ì •ìƒ
         }
         else                
         {
             dev->online     = 0;
-            dev->runStatus  = 2;            // Simulator : °èÀü±â Åë½ÅÀÌ»ó
+            dev->runStatus  = 2;            // Simulator : ê³„ì „ê¸° í†µì‹ ì´ìƒ
         }
         
         dev->rcvIIN[0] = rxbuf[10];
@@ -997,12 +997,12 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         dev->oldRcvCount = (rxbuf[16]*256) + rxbuf[17]; 
             
         /* ---------------------------------------- */
-        /*  ¼ö½ÅµÈ Æ÷ÀÎÆ® ¼ö¸¸Å­... Update...       */
+        /*  ìˆ˜ì‹ ëœ í¬ì¸íŠ¸ ìˆ˜ë§Œí¼... Update...       */
         /* ---------------------------------------- */
         dumpPoint = rxbuf[18]*256 + rxbuf[19];
         
-        dataLen   = rxcnt - 20;         // ¼ø¼ö °èÃø µ¥ÀÌÅÍ ¼ö...
-        dataLen   = rxcnt - 21;         // ¼ø¼ö °èÃø µ¥ÀÌÅÍ ¼ö...
+        dataLen   = rxcnt - 20;         // ìˆœìˆ˜ ê³„ì¸¡ ë°ì´í„° ìˆ˜...
+        dataLen   = rxcnt - 21;         // ìˆœìˆ˜ ê³„ì¸¡ ë°ì´í„° ìˆ˜...
         
         if(dataLen != (dumpPoint * 6))
         {
@@ -1011,23 +1011,23 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
             return (0);
         }
             
-        bfptr = (byte *) &rxbuf[20];         // °èÃøµ¥ÀÌÅÍ ½ÃÀÛÁöÁ¡...
+        bfptr = (byte *) &rxbuf[20];         // ê³„ì¸¡ë°ì´í„° ì‹œì‘ì§€ì ...
         index = 0;
         
         for(i=0; i< dumpPoint; i++)
          {
             index = i * 6;
-            anapoint = bfptr[index + 0] * 256 + bfptr[index + 1];   // °èÃøÆ÷ÀÎÆ® ¹øÈ£ (0,1,2,...)
+            anapoint = bfptr[index + 0] * 256 + bfptr[index + 1];   // ê³„ì¸¡í¬ì¸íŠ¸ ë²ˆí˜¸ (0,1,2,...)
 
 
             
 
-//2026-05-29 ¿ÀÈÄ 12:43:02 1->0
-#ifdef __ARM_ARCH__    //PPC ¹æ½Ä    ARM-PPC  ..ÄÚ¸àÆ® ¿À·ù  ¿©±â°¡ ARM ÀÌ°í
-        // memcpy ..°¡ ÁÁÀºµ¥..
+//2026-05-29 ì˜¤í›„ 12:43:02 1->0
+#ifdef __ARM_ARCH__    //PPC ë°©ì‹    ARM-PPC  ..ì½”ë©˜íŠ¸ ì˜¤ë¥˜  ì—¬ê¸°ê°€ ARM ì´ê³ 
+        // memcpy ..ê°€ ì¢‹ì€ë°..
         #if 0
-                fptr = (float *) &bfptr[index + 2];                     // °èÃø µ¥ÀÌÅÍ(Float)                                      
-                /* ±âº» µ¥ÀÌÅÍ ÁöÁ¤ */
+                fptr = (float *) &bfptr[index + 2];                     // ê³„ì¸¡ ë°ì´í„°(Float)                                      
+                /* ê¸°ë³¸ ë°ì´í„° ì§€ì • */
                 fdata = (float ) *fptr;
         #else
                 memcpy(&fdata, &bfptr[index + 2],4);
@@ -1039,7 +1039,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         
         #endif 
 
-#else // hkkim  Á¤±¤¿µ°ú ÀÌ°ÍÀ¸·Î ½ÃÇèÇßÀ¸´Ï ÀÌ°Ù PPC ÀÏµí.
+#else // hkkim  ì •ê´‘ì˜ê³¼ ì´ê²ƒìœ¼ë¡œ ì‹œí—˜í–ˆìœ¼ë‹ˆ ì´ê²Ÿ PPC ì¼ë“¯.
                 {
                     float a ;                                                    
                     a=BITS_TO_FLOAT (bfptr[index + 5],bfptr[index + 4],bfptr[index + 3],bfptr[index + 2]);
@@ -1055,7 +1055,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
 
 
             /* ---------------------------------------- */
-            /* 2014.12.11 ¼ö½ÅµÈ POINT ¿¹¿ÜÃ³¸®...      */
+            /* 2014.12.11 ìˆ˜ì‹ ëœ POINT ì˜ˆì™¸ì²˜ë¦¬...      */
             /* ---------------------------------------- */
             if(anapoint >= MAX_DEV_AI_POINT)
             {
@@ -1065,7 +1065,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
             }
                 
             /* ------------------------------------ */               
-            /* °èÃøÆ÷ÀÎÆ® µ¥ÀÌÅÍ.. Update ...       */
+            /* ê³„ì¸¡í¬ì¸íŠ¸ ë°ì´í„°.. Update ...       */
             /* ------------------------------------ */      
             storeAI_FLOAT_MPU( shmPtr, devNo, anapoint, fdata, (byte *)fptr);
         }
@@ -1074,17 +1074,17 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         return (0);    
         break;
         }
-    case SIM_POINT_CNTR:        // 0x05 °èÀü±â POINT Á¦¾î
-        rcvCntrDEV = rxbuf[8];              // ´ë»ó °èÀü±â ¹øÈ£ [1..64]
-        rcvCntrPT  = rxbuf[9];              // ´ë»ó Æ÷ÀÎÆ® [1..256]
-        rcvCntrTCF = rxbuf[10];             // Á¦¾î»óÅÂ, [1] TRIP, [2] CLOSE
-        rcvCntrSTS = rxbuf[11];             // Á¦¾î»óÅÂ, [0] ½ÇÆĞ, [1] ¼º°ø
+    case SIM_POINT_CNTR:        // 0x05 ê³„ì „ê¸° POINT ì œì–´
+        rcvCntrDEV = rxbuf[8];              // ëŒ€ìƒ ê³„ì „ê¸° ë²ˆí˜¸ [1..64]
+        rcvCntrPT  = rxbuf[9];              // ëŒ€ìƒ í¬ì¸íŠ¸ [1..256]
+        rcvCntrTCF = rxbuf[10];             // ì œì–´ìƒíƒœ, [1] TRIP, [2] CLOSE
+        rcvCntrSTS = rxbuf[11];             // ì œì–´ìƒíƒœ, [0] ì‹¤íŒ¨, [1] ì„±ê³µ
         
         if(opr->soeDebug)
         Debug(console,"esio%d> rcv Point Control ...rcv, [Dev=%d, point=%d, TCF=%d] => [STS=%d]\n", esioid, rcvCntrDEV, rcvCntrPT, rcvCntrTCF, rcvCntrSTS);
         
         /* ------------------------------------ */
-        /*  ESIO °èÀü±â-Á¦¾î Clear...           */   
+        /*  ESIO ê³„ì „ê¸°-ì œì–´ Clear...           */   
         /* ------------------------------------ */    
         esio->cntDev    = 0;
         esio->cntPoint  = 0;
@@ -1103,7 +1103,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         return (0);
         break;
     }                
-    case SIM_CHKSUM_DUMP:       // 0x16 µ¥ÀÌÅÍº£ÀÌ½º Chksum Scan       
+    case SIM_CHKSUM_DUMP:       // 0x16 ë°ì´í„°ë² ì´ìŠ¤ Chksum Scan       
     {
         rcvsum = rxbuf[8]*256 + rxbuf[9];
 
@@ -1121,7 +1121,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
 		    Debug(console,"esio%d> rcv Chksum = %4x, romsum = %4x\n", esioid, chksum, rcvsum);
 		}
 		
-		esio->chksumReq = RESET; // ÁÖ±âÀûÀ¸·Î RESETÀÌ µÇ´Ï ÀÏ´Ü Æ²·Áµµ ¿©±â¼­ RESET ÇØÁÖ³×..
+		esio->chksumReq = RESET; // ì£¼ê¸°ì ìœ¼ë¡œ RESETì´ ë˜ë‹ˆ ì¼ë‹¨ í‹€ë ¤ë„ ì—¬ê¸°ì„œ RESET í•´ì£¼ë„¤..
 		
 		if(chksum != rcvsum)
 		{
@@ -1132,7 +1132,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
 			esio->esioCfgDown    = SET;
 			esio->dbDownEsio     = 1;
 			
-			esio->calptCfgDown   = SET;         // CAL-POINT Config Àü¼Û¿ä±¸
+			esio->calptCfgDown   = SET;         // CAL-POINT Config ì „ì†¡ìš”êµ¬
             esio->dbDownCalpt    = 1;    
             
             esio->hostCfgDown    = SET;
@@ -1142,7 +1142,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
 			esio->modbusCfgDown  = SET;
 			esio->scanCfgDown    = SET;
 			esio->deviceCfgDown  = SET;
-			esio->dbDownDevice   = 1;           // 1¹ø °èÀü±â ¹øÈ£
+			esio->dbDownDevice   = 1;           // 1ë²ˆ ê³„ì „ê¸° ë²ˆí˜¸
 			
 			esio->pointCfgDown   = SET;
 			esio->dbDownPoint    = 1;
@@ -1157,7 +1157,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         break;
     }
         
-    case SIM_RESTART_ESIO:      // 0x18 ESIO Restart Á¦¾î
+    case SIM_RESTART_ESIO:      // 0x18 ESIO Restart ì œì–´
         if(opr->esioDebug == esioid) 
     	Debug(console,"esio%d> rcv ESIO-RESTART  ... \n", esioid);
         return (0);
@@ -1175,7 +1175,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
                 
     case SIM_ESIOCFG_DOWN:      // 0x22 DB : ESIO Config Down
         devNo  = rxbuf[8];          // ESIO # [1..5]
-        devNum = rxbuf[9];          // Àü¼Û ESIO °¹¼ö (default = 1)
+        devNum = rxbuf[9];          // ì „ì†¡ ESIO ê°¯ìˆ˜ (default = 1)
         
         esio->dbDownEsio = devNo + 1;
         if((esio->dbDownEsio > MAX_DB_ESIO) || (esio->endEsioFlag == SET))
@@ -1234,8 +1234,8 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         break;
         
     case SIM_DEVICE_DOWN:       // 0x32 DB : DEVICE Config Down
-        devNo  = rxbuf[8];      // ½ÃÀÛ °è¹ø±â ¹øÈ£ [1..64]
-        devNum = rxbuf[9];      // Àü¼Û °èÀü±â ¼ö
+        devNo  = rxbuf[8];      // ì‹œì‘ ê³„ë²ˆê¸° ë²ˆí˜¸ [1..64]
+        devNum = rxbuf[9];      // ì „ì†¡ ê³„ì „ê¸° ìˆ˜
         
         esio->dbDownDevice = devNo + devNum;
         
@@ -1250,13 +1250,13 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
         return (0);
         break;
         
-    case SIM_POINT_DOWN:        // 0x34 DB : esio ¿¡¼­ rx  POINT Config Down Ã³¸®
+    case SIM_POINT_DOWN:        // 0x34 DB : esio ì—ì„œ rx  POINT Config Down ì²˜ë¦¬
         startPoint = rxbuf[8]*256 + rxbuf[9];
 		rcvPoint   = rxbuf[10];
 		
 		if(opr->esioDebug == esioid) 
     	Debug(console,"esio%d> rcv POINT DB Down ... start=%d , end = %d\n", esioid, startPoint, startPoint + rcvPoint);
-        // ESIO°¡ ¹ŞÀº ¸¶Áö¸· Æ÷ÀÎÆ®     	
+        // ESIOê°€ ë°›ì€ ë§ˆì§€ë§‰ í¬ì¸íŠ¸     	
 		esio->dbDownPoint = startPoint + rcvPoint;
 		
 		if(opr->esioDebug == esioid) 
@@ -1264,12 +1264,12 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
 
 
 
-		/* Æ÷ÀÎÆ® DB Àü¼Û Á¾·á... */		
+		/* í¬ì¸íŠ¸ DB ì „ì†¡ ì¢…ë£Œ... */		
 		if((esio->dbDownPoint >= MAX_DB_POINT) || (esio->endPointFlag == 0x80))    
 		{	
 
-            // esio->endPointFlag ÀÌ°Ç  sim¿¡¼­ ³»·Ä ¿Ã¶§....Áï ÀÌ¶§´Â 1È¸¸¸ .
-            // esio->dbDownPoint >= MAX_DB_POINT ÀÌ°Ç checksumpÀ¸,·Î
+            // esio->endPointFlag ì´ê±´  simì—ì„œ ë‚´ë ¬ ì˜¬ë•Œ....ì¦‰ ì´ë•ŒëŠ” 1íšŒë§Œ .
+            // esio->dbDownPoint >= MAX_DB_POINT ì´ê±´ checksumpìœ¼,ë¡œ
 			esio->pointCfgDown = RESET;
 			esio->endPointFlag = 0;
 			
@@ -1290,10 +1290,10 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
 		if(opr->esioDebug == esioid) 
     	Debug(console,"esio%d> rcv CAL-POINT DB Down ... start=%d , end = %d\n", esioid, startPoint, rxbuf[10]);
     	
-		esio->dbDownCalpt = startPoint + 16;         // 16 Æ÷ÀÎÆ®¾¿ Àü¼Û
+		esio->dbDownCalpt = startPoint + 16;         // 16 í¬ì¸íŠ¸ì”© ì „ì†¡
 
         /* ---------------------------------------- */
-		/* Æ÷ÀÎÆ® DB Àü¼Û Á¾·á...                   */	
+		/* í¬ì¸íŠ¸ DB ì „ì†¡ ì¢…ë£Œ...                   */	
 		/* ---------------------------------------- */	
 		if(esio->dbDownCalpt >= MAX_DB_CAL_POINT)
 		{	
@@ -1309,9 +1309,9 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
 
 
     /* -------------------------------- */                      
-    /* ¼Û½Å Frame ±¸¼º                  */                      
+    /* ì†¡ì‹  Frame êµ¬ì„±                  */                      
     /* -------------------------------- */         	
-    sndCount = count + 1;                   // Packet ³» Address ~ DF ±îÁöÀÇ µ¥ÀÌÅÍ ¼ö
+    sndCount = count + 1;                   // Packet ë‚´ Address ~ DF ê¹Œì§€ì˜ ë°ì´í„° ìˆ˜
                      
     sndbuf[2] = (sndCount >> 8) & 0xff;     /* Total size: MSB */
     sndbuf[3] = sndCount & 0xff;            /* Total size: LSB */
@@ -1325,7 +1325,7 @@ int rcvHandler_ESIO(int esioid, byte *sndbuf, byte *rxbuf, int rxcnt)
 
 extern void copy_rtudb_for_esio(  ESIO_RTU_DATABASE *dest,   RTU_DATABASE  *src) ;
 /*
-*   ESIO - SCAN TASK : MASTER-CPU ¸Ş¼¼Áö ±¸¼º
+*   ESIO - SCAN TASK : MASTER-CPU ë©”ì„¸ì§€ êµ¬ì„±
 */
 int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
 {
@@ -1341,29 +1341,29 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
     DB_HOST_CONFIG  *dbHost;
     
     /* ---------------------------- */
-	/*	OPCODE Ã³¸® 				*/
+	/*	OPCODE ì²˜ë¦¬ 				*/
 	/* ---------------------------- */
 	if(opr->runMode == LOCAL_MASTER)
     {	    
     	if(esio->timeSyncReq)		    opcode = SIM_TIME_DOWN;
-        else if(esio->cntFlag == SET)   opcode = SIM_POINT_CNTR;        // ESIO# Á¦¾îÁ¤º¸ Àü¼Û 	    
-        // µ¥ÀÌÅÍº£ÀÌ½º Àü¼Û°ü·Ã     
+        else if(esio->cntFlag == SET)   opcode = SIM_POINT_CNTR;        // ESIO# ì œì–´ì •ë³´ ì „ì†¡ 	    
+        // ë°ì´í„°ë² ì´ìŠ¤ ì „ì†¡ê´€ë ¨     
 	    else if(esio->chksumReq)		opcode = SIM_CHKSUM_DUMP;	
-	    else if(esio->mpuCfgDown)       opcode = SIM_MPUCFG_DOWN;    	// MPU Config Àü¼Û¿ä±¸        
-    	else if(esio->esioCfgDown)      opcode = SIM_ESIOCFG_DOWN;    	// ESIO Config Àü¼Û¿ä±¸    
-    	else if(esio->hostCfgDown)      opcode = SIM_HOST_DOWN;	        // HOST Config Àü¼Û¿ä±¸
-    	else if(esio->iccpCfgDown)	    opcode = SIM_ICCP_DOWN;	        // ICCP Config Àü¼Û¿ä±¸
-    	else if(esio->harrisCfgDown)	opcode = SIM_HARRIS_DOWN;	    // HARRIS Config Àü¼Û¿ä±¸
-	    else if(esio->landisCfgDown)	opcode = SIM_LANDIS_DOWN;	    // LANDIS Config Àü¼Û¿ä±¸            
-	    else if(esio->modbusCfgDown)	opcode = SIM_MODBUS_DOWN;	    // MODBUS Config Àü¼Û¿ä±¸
-        else if(esio->scanCfgDown)	    opcode = SIM_SCAN_DOWN;         // SCAN Config Àü¼Û¿ä±¸
-        else if(esio->deviceCfgDown)	opcode = SIM_DEVICE_DOWN;       // DEVICE Config Àü¼Û¿ä±¸
-        else if(esio->calptCfgDown)     opcode = SIM_CAL_POINT_DOWN;    // CAL-POINT Config Àü¼Û¿ä±¸     
-    	else if(esio->pointCfgDown)     opcode = SIM_POINT_DOWN;        // POINT Config Àü¼Û¿ä±¸
+	    else if(esio->mpuCfgDown)       opcode = SIM_MPUCFG_DOWN;    	// MPU Config ì „ì†¡ìš”êµ¬        
+    	else if(esio->esioCfgDown)      opcode = SIM_ESIOCFG_DOWN;    	// ESIO Config ì „ì†¡ìš”êµ¬    
+    	else if(esio->hostCfgDown)      opcode = SIM_HOST_DOWN;	        // HOST Config ì „ì†¡ìš”êµ¬
+    	else if(esio->iccpCfgDown)	    opcode = SIM_ICCP_DOWN;	        // ICCP Config ì „ì†¡ìš”êµ¬
+    	else if(esio->harrisCfgDown)	opcode = SIM_HARRIS_DOWN;	    // HARRIS Config ì „ì†¡ìš”êµ¬
+	    else if(esio->landisCfgDown)	opcode = SIM_LANDIS_DOWN;	    // LANDIS Config ì „ì†¡ìš”êµ¬            
+	    else if(esio->modbusCfgDown)	opcode = SIM_MODBUS_DOWN;	    // MODBUS Config ì „ì†¡ìš”êµ¬
+        else if(esio->scanCfgDown)	    opcode = SIM_SCAN_DOWN;         // SCAN Config ì „ì†¡ìš”êµ¬
+        else if(esio->deviceCfgDown)	opcode = SIM_DEVICE_DOWN;       // DEVICE Config ì „ì†¡ìš”êµ¬
+        else if(esio->calptCfgDown)     opcode = SIM_CAL_POINT_DOWN;    // CAL-POINT Config ì „ì†¡ìš”êµ¬     
+    	else if(esio->pointCfgDown)     opcode = SIM_POINT_DOWN;        // POINT Config ì „ì†¡ìš”êµ¬
 	    else
     	{
 	        /* ------------------------------------ */
-	        /* °èÀü±â »óÅÂ/¾Æ³¯·Î±× Á¤º¸ ¿¬°è       */
+	        /* ê³„ì „ê¸° ìƒíƒœ/ì•„ë‚ ë¡œê·¸ ì •ë³´ ì—°ê³„       */
     	    /* ------------------------------------ */
             if(++esio->scanIndex >= esio->scanMaxNum) 
             {
@@ -1383,25 +1383,25 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
                 comDevid = dev->comDevID;
                 
                 /* ------------------------------------------------ */
-                /*  °èÀü±âº° »óÅÂ/°èÃøÁ¤º¸ ¼öÁı...                  */
-                /*  - »óÅÂDump : ÃÊ±â & »óÅÂDump ÁÖ±â½Ã             */      
+                /*  ê³„ì „ê¸°ë³„ ìƒíƒœ/ê³„ì¸¡ì •ë³´ ìˆ˜ì§‘...                  */
+                /*  - ìƒíƒœDump : ì´ˆê¸° & ìƒíƒœDump ì£¼ê¸°ì‹œ             */      
                 /* ------------------------------------------------ */         
                 if(dev->scan == 0)      opcode = SIM_SDP_GPOLL;     
                 else
                 { 
                     if(dev->devDiPoint)
                     {
-                        if(dev->init_status == RESET)   opcode = SIM_POINT_SCAN;    // °èÀü±â »óÅÂÆ÷ÀÎÆ® Á¤º¸ 
+                        if(dev->init_status == RESET)   opcode = SIM_POINT_SCAN;    // ê³„ì „ê¸° ìƒíƒœí¬ì¸íŠ¸ ì •ë³´ 
                         else
                         {
-                            if(dev->statusDump == SET)  opcode = SIM_POINT_SCAN;    // °èÀü±â »óÅÂÆ÷ÀÎÆ® Á¤º¸ 
-                            else if(dev->devAiPoint)    opcode = SIM_ANALOG_SCAN;   // °èÀü±â °èÃøÆ÷ÀÎÆ® Á¤º¸   
+                            if(dev->statusDump == SET)  opcode = SIM_POINT_SCAN;    // ê³„ì „ê¸° ìƒíƒœí¬ì¸íŠ¸ ì •ë³´ 
+                            else if(dev->devAiPoint)    opcode = SIM_ANALOG_SCAN;   // ê³„ì „ê¸° ê³„ì¸¡í¬ì¸íŠ¸ ì •ë³´   
                             else                        opcode = SIM_SDP_GPOLL;  
                         }
                     }
                     else
                     {
-                        if(dev->devAiPoint)     opcode = SIM_ANALOG_SCAN;   // °èÀü±â °èÃøÆ÷ÀÎÆ® Á¤º¸    
+                        if(dev->devAiPoint)     opcode = SIM_ANALOG_SCAN;   // ê³„ì „ê¸° ê³„ì¸¡í¬ì¸íŠ¸ ì •ë³´    
                         else                    opcode = SIM_SDP_GPOLL;                                      
                     }
                 }
@@ -1412,25 +1412,25 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
     else
     {
         /* ------------------------------------------------------------ */
-        /*  LOCAL-SLAVE ÀÎ °æ¿ì....                                     */
+        /*  LOCAL-SLAVE ì¸ ê²½ìš°....                                     */
         /* ------------------------------------------------------------ */
         if(esio->timeSyncReq)		    opcode = SIM_TIME_DOWN;
         else if(esio->chksumReq)		opcode = SIM_CHKSUM_DUMP;	
-        else if(esio->mpuCfgDown)       opcode = SIM_MPUCFG_DOWN;    	// MPU Config Àü¼Û¿ä±¸        
-    	else if(esio->esioCfgDown)      opcode = SIM_ESIOCFG_DOWN;    	// ESIO Config Àü¼Û¿ä±¸    
-    	else if(esio->hostCfgDown)      opcode = SIM_HOST_DOWN;	        // HOST Config Àü¼Û¿ä±¸
-    	else if(esio->iccpCfgDown)	    opcode = SIM_ICCP_DOWN;	        // ICCP Config Àü¼Û¿ä±¸
-    	else if(esio->harrisCfgDown)	opcode = SIM_HARRIS_DOWN;	    // HARRIS Config Àü¼Û¿ä±¸
-	    else if(esio->landisCfgDown)	opcode = SIM_LANDIS_DOWN;	    // LANDIS Config Àü¼Û¿ä±¸            
-	    else if(esio->modbusCfgDown)	opcode = SIM_MODBUS_DOWN;	    // MODBUS Config Àü¼Û¿ä±¸
-        else if(esio->scanCfgDown)	    opcode = SIM_SCAN_DOWN;         // SCAN Config Àü¼Û¿ä±¸
-        else if(esio->deviceCfgDown)	opcode = SIM_DEVICE_DOWN;       // DEVICE Config Àü¼Û¿ä±¸
-        else if(esio->calptCfgDown)     opcode = SIM_CAL_POINT_DOWN;    // CAL-POINT Config Àü¼Û¿ä±¸     
-    	else if(esio->pointCfgDown)     opcode = SIM_POINT_DOWN;        // POINT Config Àü¼Û¿ä±¸.  2026-08-27 ¿ÀÈÄ 1:42:29 
+        else if(esio->mpuCfgDown)       opcode = SIM_MPUCFG_DOWN;    	// MPU Config ì „ì†¡ìš”êµ¬        
+    	else if(esio->esioCfgDown)      opcode = SIM_ESIOCFG_DOWN;    	// ESIO Config ì „ì†¡ìš”êµ¬    
+    	else if(esio->hostCfgDown)      opcode = SIM_HOST_DOWN;	        // HOST Config ì „ì†¡ìš”êµ¬
+    	else if(esio->iccpCfgDown)	    opcode = SIM_ICCP_DOWN;	        // ICCP Config ì „ì†¡ìš”êµ¬
+    	else if(esio->harrisCfgDown)	opcode = SIM_HARRIS_DOWN;	    // HARRIS Config ì „ì†¡ìš”êµ¬
+	    else if(esio->landisCfgDown)	opcode = SIM_LANDIS_DOWN;	    // LANDIS Config ì „ì†¡ìš”êµ¬            
+	    else if(esio->modbusCfgDown)	opcode = SIM_MODBUS_DOWN;	    // MODBUS Config ì „ì†¡ìš”êµ¬
+        else if(esio->scanCfgDown)	    opcode = SIM_SCAN_DOWN;         // SCAN Config ì „ì†¡ìš”êµ¬
+        else if(esio->deviceCfgDown)	opcode = SIM_DEVICE_DOWN;       // DEVICE Config ì „ì†¡ìš”êµ¬
+        else if(esio->calptCfgDown)     opcode = SIM_CAL_POINT_DOWN;    // CAL-POINT Config ì „ì†¡ìš”êµ¬     
+    	else if(esio->pointCfgDown)     opcode = SIM_POINT_DOWN;        // POINT Config ì „ì†¡ìš”êµ¬.  2026-08-27 ì˜¤í›„ 1:42:29 
         else    
        	{
        	    /* ------------------------------------ */
-	        /* °èÀü±â »óÅÂ/¾Æ³¯·Î±× Á¤º¸ ¿¬°è       */
+	        /* ê³„ì „ê¸° ìƒíƒœ/ì•„ë‚ ë¡œê·¸ ì •ë³´ ì—°ê³„       */
     	    /* ------------------------------------ */
             if(++esio->scanIndex >= esio->scanMaxNum) 
             {
@@ -1450,7 +1450,7 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
      {
         copy_rtudb_for_esio( &esio_rtudb, rtudb) ;
 
-    /* µ¥ÀÌÅÍº£ÀÌ½º ÀúÀå ... */
+    /* ë°ì´í„°ë² ì´ìŠ¤ ì €ì¥ ... */
         
          chksum = gensum((byte *)&esio_rtudb, sizeof(ESIO_RTU_DATABASE) - 2);
         // printf("SCAN> ESIO_RTU_DATABASE CHKSIM [%04X]\r\n",chksum );
@@ -1462,16 +1462,16 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
 
     
     /* -------------------------------- */                      
-    /* ¼Û½Å Frame ±¸¼º                      */                      
+    /* ì†¡ì‹  Frame êµ¬ì„±                      */                      
     /* -------------------------------- */                      
-    sndbuf[0] = 0x05;                       // Àü¼Û ±¸ºĞÀÚ#1                
-    sndbuf[1] = 0x64;                       // Àü¼Û ±¸ºĞÀÚ#2  
+    sndbuf[0] = 0x05;                       // ì „ì†¡ êµ¬ë¶„ì#1                
+    sndbuf[1] = 0x64;                       // ì „ì†¡ êµ¬ë¶„ì#2  
     sndbuf[2] = 0;                          // size             
     sndbuf[3] = 0;                          // size        
     sndbuf[4] = esioid;                     // Address ...[1] ESIO1, [2] ESIO2, [3] ESIO3, [4] ESIO4, [5] RTU
     sndbuf[5] = opcode + 0x80;              // opcode          
-    sndbuf[6] = mpuCFG->mpuStatus;          // MPU »óÅÂÁ¤º¸ status, MASTER/SLAVE, SDP-A/SDP-B           
-    sndbuf[7] = esio->sndSeqNo;             // ¼Û½Å SeqNo       
+    sndbuf[6] = mpuCFG->mpuStatus;          // MPU ìƒíƒœì •ë³´ status, MASTER/SLAVE, SDP-A/SDP-B           
+    sndbuf[7] = esio->sndSeqNo;             // ì†¡ì‹  SeqNo       
     count = 8;                                                  
 
     esio->sndOpcode = opcode & 0x7f;
@@ -1481,25 +1481,25 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
     case SIM_SDP_GPOLL:             // 0x00 SDP G-POLL        
         if(opr->esioDebug == esioid)                                    
         Debug(console,"esio%d> snd GPOLL ...dev= %d[com=%d] \n", esioid, sndDevNo, comDevid);
-        sndbuf[count++] = sndDevNo;     // ´ë»ó °èÀü±â ¹øÈ£, 1,2,3...
+        sndbuf[count++] = sndDevNo;     // ëŒ€ìƒ ê³„ì „ê¸° ë²ˆí˜¸, 1,2,3...
         break;
         
-    case SIM_POINT_SCAN:                // 0x04 °èÀü±â »óÅÂ POINT Á¤º¸ Scan
+    case SIM_POINT_SCAN:                // 0x04 ê³„ì „ê¸° ìƒíƒœ POINT ì •ë³´ Scan
         if(opr->esioDebug == esioid)                                    
         Debug(console,"esio%d> snd STATUS DUMP ...dev= %02d [com=%02d] \n", esioid, sndDevNo, comDevid);
-        sndbuf[count++] = sndDevNo;     // ´ë»ó °èÀü±â ¹øÈ£, 1,2,3...
+        sndbuf[count++] = sndDevNo;     // ëŒ€ìƒ ê³„ì „ê¸° ë²ˆí˜¸, 1,2,3...
         break;
         
-    case SIM_ANALOG_SCAN:               // 0x14 °èÀü±â ¾Æ³¯·Î±× Á¤º¸ Scan
+    case SIM_ANALOG_SCAN:               // 0x14 ê³„ì „ê¸° ì•„ë‚ ë¡œê·¸ ì •ë³´ Scan
         if(opr->esioDebug == esioid)                                    
         Debug(console,"esio%d> snd ANALOG DUMP ...dev= %d[com=%d] \n", esioid, sndDevNo, comDevid);
-        sndbuf[count++] = sndDevNo;     // ´ë»ó °èÀü±â ¹øÈ£, 1,2,3...
+        sndbuf[count++] = sndDevNo;     // ëŒ€ìƒ ê³„ì „ê¸° ë²ˆí˜¸, 1,2,3...
         break;
     
-    case SIM_POINT_CNTR:                // 0x05 °èÀü±â POINT Á¦¾î
-        sndbuf[count++] = esio->cntDev;        // ´ë»ó °èÀü±â ¹øÈ£ [1..64]
-        sndbuf[count++] = esio->cntPoint;      // ´ë»ó Æ÷ÀÎÆ® [1..256]
-        sndbuf[count++] = esio->cntTCF;        // Á¦¾î»óÅÂ, [1] TRIP, [2] CLOSE
+    case SIM_POINT_CNTR:                // 0x05 ê³„ì „ê¸° POINT ì œì–´
+        sndbuf[count++] = esio->cntDev;        // ëŒ€ìƒ ê³„ì „ê¸° ë²ˆí˜¸ [1..64]
+        sndbuf[count++] = esio->cntPoint;      // ëŒ€ìƒ í¬ì¸íŠ¸ [1..256]
+        sndbuf[count++] = esio->cntTCF;        // ì œì–´ìƒíƒœ, [1] TRIP, [2] CLOSE
         
         if(opr->soeDebug)
         Debug(console,"esio%d> snd Point Control ...[Dev=%d, point=%d, TCF=%d] \n", esioid, esio->cntDev, esio->cntPoint, esio->cntTCF);
@@ -1518,7 +1518,7 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
     	Debug(console, "esio%d> snd TIME-Sync Down : %4d/%2d/%2d %02d:%02d:%02d \n", esioid, rtc->year, rtc->month, rtc->day, rtc->hour, rtc->min, rtc->sec);
         break;
 
-    case SIM_CHKSUM_DUMP:               // 0x16 µ¥ÀÌÅÍº£ÀÌ½º Chksum Scan   
+    case SIM_CHKSUM_DUMP:               // 0x16 ë°ì´í„°ë² ì´ìŠ¤ Chksum Scan   
 
 #if 0
         chksum = gensum((byte *)rtudb, sizeof(RTU_DATABASE) - 2);
@@ -1534,7 +1534,7 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
         Debug(console,"esio%d> snd CHKSUM req...chksum = %04x \n", esioid, chksum);
         break;
 
-    case SIM_RESTART_ESIO:       // 0x16 µ¥ÀÌÅÍº£ÀÌ½º Chksum Scan   
+    case SIM_RESTART_ESIO:       // 0x16 ë°ì´í„°ë² ì´ìŠ¤ Chksum Scan   
         if(opr->esioDebug == esioid) 
     	Debug(console,"esio%d> cmd ESIO-Restart... \n", esioid);
     	sndbuf[count++] = 0;   
@@ -1548,14 +1548,14 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
 		memcpy( &sndbuf[count], (byte *) &rtudb->mpuConfig,  dbSize);
 		count += dbSize;
 #else
-// update µÉ °æ¿ì... ÀÏ´Ü Á¶±İ ÀÖ´Ù°¡..
+// update ë  ê²½ìš°... ì¼ë‹¨ ì¡°ê¸ˆ ìˆë‹¤ê°€..
         extern void copy_mpu_config(     DB_ESIO_MPU_CONFIG *dest,    DB_MPU_CONFIG *src) ;
         copy_mpu_config(  &esio_rtudb.esio_mpuConfig, &rtudb->mpuConfig);
          //copy_mpu_config( &dest->esio_mpuConfig, &src->mpuConfig) ;
         
         dbSize = sizeof(DB_ESIO_MPU_CONFIG);
         //printf("SIM_MPUCFG_DOWN size[%d]\r\n",dbSize );    
-		// ±¸Á¶Ã¼ÀÇ ÀÌ¸§Àº ÁÖ¼Ò°¡ ¾Æ´Ï¶ó Ã¹ Ç×¸ñÀÌ´Ù.
+		// êµ¬ì¡°ì²´ì˜ ì´ë¦„ì€ ì£¼ì†Œê°€ ì•„ë‹ˆë¼ ì²« í•­ëª©ì´ë‹¤.
 		memcpy( &sndbuf[count], (byte *) &esio_rtudb.esio_mpuConfig,  dbSize);
 		count += dbSize;
 
@@ -1570,7 +1570,7 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
         dbESIO = (DB_ESIO_CONFIG *) &rtudb->esioConfig[esio->dbDownEsio - 1];
         
 		sndbuf[count++] = esio->dbDownEsio;                     // ESIO#  [1..5]
-        sndbuf[count++] = 1;                                    // Àü¼Û ESIO °¹¼ö (default = 1)
+        sndbuf[count++] = 1;                                    // ì „ì†¡ ESIO ê°¯ìˆ˜ (default = 1)
 		memcpy( &sndbuf[count], (byte *) dbESIO,  dbSize);      // ESIO DB
 		count += dbSize;
 		
@@ -1636,16 +1636,16 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
     case SIM_DEVICE_DOWN:       // 0x32 DB : DEVICE Config Down
         devNum = 16;
 
-        /* END-°èÀü±â  Ç¥½Ã */
+        /* END-ê³„ì „ê¸°  í‘œì‹œ */
         if(esio->dbDownDevice >= 96)    esio->endDeviceFlag = SET;
         else                            esio->endDeviceFlag = RESET;    
 
         dbSize = sizeof(DB_SDP_DEVICE) * 16;
         
-        sndbuf[count++] = esio->dbDownDevice;               // ½ÃÀÛ °èÀü±â ¹øÈ£ [1..64]
+        sndbuf[count++] = esio->dbDownDevice;               // ì‹œì‘ ê³„ì „ê¸° ë²ˆí˜¸ [1..64]
         
-        if(esio->endDeviceFlag == SET)  sndbuf[count++] = 16 + 0x80;                // °èÀü±â ¼ö
-        else                            sndbuf[count++] = 16;                       // °èÀü±â ¼ö                 
+        if(esio->endDeviceFlag == SET)  sndbuf[count++] = 16 + 0x80;                // ê³„ì „ê¸° ìˆ˜
+        else                            sndbuf[count++] = 16;                       // ê³„ì „ê¸° ìˆ˜                 
 		memcpy( &sndbuf[count], (byte *) &rtudb->deviceConfig[esio->dbDownDevice - 1],  dbSize);
 		count += dbSize;
 		
@@ -1656,17 +1656,17 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
     case SIM_POINT_DOWN:        // 0x34 DB : POINT Config Down
         pointNum    = 16;
 
-		startPoint  = esio->dbDownPoint; // ÀÌÀü¿¡ º¸³»°í ESIO·Î ºÎÅÍ ¹ŞÀº °ÍÀ¸·Î ´ÙÀ½ÀÇ start °¡ µÈ´Ù.
-        // ÀÌ¹ø¿¡ º¸³¾ point ¸¶Áö¸· ¹øÈ£.
+		startPoint  = esio->dbDownPoint; // ì´ì „ì— ë³´ë‚´ê³  ESIOë¡œ ë¶€í„° ë°›ì€ ê²ƒìœ¼ë¡œ ë‹¤ìŒì˜ start ê°€ ëœë‹¤.
+        // ì´ë²ˆì— ë³´ë‚¼ point ë§ˆì§€ë§‰ ë²ˆí˜¸.
 		reportPoint = startPoint + pointNum;
 		
 		/* ------------------------------------ */
-		/* ½ÇÁ¦ µî·ÏµÈ Æ÷ÀÎÆ® Check...          */
-		/* ¸¶Áö¸· Æ÷ÀÎÆ®°¡ dbÀÇ ³¡... > ´Â ¹¹Áö ???    */
+		/* ì‹¤ì œ ë“±ë¡ëœ í¬ì¸íŠ¸ Check...          */
+		/* ë§ˆì§€ë§‰ í¬ì¸íŠ¸ê°€ dbì˜ ë... > ëŠ” ë­ì§€ ???    */
 		/* ------------------------------------ */
-		if(reportPoint >= MAX_DB_POINT) // Àü¿¡´Â = °¡ ¾ø¾î ¹®Á¦°¡ µÇ¾úÀÚ..
-		{                               // ¿©±â´Â point°¡ ¸¶Áö¸·À» º¸³½ °æ¿ìÀÎµ¥.
-			pointNum = 	MAX_DB_POINT - esio->dbDownPoint + 1; // 3-1=2 ÀÎµ¥ 1,2,3 À¸·Î 3°³..Áï +1 
+		if(reportPoint >= MAX_DB_POINT) // ì „ì—ëŠ” = ê°€ ì—†ì–´ ë¬¸ì œê°€ ë˜ì—ˆì..
+		{                               // ì—¬ê¸°ëŠ” pointê°€ ë§ˆì§€ë§‰ì„ ë³´ë‚¸ ê²½ìš°ì¸ë°.
+			pointNum = 	MAX_DB_POINT - esio->dbDownPoint + 1; // 3-1=2 ì¸ë° 1,2,3 ìœ¼ë¡œ 3ê°œ..ì¦‰ +1 
 			
 			esio->endPointFlag  = 0x80;	// point update flag...
             Debug(console,"esio%d> reach MAX_DB_POINT. set  POINT-DB endPointFlag\n", esioid);
@@ -1677,11 +1677,11 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
         
 		sndbuf[count++] = (startPoint >> 8) & 0xff;
 		sndbuf[count++] = startPoint & 0xff;
-		sndbuf[count++] = pointNum | esio->endPointFlag; // ¾î endPointFlag°¡ sim¿¡¼­µµ 0x80 ¼³Á¤ÇÏ´Âµ¥
+		sndbuf[count++] = pointNum | esio->endPointFlag; // ì–´ endPointFlagê°€ simì—ì„œë„ 0x80 ì„¤ì •í•˜ëŠ”ë°
 		
         dbSize = sizeof(DB_POINT_BUF) * pointNum;
 		memcpy( &sndbuf[count], (byte *) &rtudb->pointBuf[startPoint - 1],  dbSize);
-        // 2026-05-23 ¿ÀÈÄ 3:31:53
+        // 2026-05-23 ì˜¤í›„ 3:31:53
     	chksum = gensum (&sndbuf[count], dbSize);
 
 		count += dbSize;
@@ -1731,9 +1731,9 @@ int	 makeLink_ESIO(ESIO_CONFIG *esio, int esioid,  byte *sndbuf)
 
 
     /* -------------------------------- */                      
-    /* ¼Û½Å Frame ±¸¼º                  */                      
+    /* ì†¡ì‹  Frame êµ¬ì„±                  */                      
     /* -------------------------------- */   
-    sndCount = count + 1;                   // Packet ³» Address ~ DF ±îÁöÀÇ µ¥ÀÌÅÍ ¼ö
+    sndCount = count + 1;                   // Packet ë‚´ Address ~ DF ê¹Œì§€ì˜ ë°ì´í„° ìˆ˜
     sndbuf[2] = (sndCount >> 8) & 0xff;     /* Total size: MSB */
     sndbuf[3] = sndCount & 0xff;            /* Total size: LSB */
 
@@ -1769,9 +1769,9 @@ void    *scanThread_ESIO(int  *arg)
 	/* ------------------------------------ */
 	/* THREAD Argment Assign ...            */
 	/* ------------------------------------ */
-	esioid = (int ) *arg;                                   // ÇØ´ç ESIO ID, 0,1,2..
+	esioid = (int ) *arg;                                   // í•´ë‹¹ ESIO ID, 0,1,2..
     esio = (ESIO_CONFIG *) esioCFG[esioid];
-    esioNet = (ESIO_NET_ENTRY *) &esio->mstNetConfig[0];    // ESIO Á¢¼Ó Network Á¤º¸
+    esioNet = (ESIO_NET_ENTRY *) &esio->mstNetConfig[0];    // ESIO ì ‘ì† Network ì •ë³´
     
     if(esio->comDelay <= 0) taskDelay = 100;
 	else                    taskDelay = esio->comDelay * 10;
@@ -1782,8 +1782,8 @@ void    *scanThread_ESIO(int  *arg)
     resetCount = 0;
     readFail   = 0;
     
-    txbuf = (byte *) &esioSndBuf[esioid][0];        // ESIO# ¼Û½Å Buffer Pointer
-    rxbuf = (byte *) &esioRcvBuf[esioid][0];        // ESIO# ¼ö½Å Buffer Pointer
+    txbuf = (byte *) &esioSndBuf[esioid][0];        // ESIO# ì†¡ì‹  Buffer Pointer
+    rxbuf = (byte *) &esioRcvBuf[esioid][0];        // ESIO# ìˆ˜ì‹  Buffer Pointer
     rxcnt = 0;
     txcnt = 0;
     
@@ -1803,7 +1803,7 @@ void    *scanThread_ESIO(int  *arg)
 #endif     
     
     /* ------------------------------------ */
-    /*  ESIO# : SCAN Device Á¤º¸            */
+    /*  ESIO# : SCAN Device ì •ë³´            */
     /* ------------------------------------ */
     printf("=> ESIO-SCAN[%d] device Num = %02d ... ", esioid, esio->scanMaxNum);
     for(i=0; i< esio->scanMaxNum; i++)  printf(" %2d", esio->scanDevice[i]);
@@ -1813,11 +1813,11 @@ void    *scanThread_ESIO(int  *arg)
     sendFlag        = 0;
     
     esio->comFailTick = 0;
-    // ±âº» flag set
+    // ê¸°ë³¸ flag set
     esio->chksumReq   = SET;
     esio->timeSyncReq = SET;
-    //esio->online      = 2;	// ÃÊ±â ESIO Åë½Å»óÅÂ
-//  2026-05-19 ¿ÀÈÄ 1:24:34  À§·ÎÀÌµ¿     
+    //esio->online      = 2;	// ì´ˆê¸° ESIO í†µì‹ ìƒíƒœ
+//  2026-05-19 ì˜¤í›„ 1:24:34  ìœ„ë¡œì´ë™     
 //    esio->connectStatus = RESET;
     
     oldsec = rtc->sec;
@@ -1828,14 +1828,14 @@ void    *scanThread_ESIO(int  *arg)
 		opr->scanWDT[esioid] = 0;
 				                                
         /* ---------------------------------------- */
-	    /*  ESIO Á¢¼Ó½ÇÆĞ¿¡ µû¸¥ ÀçÁ¢¼Ó...          */
+	    /*  ESIO ì ‘ì†ì‹¤íŒ¨ì— ë”°ë¥¸ ì¬ì ‘ì†...          */
 	    /* ---------------------------------------- */
 	    if(esio->connectStatus == RESET)
 	    {
           //  if(opr->esioDebug == esioid)  
           //  Debug(console,"esio%d> * Client retry Connect....socket = %d !\n", esioid , esio->SocketFd );
             
-            /* LINK OFFLINE Ç¥½Ã */
+            /* LINK OFFLINE í‘œì‹œ */
             if(esio->online == SET)
             {
             	Debug(console, ">> *ESIO(%d) Offline.... %s \n", esioid, esio->esioNameStr);
@@ -1853,17 +1853,17 @@ void    *scanThread_ESIO(int  *arg)
                    { 
                         if(opr->esioDebug == esioid)
                         Debug(console, "esio%d> *** Network Initial(Client)... Fail...\n", esioid);	                    
-                        // 2026-05-19 ¿ÀÈÄ 1:27:28 
+                        // 2026-05-19 ì˜¤í›„ 1:27:28 
                       //  pause(1000);
                           
-                          //  TK_SYS_ERR ÀÌ°Ç    _initNetClient_SCAN ¿¡¼­ Ã³¸®ÇÏ°í 
-                          //  termExec = NO; // threadÁ¾·á°¡ ¾Æ´Ï°í. SCAN  Á¾³×..
+                          //  TK_SYS_ERR ì´ê±´    _initNetClient_SCAN ì—ì„œ ì²˜ë¦¬í•˜ê³  
+                          //  termExec = NO; // threadì¢…ë£Œê°€ ì•„ë‹ˆê³ . SCAN  ì¢…ë£“ë„¤..
 
         				/* -------------------------------------------- */
-        				/*	Áö¼ÓÀûÀ¸·Î ESIO ¿Í ¸µÅ©°¡ µÇÁö ¾Ê´Â °æ¿ì...				*/
+        				/*	ì§€ì†ì ìœ¼ë¡œ ESIO ì™€ ë§í¬ê°€ ë˜ì§€ ì•ŠëŠ” ê²½ìš°...				*/
         				/* -------------------------------------------- */
         				resetCount++;
-        				if(resetCount > 60) // ¿¬¼ÓÀ¸·Î 60¹ø connect°¡ Á¤»óÀûÀ¸·Î ½ÇÆĞÇÑ °æ¿ì...
+        				if(resetCount > 60) // ì—°ì†ìœ¼ë¡œ 60ë²ˆ connectê°€ ì •ìƒì ìœ¼ë¡œ ì‹¤íŒ¨í•œ ê²½ìš°...
         				{
         					if((opr->runMode == LOCAL_SLAVE) && (esio->autoChgFlag == SET))
         					{
@@ -1882,7 +1882,7 @@ void    *scanThread_ESIO(int  *arg)
 #if 0       
 {     
             /* ------------------------------------ */
-            /* ESIO ¿ÍÀÇ Á¢¼Ó ½Ãµµ...               */  
+            /* ESIO ì™€ì˜ ì ‘ì† ì‹œë„...               */  
             /* ------------------------------------ */  
             if(_reConnectClient_SCAN(esio, esioid) == 0)
             {
@@ -1898,7 +1898,7 @@ void    *scanThread_ESIO(int  *arg)
                     }
 
                     /* ---------------------------------------- */
-                    /*  ÀåÄ¡º° TCPIP ÃÊ±âÈ­...                  */
+                    /*  ì¥ì¹˜ë³„ TCPIP ì´ˆê¸°í™”...                  */
                     /* ---------------------------------------- */
                     if (_initNetClient_SCAN(esio, esioid) == ERROR)
                     { 
@@ -1908,7 +1908,7 @@ void    *scanThread_ESIO(int  *arg)
                     }
     
     				/* -------------------------------------------- */
-    				/*	Áö¼ÓÀûÀ¸·Î ESIO ¿Í ¸µÅ©°¡ µÇÁö ¾Ê´Â °æ¿ì...				*/
+    				/*	ì§€ì†ì ìœ¼ë¡œ ESIO ì™€ ë§í¬ê°€ ë˜ì§€ ì•ŠëŠ” ê²½ìš°...				*/
     				/* -------------------------------------------- */
     				resetCount++;
     				if(resetCount > 60)
@@ -1923,7 +1923,7 @@ void    *scanThread_ESIO(int  *arg)
     			
     						pause(1000);
     			
-    			            // 2026-10-19 ¿ÀÈÄ 5:42:07
+    			            // 2026-10-19 ì˜¤í›„ 5:42:07
                             system("reboot");
     			
     						opr->wdtEnable = RESET;
@@ -1942,13 +1942,13 @@ void    *scanThread_ESIO(int  *arg)
 	    
 	    {		 	  	
 	            /* ---------------------------------------- */
-    	        /*  ESIO ¼Û½Å ¸Ş¼¼Áö Ã³¸®                        */
+    	        /*  ESIO ì†¡ì‹  ë©”ì„¸ì§€ ì²˜ë¦¬                        */
         	    /* ---------------------------------------- */
 	            txcnt = makeLink_ESIO(esio, esioid, txbuf);
     	        if(txcnt > 7) 
     	        {      
     	                sendFlag = SET;      
-                	    /* ESIO# ¼Û¼ö½Å Åë½Å»óÅÂ È®ÀÎ¿ë... */            
+                	    /* ESIO# ì†¡ìˆ˜ì‹  í†µì‹ ìƒíƒœ í™•ì¸ìš©... */            
         	            esio->sndCount++;  
             	        if(esio->sndCount > 1000)
                 	    {
@@ -1957,13 +1957,13 @@ void    *scanThread_ESIO(int  *arg)
                         	esio->rcvCount = 0;
                         }
                         
-                        /* ¾Æ·¡°¡ ¿©±â¿¡ ¿Í¾ßÁö. */
+                        /* ì•„ë˜ê°€ ì—¬ê¸°ì— ì™€ì•¼ì§€. */
                         
                 }
         }
 
         /* ---------------------------------------- */
-        /*  ESIO Àü¼Û µ¥ÀÌÅÍ¿¡ ´ëÇÑ ÆĞÄÏ Ã³¸® ...   */    
+        /*  ESIO ì „ì†¡ ë°ì´í„°ì— ëŒ€í•œ íŒ¨ì¼“ ì²˜ë¦¬ ...   */    
         /* ---------------------------------------- */
         if(sendFlag == SET)
         {
@@ -1984,15 +1984,18 @@ void    *scanThread_ESIO(int  *arg)
             	{
                    if(opr->esioDebug == esioid)  
                     Debug(console, "esio%d> * *** net Send Error [%d %d]...socket = %d !\n", esioid, txcnt,  rxVal, esio->SocketFd);		
-                    //esio->connectStatus = RESET;
+                    // 2026-10-30 ì˜¤í›„ 3:01:49 
+                    esio->connectStatus = RESET;
+                    continue; 
 	            }
 
                 if( rxVal != txcnt)
                 {
                    if(opr->esioDebug == esioid)  
                     Debug(console, "esio%d> * net Send Error [%d %d]...!\n", esioid, txcnt,  rxVal);
-                    
-                    //esio->connectStatus = RESET;
+                    // 2026-10-30 ì˜¤í›„ 3:01:49 
+                    esio->connectStatus = RESET;
+                    continue; 
                 }                
             }
             
@@ -2000,26 +2003,27 @@ void    *scanThread_ESIO(int  *arg)
             if(esio->sndOpcode == SIM_CHKSUM_DUMP)  pause(200);
                 
         }
-	    // 2026-10-28 ¿ÀÈÄ 2:34:43 ¸·ÀÚ..
+	    // 2026-10-28 ì˜¤í›„ 2:34:43 ë§‰ì..
 	    //pause(500);
 	    
-	    //2026-05-22 ¿ÀÈÄ 6:54:49
-	    // ¹Ğ¸°´Ù.. 
-	    // 2026-05-23 ¿ÀÀü 11:23:09  tk_get_response·Î º¯°æÇÏ°í Áö¿î´Ù.
+	    //2026-05-22 ì˜¤í›„ 6:54:49
+	    // ë°€ë¦°ë‹¤.. 
+	    // 2026-05-23 ì˜¤ì „ 11:23:09  tk_get_responseë¡œ ë³€ê²½í•˜ê³  ì§€ìš´ë‹¤.
 	    //pause(1000);
 	    
 	    
 	    bzero(rxbuf, 10);
 	    /* ------------------------------------- */
-        /*  ¸Ş¼¼Áö ¼ö½Å & Response               */
+        /*  ë©”ì„¸ì§€ ìˆ˜ì‹  & Response               */
     	/* ------------------------------------- */	        	        
         if((rxcnt = tk_get_response_ESIO(esio->SocketFd, esioid, rxbuf)) > 0)
         {
             esio->comFailTick = 0;
             esio->netCfgCount = 0;
-	    
+            // 2026-10-30 ì˜¤í›„ 3:29:42 
+            readFail	= 0 ;     
             /* ---------------------------------------- */
-            /*  ¼ö½ÅÇÑ µ¥ÀÌÅÍ¿¡ ´ëÇÑ ÆĞÄÏ Ã³¸® ...              */    
+            /*  ìˆ˜ì‹ í•œ ë°ì´í„°ì— ëŒ€í•œ íŒ¨ì¼“ ì²˜ë¦¬ ...              */    
             /* ---------------------------------------- */
             if(opr->esioDebug == esioid)  
             {         
@@ -2027,9 +2031,9 @@ void    *scanThread_ESIO(int  *arg)
                 else            DumpBuff(console,"ERX: ", rxbuf, rxcnt);
             }        
 
-            // 2026-10-28 ¿ÀÈÄ 2:22:06 ¹¹Áö...À§¿Í Áßº¹ÀÎµ¥...
+            // 2026-10-28 ì˜¤í›„ 2:22:06 ë­ì§€...ìœ„ì™€ ì¤‘ë³µì¸ë°...
 			/* Reset Clear... */
-            opcode = rxbuf[5] & 0x7f;           // ¼ö½Å OPCODE
+            opcode = rxbuf[5] & 0x7f;           // ìˆ˜ì‹  OPCODE
             if(opcode == SIM_TIME_DOWN)		resetCount = 0;
             else if ((opcode == SIM_SDP_GPOLL) || (opcode == SIM_POINT_SCAN) || (opcode == SIM_ANALOG_SCAN))
             {
@@ -2042,11 +2046,11 @@ void    *scanThread_ESIO(int  *arg)
             }
             
             txcnt = rcvHandler_ESIO(esioid, txbuf, rxbuf, rxcnt);
-            if(txcnt > 7)  // 2026-05-22 ¿ÀÈÄ 6:05:39 
+            if(txcnt > 7)  // 2026-05-22 ì˜¤í›„ 6:05:39 
             {
-                 sendFlag = SET;  // ???? ¿¨ ÀÖ´Ù ..eventDump.        
+                 sendFlag = SET;  // ???? ì—¥ ìˆë‹¤ ..eventDump.        
                                 /* ---------------------------------------- */
-                /*  ESIO Àü¼Û µ¥ÀÌÅÍ¿¡ ´ëÇÑ ÆĞÄÏ Ã³¸® ...   */    
+                /*  ESIO ì „ì†¡ ë°ì´í„°ì— ëŒ€í•œ íŒ¨ì¼“ ì²˜ë¦¬ ...   */    
                 /* ---------------------------------------- */
                 if(sendFlag == SET)
                 {
@@ -2067,15 +2071,18 @@ void    *scanThread_ESIO(int  *arg)
                     	{
                            if(opr->esioDebug == esioid)  
                             Debug(console, "esio%d> * *** net Send Error [%d %d]...socket = %d !\n", esioid, txcnt,  rxVal, esio->SocketFd);		
-                            //esio->connectStatus = RESET;
+                            // 2026-10-31 ì˜¤í›„ 1:07:03
+                            esio->connectStatus = RESET;
+                            continue;
         	            }
 
                         if( rxVal != txcnt)
                         {
                            if(opr->esioDebug == esioid)  
                             Debug(console, "esio%d> * net Send Error [%d %d]...!\n", esioid, txcnt,  rxVal);
-                            
-                            //esio->connectStatus = RESET;
+                            // 2026-10-31 ì˜¤í›„ 1:06:59
+                            esio->connectStatus = RESET;
+                            continue; 
                         }                
                     }
                     
@@ -2088,7 +2095,7 @@ void    *scanThread_ESIO(int  *arg)
                 
             }		
             	
-            /* ESIO# ¼Û¼ö½Å Åë½Å»óÅÂ È®ÀÎ¿ë... */           
+            /* ESIO# ì†¡ìˆ˜ì‹  í†µì‹ ìƒíƒœ í™•ì¸ìš©... */           
             esio->sndSeqNo++;
             esio->rcvCount++;
             
@@ -2108,18 +2115,18 @@ void    *scanThread_ESIO(int  *arg)
 	    else
 	    {
 	        /* ---------------------------------------- */
-            /*  ESIO Á¢¼ÓÀÌ»ó¿¡ µû¸¥ Ã³¸®               */
+            /*  ESIO ì ‘ì†ì´ìƒì— ë”°ë¥¸ ì²˜ë¦¬               */
             /* ---------------------------------------- */
-    	    if(rxcnt == 0)
+    	    if(rxcnt == 0) //EOL
     	    {
 	        	//if(opr->esioDebug == esioid)  
-	        	Debug(console, "esio%d> *** TCP/IP read ...0 Connection...Failed...!\n", esioid);
+	        	Debug(console, "esio%d> *** TCP/IP read ...0 Peer Close Connection..!\n", esioid);
 	            esio->connectStatus = RESET;
 	            
 	            
 	            
 	        }
-	        else if(rxcnt == -2)
+	        else if(rxcnt == -2) // timeout
 	      	{
 	      		Debug(console, "esio%d> *TCP/IP read Fail ...%d !\n", esioid, readFail);
 	      		if(++readFail > 10)
@@ -2128,16 +2135,28 @@ void    *scanThread_ESIO(int  *arg)
 	      			esio->connectStatus = RESET;
 	      		}		
 	      	}
+
+	        else // sys error or protocol error
+	      	{
+	      		Debug(console, "esio%d> *TCP/IP read Fail for protocol or sys error .. !\n", esioid);
+	      	//	if(++readFail > 10)
+	      		{
+	      		//	readFail = 0;
+	      			esio->connectStatus = RESET;
+	      		}		
+	      	}
+
+           
 #if 0	      	
-	     	else // timeout °É·Á¼­¤Ó¤Ó³ª¿À³ä...¾Æ ÀÌ»óÇÏ´Ù.
+	     	else // timeout ê±¸ë ¤ì„œã…£ã…£ë‚˜ì˜¤ë…...ì•„ ì´ìƒí•˜ë‹¤.
 	     	{		 	  	
 	            /* ---------------------------------------- */
-    	        /*  ESIO ¼Û½Å ¸Ş¼¼Áö Ã³¸®                        */
+    	        /*  ESIO ì†¡ì‹  ë©”ì„¸ì§€ ì²˜ë¦¬                        */
         	    /* ---------------------------------------- */
 	            txcnt = makeLink_ESIO(esio, esioid, txbuf);
     	        if(txcnt > 7)   sendFlag = SET;      
 
-        	    /* ESIO# ¼Û¼ö½Å Åë½Å»óÅÂ È®ÀÎ¿ë... */            
+        	    /* ESIO# ì†¡ìˆ˜ì‹  í†µì‹ ìƒíƒœ í™•ì¸ìš©... */            
 	            esio->sndCount++;  
     	        if(esio->sndCount > 1000)
         	    {
@@ -2153,18 +2172,18 @@ void    *scanThread_ESIO(int  *arg)
         
 	    
         /* ------------------------------------ */
-        /* ÃÊ´ÜÀ§ Á¤º¸ Ã³¸® ...                 */ 
+        /* ì´ˆë‹¨ìœ„ ì •ë³´ ì²˜ë¦¬ ...                 */ 
         /* ------------------------------------ */       
         if(oldsec == rtc->sec)  continue;
         oldsec = rtc->sec;
         
         if(oldsec == 0) 
         {
-            if(esio->dbDownFlag == RESET)  esio->chksumReq = SET;       // 1ºĞ´ÜÀ§ DB Check...    
+            if(esio->dbDownFlag == RESET)  esio->chksumReq = SET;       // 1ë¶„ë‹¨ìœ„ DB Check...    
         }     
         
         /* ------------------------------------ */
-        /* ESIO# Á¤º¸¿¬°è Timeout ÃÊ±âÈ­ ...    */ 
+        /* ESIO# ì •ë³´ì—°ê³„ Timeout ì´ˆê¸°í™” ...    */ 
         /* ------------------------------------ */ 
         if(++esio->comFailTick > 5)
         {
